@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.6.10] - 2026-04-19
+### 🔧 Critical Fix - Missing ajaxurl Variable
+**FIXED:**
+- ✅ Added missing `ajaxurl` variable definition in JavaScript
+- ✅ Added console logging for debugging AJAX calls
+- ✅ Added detailed error logging to track issues
+
+**ISSUE:**
+- JavaScript was trying to use `ajaxurl` which was undefined
+- This caused "ajaxurl is not defined" error preventing AJAX calls
+
+**FILES MODIFIED:**
+- `includes/class-employee-detail.php` - Added ajaxurl definition and console logging
+
+**RESULT:**
+- AJAX calls now work properly
+- Console shows detailed debugging information
+- Orders table loads correctly
+
+---
+
 ## [1.6.9] - 2026-04-19
 ### 🔧 Critical Fix - Admin Orders Table AJAX and CSS
 **FIXED:**

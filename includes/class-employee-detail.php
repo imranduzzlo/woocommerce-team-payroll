@@ -1659,6 +1659,7 @@ class WC_Team_Payroll_Employee_Detail {
 			jQuery(document).ready(function($) {
 				const userId = $('#wc-tp-current-user-id').val();
 				const nonce = $('#wc_team_payroll_nonce').val();
+				const ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
 
 				// Employee Status Change Handler
 				$('#wc-tp-employee-status').on('change', function() {
@@ -1813,6 +1814,14 @@ class WC_Team_Payroll_Employee_Detail {
 						const statusValue = $('#status-filter').val();
 						const roleValue = $('#role-filter').val();
 						
+						console.log('Loading orders with params:', {
+							userId: userId,
+							role: roleValue,
+							status: statusValue,
+							start_date: dateFrom,
+							end_date: dateTo
+						});
+						
 						$.ajax({
 							url: ajaxurl,
 							type: 'POST',
@@ -1827,6 +1836,7 @@ class WC_Team_Payroll_Employee_Detail {
 								nonce: nonce
 							},
 							success: function(response) {
+								console.log('AJAX Response:', response);
 								if (response.success) {
 									const data = response.data;
 									
@@ -1857,11 +1867,12 @@ class WC_Team_Payroll_Employee_Detail {
 										$('#orders-pagination').html('');
 									}
 								} else {
+									console.error('AJAX Error Response:', response);
 									$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p style="color: #dc3545;"><?php esc_html_e( 'Failed to load orders', 'wc-team-payroll' ); ?></p></td></tr>');
 								}
 							},
 							error: function(xhr, status, error) {
-								console.error('AJAX Error:', status, error);
+								console.error('AJAX Error:', {xhr: xhr, status: status, error: error});
 								$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p style="color: #dc3545;"><?php esc_html_e( 'Error loading orders', 'wc-team-payroll' ); ?></p></td></tr>');
 							}
 						});
