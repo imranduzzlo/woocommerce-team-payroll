@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.6.7] - 2026-04-20
+### 🔒 IMPROVED - Prevent Self-Assignment in Agent Dropdown
+
+#### ENHANCEMENT - Current User Excluded from Agent Selection
+**IMPROVEMENT:**
+- Current logged-in user is now excluded from the agent dropdown on checkout
+- Prevents users from selecting themselves as the agent
+- Ensures clean owner-only orders when no agent is selected
+
+**THE CHANGE:**
+```php
+// Get current logged-in user ID to exclude from dropdown
+$current_user_id = get_current_user_id();
+
+foreach ( $users as $user ) {
+    // Exclude current logged-in user from dropdown
+    if ( $current_user_id && $user->ID === $current_user_id ) {
+        continue; // Skip current user - they can't select themselves
+    }
+    // ... rest of the code
+}
+```
+
+**BENEFITS:**
+- ✅ No confusion about selecting yourself
+- ✅ Clean owner-only orders (no agent selected = current user is owner)
+- ✅ Prevents agent_id === processor_id scenario from manual selection
+- ✅ Simpler UX - only see other team members in dropdown
+
+**USE CASES:**
+- **Before**: User could select themselves, creating agent_id === processor_id
+- **After**: User only sees other team members, if none selected = owner-only order
+
+---
+
 ## [1.6.6] - 2026-04-20
 ### 🎯 FIXED - Attributed Total for Owner-Only Orders
 

@@ -37,6 +37,9 @@ class WC_Team_Payroll_Checkout_Integration {
 			return;
 		}
 
+		// Get current logged-in user ID to exclude from dropdown
+		$current_user_id = get_current_user_id();
+
 		// Fetch users with specified roles
 		$users = get_users( array(
 			'role__in' => $this->agent_user_roles,
@@ -46,6 +49,11 @@ class WC_Team_Payroll_Checkout_Integration {
 
 		$data = array();
 		foreach ( $users as $user ) {
+			// Exclude current logged-in user from dropdown
+			if ( $current_user_id && $user->ID === $current_user_id ) {
+				continue; // Skip current user - they can't select themselves
+			}
+
 			// Check if employee is active (exclude inactive employees)
 			$employee_status = get_user_meta( $user->ID, '_wc_tp_employee_status', true );
 			if ( $employee_status === 'inactive' ) {
