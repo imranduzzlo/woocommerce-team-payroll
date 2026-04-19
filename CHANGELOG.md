@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.5] - 2026-04-19
+### Fixed
+- **CRITICAL**: Replaced ?? operator with isset() for PHP 5.6 compatibility
+- Removed try-catch that was causing issues
+- Added WooCommerce function check
+
+## [1.7.4] - 2026-04-19
+### Fixed
+- Wrapped AJAX handler in try-catch to prevent fatal errors
+- Removed file logging that was causing crashes
+- Added detailed exception reporting
+
 ## [1.7.3] - 2026-04-19
 ### Debug
 - Added detailed error display in frontend table for debugging

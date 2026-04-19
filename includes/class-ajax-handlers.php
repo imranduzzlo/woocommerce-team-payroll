@@ -39,36 +39,24 @@ class WC_Team_Payroll_AJAX_Handlers {
 	}
 
 	public static function get_employee_orders() {
-		// Force error logging to file
-		$log_file = WP_CONTENT_DIR . '/wc-tp-debug.log';
-		file_put_contents( $log_file, date( 'Y-m-d H:i:s' ) . " - get_employee_orders called\n", FILE_APPEND );
-		file_put_contents( $log_file, "POST data: " . print_r( $_POST, true ) . "\n", FILE_APPEND );
-		
-		// Add error logging
-		error_log( '=== get_employee_orders called ===' );
-		error_log( 'POST data: ' . print_r( $_POST, true ) );
-		
-		// Check nonce
+		// Check nonce first
 		if ( ! isset( $_POST['nonce'] ) ) {
-			error_log( 'ERROR: Nonce not provided' );
-			file_put_contents( $log_file, "ERROR: Nonce not provided\n", FILE_APPEND );
-			wp_send_json_error( array( 'message' => __( 'Nonce not provided', 'wc-team-payroll' ) ) );
+			wp_send_json_error( array( 'message' => 'Nonce not provided' ) );
 		}
 		
 		$nonce_check = check_ajax_referer( 'wc_team_payroll_nonce', 'nonce', false );
 		if ( ! $nonce_check ) {
-			error_log( 'ERROR: Nonce verification failed' );
-			file_put_contents( $log_file, "ERROR: Nonce verification failed\n", FILE_APPEND );
-			wp_send_json_error( array( 'message' => __( 'Nonce verification failed', 'wc-team-payroll' ) ) );
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ) );
 		}
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			error_log( 'ERROR: User does not have manage_woocommerce capability' );
-			file_put_contents( $log_file, "ERROR: User does not have manage_woocommerce capability\n", FILE_APPEND );
-			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
 		}
-
-		file_put_contents( $log_file, "All checks passed, processing orders...\n", FILE_APPEND );
+		
+		// Check if WooCommerce function exists
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			wp_send_json_error( array( 'message' => 'WooCommerce not loaded' ) );
+		}
 
 		$user_id = intval( $_POST['user_id'] );
 		$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( $_POST['start_date'] ) : '';
@@ -181,7 +169,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$start_timestamp = strtotime( $start_date );
 			$end_timestamp = strtotime( $end_date . ' 23:59:59' );
 			$orders = array_filter( $orders, function( $order ) use ( $start_timestamp, $end_timestamp ) {
-				$order_time = strtotime( $order['date'] ?? '' );
+				$order_time = strtotime( isset( $order['date'] ) ? $order['date'] : '' );
 				return $order_time >= $start_timestamp && $order_time <= $end_timestamp;
 			} );
 		}
@@ -189,14 +177,14 @@ class WC_Team_Payroll_AJAX_Handlers {
 		// Filter by status
 		if ( $status ) {
 			$orders = array_filter( $orders, function( $order ) use ( $status ) {
-				return ( $order['status'] ?? '' ) === $status;
+				return ( isset( $order['status'] ) ? $order['status'] : '' ) === $status;
 			} );
 		}
 
 		// Filter by role (instead of flag)
 		if ( $role ) {
 			$orders = array_filter( $orders, function( $order ) use ( $role ) {
-				return ( $order['role'] ?? '' ) === $role;
+				return ( isset( $order['role'] ) ? $order['role'] : '' ) === $role;
 			} );
 		}
 
@@ -204,20 +192,16 @@ class WC_Team_Payroll_AJAX_Handlers {
 		if ( $search ) {
 			$orders = array_filter( $orders, function( $order ) use ( $search ) {
 				$search_lower = strtolower( $search );
-				return strpos( strtolower( $order['order_id'] ?? '' ), $search_lower ) !== false ||
-					   strpos( strtolower( $order['customer_name'] ?? '' ), $search_lower ) !== false ||
-					   strpos( strtolower( $order['customer_email'] ?? '' ), $search_lower ) !== false ||
-					   strpos( strtolower( $order['customer_phone'] ?? '' ), $search_lower ) !== false;
+				return strpos( strtolower( isset( $order['order_id'] ) ? $order['order_id'] : '' ), $search_lower ) !== false ||
+					   strpos( strtolower( isset( $order['customer_name'] ) ? $order['customer_name'] : '' ), $search_lower ) !== false ||
+					   strpos( strtolower( isset( $order['customer_email'] ) ? $order['customer_email'] : '' ), $search_lower ) !== false ||
+					   strpos( strtolower( isset( $order['customer_phone'] ) ? $order['customer_phone'] : '' ), $search_lower ) !== false;
 			} );
 		}
 
 		wp_send_json_success( array(
 			'orders' => array_values( $orders ),
 		) );
-		
-		// Log success
-		$log_file = WP_CONTENT_DIR . '/wc-tp-debug.log';
-		file_put_contents( $log_file, "SUCCESS: Returned " . count( $orders ) . " orders\n", FILE_APPEND );
 	}
 
 	public static function get_employee_salary() {
