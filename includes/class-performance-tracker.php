@@ -1386,6 +1386,7 @@ class WC_Team_Payroll_Performance_Tracker {
 			'awarded_date' => current_time( 'Y-m-d H:i:s' ),
 			'period' => date( 'Y-m' ),
 			'repeatable' => $repeatable,
+			'status' => 'pending', // pending, fulfilled, cancelled
 		);
 
 		// Save to bonus history
@@ -1400,6 +1401,30 @@ class WC_Team_Payroll_Performance_Tracker {
 		// If money bonus, add to user's earnings
 		if ( $bonus_type === 'money' && $bonus_amount > 0 ) {
 			$this->add_bonus_to_earnings( $user_id, $bonus_amount, $tier, $streak_count );
+		}
+
+		// If physical or other bonus, track in pending bonuses for admin fulfillment
+		if ( $bonus_type !== 'money' ) {
+			$pending_bonuses = get_user_meta( $user_id, '_wc_tp_pending_physical_bonuses', true );
+			if ( ! is_array( $pending_bonuses ) ) {
+				$pending_bonuses = array();
+			}
+			
+			$pending_bonus = array(
+				'id' => time() . '_' . $user_id,
+				'tier' => $tier,
+				'streak_count' => $streak_count,
+				'bonus_type' => $bonus_type,
+				'bonus_description' => $bonus_description,
+				'awarded_date' => current_time( 'Y-m-d H:i:s' ),
+				'status' => 'pending', // pending, fulfilled, cancelled
+				'fulfilled_date' => null,
+				'fulfilled_by' => null,
+				'notes' => '',
+			);
+			
+			array_unshift( $pending_bonuses, $pending_bonus );
+			update_user_meta( $user_id, '_wc_tp_pending_physical_bonuses', $pending_bonuses );
 		}
 
 		// Mark as awarded (for non-repeatable)
