@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.6.8] - 2026-04-20
+### 🐛 FIXED - Attributed Total Display Issue
+
+#### CRITICAL FIX - Attributed Total Now Displays Correctly
+**THE PROBLEM:**
+- Attributed Total column was blank despite data existing in database
+- Backend was sending `attributed_total_formatted` with `wc_price()` HTML formatting
+- Frontend JavaScript couldn't properly display the pre-formatted HTML string
+- Other columns (earnings, commission) worked because they used raw numbers + JavaScript formatting
+
+**THE ROOT CAUSE:**
+```php
+// BACKEND - Was sending pre-formatted HTML
+'attributed_total_formatted' => wc_price( $attributed_value ) // Returns HTML with <span> tags
+
+// FRONTEND - Tried to use pre-formatted value
+html += '<td>' + (order.attributed_total_formatted || '—') + '</td>'; // HTML in HTML = broken
+```
+
+**THE FIX:**
+Made attributed_total work EXACTLY like user_earnings:
+```php
+// BACKEND - Now sends raw number (like earnings)
+'attributed_total' => $attributed_value, // Just the number
+
+// FRONTEND - Formats with JavaScript (like earnings)
+html += '<td>' + formatCurrency(order.attributed_total) + '</td>'; // Consistent!
+```
+
+**IMPACT:**
+- ✅ Attributed Total now displays correctly
+- ✅ Consistent formatting with all other currency columns
+- ✅ No more HTML-in-HTML issues
+- ✅ Works exactly like earnings column
+
+---
+
 ## [1.6.7] - 2026-04-20
 ### 🔒 IMPROVED - Prevent Self-Assignment in Agent Dropdown
 

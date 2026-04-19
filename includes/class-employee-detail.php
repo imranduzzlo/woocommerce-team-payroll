@@ -1973,7 +1973,7 @@ class WC_Team_Payroll_Employee_Detail {
 							html += '<td><strong>#' + order.order_id + '</strong></td>';
 							html += '<td>' + order.customer_name + '</td>';
 							html += '<td>' + formatCurrency(order.total) + '</td>';
-							html += '<td>' + (order.attributed_total_formatted || '—') + '</td>';
+							html += '<td>' + formatCurrency(order.attributed_total) + '</td>';
 							html += '<td><span class="wc-tp-badge ' + statusClass + '">' + order.status + '</span></td>';
 							html += '<td>' + formatCurrency(order.commission) + '</td>';
 							html += '<td><strong>' + formatCurrency(order.user_earnings) + '</strong></td>';

@@ -129,7 +129,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 				'date' => $order->get_date_created()->format( 'Y-m-d' ),
 				'total' => $order->get_total(),
 				'attributed_total' => $attributed_value,
-				'attributed_total_formatted' => $attributed_value > 0 ? wc_price( $attributed_value ) : '—',
 				'commission' => $order_commission,
 				'earnings' => $user_earnings,
 				'user_earnings' => $user_earnings,
