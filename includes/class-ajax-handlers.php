@@ -95,9 +95,9 @@ class WC_Team_Payroll_AJAX_Handlers {
 				// If user is both agent and processor (owner), show full order total
 				if ( $is_agent && $is_processor ) {
 					$attributed_value = floatval( $order->get_total() );
-				} elseif ( $user_role === 'agent' && isset( $commission_data['agent_order_value'] ) ) {
+				} elseif ( $user_role === 'agent' ) {
 					$attributed_value = floatval( $commission_data['agent_order_value'] );
-				} elseif ( $user_role === 'processor' && isset( $commission_data['processor_order_value'] ) ) {
+				} else {
 					$attributed_value = floatval( $commission_data['processor_order_value'] );
 				}
 			}

@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.6.4] - 2026-04-20
+### 🐛 Fixed - Attributed Total Display Issue
+
+#### CRITICAL FIX - Attributed Total Now Shows Correctly
+**BUG FIX:**
+- Fixed attributed total showing blank/nothing in employee order tables
+- Issue was in the conditional logic structure (elseif vs else)
+- Now matches earnings calculation logic exactly
+
+**THE PROBLEM:**
+```php
+// BEFORE (didn't work for processor)
+} elseif ( $user_role === 'agent' && isset(...) ) {
+    $attributed_value = agent_order_value;
+} elseif ( $user_role === 'processor' && isset(...) ) {  // ❌ Never reached
+    $attributed_value = processor_order_value;
+}
+```
+
+**THE FIX:**
+```php
+// AFTER (works for both)
+} elseif ( $user_role === 'agent' ) {
+    $attributed_value = agent_order_value;
+} else {  // ✅ Catches processor
+    $attributed_value = processor_order_value;
+}
+```
+
+**CHANGES:**
+- Changed `elseif` to `else` for processor case (matches earnings logic)
+- Removed unnecessary `isset()` checks (data exists in DB)
+- Now uses exact same conditional structure as earnings calculation
+
+**RESULT:**
+- ✅ Attributed Total displays correctly for agents
+- ✅ Attributed Total displays correctly for processors
+- ✅ Attributed Total displays correctly for owners (both roles)
+- ✅ Matches earnings column behavior exactly
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Fixed conditional logic for attributed total
+
+---
+
 ## [1.6.3] - 2026-04-20
 ### ✨ Refactored - Attributed Total Column with Unified Logic
 
