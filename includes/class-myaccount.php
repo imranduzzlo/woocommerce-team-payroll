@@ -2160,7 +2160,12 @@ class WC_Team_Payroll_MyAccount {
 					color: {$primary_color} !important;
 					font-family: {$font_family} !important;
 				}
-				
+				.profile-goal-counter{
+					border-color:{$primary_color};
+				}
+				.goal-star-icon, .goal-count{
+					color:{$primary_color};
+				}
 				.wc-tp-employee-header-new .info-item {
 					color: {$text_color} !important;
 					font-family: {$font_family} !important;
@@ -2234,7 +2239,7 @@ class WC_Team_Payroll_MyAccount {
 				.pv-page-wrapper .ph {
 					color: {$primary_color};
 				}				
-				.pv-page-wrapper button .ph {
+				.pv-page-wrapper button .ph, .btn-action .ph {
 					color: {$button_text_color} !important;
 				}
 				
@@ -2343,7 +2348,7 @@ class WC_Team_Payroll_MyAccount {
 				
 				.pv-table-controls .filter-button,
 				.pv-filter-container .filter-button,
-				.report-filters .filter-button {
+				.report-filters .filter-button, .btn-action {
 					background: {$button_background} !important;
 					color: {$button_text_color} !important;
 					font-family: {$font_family} !important;
@@ -5573,6 +5578,9 @@ class WC_Team_Payroll_MyAccount {
 		// Get order status filter
 		$order_status_filter = isset( $filters['orderStatus'] ) && $filters['orderStatus'] !== 'all' ? $filters['orderStatus'] : '';
 
+		// Get role filter
+		$role_filter = isset( $filters['roleFilter'] ) ? $filters['roleFilter'] : 'all';
+
 		// Determine which statuses to query
 		if ( $order_status_filter && $order_status_filter !== 'all' ) {
 			// If specific status is selected, use only that status if it's in commission statuses
@@ -5594,41 +5602,44 @@ class WC_Team_Payroll_MyAccount {
 			'return'       => 'ids',
 		);
 
-		// Get orders where user is agent or processor
-		$agent_orders = wc_get_orders( array_merge( $args, array(
-			'meta_key'   => '_primary_agent_id',
-			'meta_value' => $user_id,
-		) ) );
-
-		$processor_orders = wc_get_orders( array_merge( $args, array(
-			'meta_key'   => '_processor_user_id',
-			'meta_value' => $user_id,
-		) ) );
-
 		// Calculate attributed order total
 		$attributed_total = 0;
 
-		// Process agent orders
-		foreach ( $agent_orders as $order_id ) {
-			$order = wc_get_order( $order_id );
-			if ( ! $order ) {
-				continue;
-			}
-			$commission_data = $order->get_meta( '_commission_data' );
-			if ( is_array( $commission_data ) && isset( $commission_data['agent_order_value'] ) ) {
-				$attributed_total += floatval( $commission_data['agent_order_value'] );
+		// Process agent orders if role filter is 'all' or 'agent'
+		if ( 'all' === $role_filter || 'agent' === $role_filter ) {
+			$agent_orders = wc_get_orders( array_merge( $args, array(
+				'meta_key'   => '_primary_agent_id',
+				'meta_value' => $user_id,
+			) ) );
+
+			foreach ( $agent_orders as $order_id ) {
+				$order = wc_get_order( $order_id );
+				if ( ! $order ) {
+					continue;
+				}
+				$commission_data = $order->get_meta( '_commission_data' );
+				if ( is_array( $commission_data ) && isset( $commission_data['agent_order_value'] ) ) {
+					$attributed_total += floatval( $commission_data['agent_order_value'] );
+				}
 			}
 		}
 
-		// Process processor orders
-		foreach ( $processor_orders as $order_id ) {
-			$order = wc_get_order( $order_id );
-			if ( ! $order ) {
-				continue;
-			}
-			$commission_data = $order->get_meta( '_commission_data' );
-			if ( is_array( $commission_data ) && isset( $commission_data['processor_order_value'] ) ) {
-				$attributed_total += floatval( $commission_data['processor_order_value'] );
+		// Process processor orders if role filter is 'all' or 'processor'
+		if ( 'all' === $role_filter || 'processor' === $role_filter ) {
+			$processor_orders = wc_get_orders( array_merge( $args, array(
+				'meta_key'   => '_processor_user_id',
+				'meta_value' => $user_id,
+			) ) );
+
+			foreach ( $processor_orders as $order_id ) {
+				$order = wc_get_order( $order_id );
+				if ( ! $order ) {
+					continue;
+				}
+				$commission_data = $order->get_meta( '_commission_data' );
+				if ( is_array( $commission_data ) && isset( $commission_data['processor_order_value'] ) ) {
+					$attributed_total += floatval( $commission_data['processor_order_value'] );
+				}
 			}
 		}
 
