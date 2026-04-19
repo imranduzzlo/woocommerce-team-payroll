@@ -1733,8 +1733,9 @@ class WC_Team_Payroll_Employee_Detail {
 				// ORDERS TAB
 				// ============================================================================
 				if ($('.wc-tp-orders-tab').length) {
-					let currentStartDate = '';
-					let currentEndDate = '';
+					// Initialize with "All Time" as default
+					let currentStartDate = '2020-01-01'; // Far past date
+					let currentEndDate = '<?php echo date( 'Y-m-d' ); ?>'; // Today
 					let currentSortColumn = 'date';
 					let currentSortDirection = 'desc';
 					let currentPage = 1;
@@ -1783,6 +1784,9 @@ class WC_Team_Payroll_Employee_Detail {
 							loadOrdersData();
 						}
 					});
+
+					// Load orders on page load
+					loadOrdersData();
 
 					function getDateRangeFromPreset(preset) {
 						const today = new Date();

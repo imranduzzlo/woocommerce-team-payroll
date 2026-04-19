@@ -68,6 +68,17 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$is_agent = intval( $agent_id ) === intval( $user_id );
 			$is_processor = intval( $processor_id ) === intval( $user_id );
 
+			// Debug logging
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && $order->get_id() == 8036 ) {
+				error_log( 'Order 8036 Debug:' );
+				error_log( 'Agent ID: ' . var_export( $agent_id, true ) );
+				error_log( 'Processor ID: ' . var_export( $processor_id, true ) );
+				error_log( 'User ID: ' . var_export( $user_id, true ) );
+				error_log( 'Is Agent: ' . var_export( $is_agent, true ) );
+				error_log( 'Is Processor: ' . var_export( $is_processor, true ) );
+				error_log( 'Commission Data: ' . var_export( $commission_data, true ) );
+			}
+
 			// Determine user role (if both, show as agent)
 			$user_role = null;
 			$user_role_label = '';
@@ -103,6 +114,12 @@ class WC_Team_Payroll_AJAX_Handlers {
 			} else {
 				// No commission data yet - show full order total as fallback
 				$attributed_value = floatval( $order->get_total() );
+			}
+
+			// Debug logging for attributed value
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && $order->get_id() == 8036 ) {
+				error_log( 'User Role: ' . var_export( $user_role, true ) );
+				error_log( 'Attributed Value: ' . var_export( $attributed_value, true ) );
 			}
 
 			// Calculate user earnings
