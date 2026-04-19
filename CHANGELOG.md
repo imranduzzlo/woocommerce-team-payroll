@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.0] - 2026-04-19
+### Fixed
+- Added detailed error logging to diagnose orders loading issue
+- Improved nonce verification error handling
+
 ## [1.6.9] - 2026-04-19
 ### Fixed
 - Added missing nonce verification to get_employee_orders AJAX handler

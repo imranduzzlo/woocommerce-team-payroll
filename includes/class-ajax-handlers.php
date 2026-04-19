@@ -39,10 +39,25 @@ class WC_Team_Payroll_AJAX_Handlers {
 	}
 
 	public static function get_employee_orders() {
-		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+		// Add error logging
+		error_log( '=== get_employee_orders called ===' );
+		error_log( 'POST data: ' . print_r( $_POST, true ) );
+		
+		// Check nonce
+		if ( ! isset( $_POST['nonce'] ) ) {
+			error_log( 'ERROR: Nonce not provided' );
+			wp_send_json_error( array( 'message' => __( 'Nonce not provided', 'wc-team-payroll' ) ) );
+		}
+		
+		$nonce_check = check_ajax_referer( 'wc_team_payroll_nonce', 'nonce', false );
+		if ( ! $nonce_check ) {
+			error_log( 'ERROR: Nonce verification failed' );
+			wp_send_json_error( array( 'message' => __( 'Nonce verification failed', 'wc-team-payroll' ) ) );
+		}
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_send_json_error( __( 'Unauthorized', 'wc-team-payroll' ) );
+			error_log( 'ERROR: User does not have manage_woocommerce capability' );
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
 		}
 
 		$user_id = intval( $_POST['user_id'] );
