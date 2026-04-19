@@ -70,27 +70,34 @@
 
 .performance-tab {
 	padding: 12px 24px;
-	background: transparent;
-	border: none;
-	border-bottom: 3px solid transparent;
+	background: rgba(233, 236, 239, 0.1);
+	border: 1px solid rgba(233, 236, 239, 0.3);
+	border-bottom: none;
+	border-radius: 6px 6px 0 0;
 	font-size: 15px;
 	font-weight: 500;
 	color: #637381;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	position: relative;
-	bottom: -2px;
 }
 
 .performance-tab:hover {
-	color: #FF9900;
-	background: rgba(255, 153, 0, 0.05);
+	background: rgba(233, 236, 239, 0.15);
+	color: #637381;
 }
 
 .performance-tab.active {
-	color: #FF9900;
-	border-bottom-color: #FF9900;
+	background: #0073aa;
+	border-color: #0073aa;
+	color: #ffffff;
 	font-weight: 600;
+}
+
+.performance-tab.active:hover {
+	background: #005a87;
+	border-color: #005a87;
+	color: #ffffff;
 }
 
 /* ============================================================================
