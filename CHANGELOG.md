@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.6.7] - 2026-04-19
+
+### 🔍 Debug - Always Active Logging
+
+**FIXED - Debug Logging Not Working:**
+- Removed `WP_DEBUG` requirement for debug logging
+- Debug logs now work automatically without any configuration
+- Logs are always written to `/wp-content/debug.log`
+
+**ENHANCED - Debug Output:**
+- Logs AJAX call with user_id and date range
+- Logs total orders found in database
+- Logs detailed info for order #8036 (agent_id, commission data, attributed value)
+- Logs final order count and sample order data
+- Shows complete data flow from database to response
+
+**HOW TO USE:**
+1. Install v1.6.7
+2. Load Orders tab for user_id=1
+3. Check `/wp-content/debug.log` file
+4. Look for "=== WC_TP: get_employee_orders called ===" and "=== Order 8036 Debug ==="
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Always-active debug logging
+
+---
+
 ## [1.6.6] - 2026-04-19
 
 ### 🔍 Debug - Attributed Total Investigation
