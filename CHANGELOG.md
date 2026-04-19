@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.6.5] - 2026-04-19
+### 🔧 Fix - Employee Role Column Display Logic
+
+#### FIXED - Employee Role Shows Order Role (Agent/Processor)
+**CLARIFICATION:**
+- "Employee Role" column now correctly shows the user's **order role** (Agent or Processor)
+- This is their role in that specific order, not their WordPress user role
+- If user is both agent AND processor in the same order, displays as "Agent"
+
+**LOGIC:**
+```php
+// Determine order role (if both, show as agent)
+if ( $is_agent ) {
+    $order_role = 'agent';
+    $order_role_label = 'Agent';
+} elseif ( $is_processor ) {
+    $order_role = 'processor';
+    $order_role_label = 'Processor';
+}
+```
+
+**WHAT IT SHOWS:**
+- **Agent** = User is the agent for this order
+- **Processor** = User is the processor for this order
+- **Agent** = User is BOTH agent and processor (owner) for this order
+
+**BENEFITS:**
+- Clear indication of user's role in each order
+- Consistent with frontend My Account orders display
+- Proper badge styling (agent/processor colors)
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Updated role_label to show order role
+- `includes/class-employee-detail.php` - Updated JavaScript to use order_role field
+
+---
+
 ## [1.6.4] - 2026-04-19
 ### 🐛 Critical Fix - Remove Duplicate AJAX Handler Causing Data Issues
 
