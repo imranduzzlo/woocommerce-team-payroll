@@ -64,6 +64,11 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$processor_id = $order->get_meta( '_processor_user_id' );
 			$commission_data = $order->get_meta( '_commission_data' );
 
+			// Ensure commission_data is unserialized if needed
+			if ( is_string( $commission_data ) && ! empty( $commission_data ) ) {
+				$commission_data = maybe_unserialize( $commission_data );
+			}
+
 			// Check if user is involved in this order
 			$is_agent = intval( $agent_id ) === intval( $user_id );
 			$is_processor = intval( $processor_id ) === intval( $user_id );
@@ -76,6 +81,8 @@ class WC_Team_Payroll_AJAX_Handlers {
 				error_log( 'User ID: ' . var_export( $user_id, true ) );
 				error_log( 'Is Agent: ' . var_export( $is_agent, true ) );
 				error_log( 'Is Processor: ' . var_export( $is_processor, true ) );
+				error_log( 'Commission Data Type: ' . gettype( $commission_data ) );
+				error_log( 'Commission Data Is Array: ' . var_export( is_array( $commission_data ), true ) );
 				error_log( 'Commission Data: ' . var_export( $commission_data, true ) );
 			}
 
@@ -119,6 +126,8 @@ class WC_Team_Payroll_AJAX_Handlers {
 			// Debug logging for attributed value
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && $order->get_id() == 8036 ) {
 				error_log( 'User Role: ' . var_export( $user_role, true ) );
+				error_log( 'Has agent_order_value: ' . var_export( isset( $commission_data['agent_order_value'] ), true ) );
+				error_log( 'Agent Order Value: ' . var_export( $commission_data['agent_order_value'] ?? 'NOT SET', true ) );
 				error_log( 'Attributed Value: ' . var_export( $attributed_value, true ) );
 			}
 

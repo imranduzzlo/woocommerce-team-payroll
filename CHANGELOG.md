@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.6.6] - 2026-04-19
+
+### 🔍 Debug - Attributed Total Investigation
+
+**ADDED - Enhanced Debug Logging:**
+- Added detailed debug logging for order #8036 attributed total calculation
+- Logs commission data type (array vs string)
+- Logs if `agent_order_value` exists in commission data
+- Logs calculated attributed value
+- Added `maybe_unserialize()` to ensure commission data is properly unserialized
+
+**DEBUG INFO:**
+- Enable `WP_DEBUG` and `WP_DEBUG_LOG` in wp-config.php
+- Load Orders tab for user_id=1
+- Check `/wp-content/debug.log` for detailed output
+- Will show why attributed total is not displaying
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Enhanced debug logging
+
+---
+
 ## [1.6.5] - 2026-04-19
 
 ### 🐛 Bug Fixes - Admin Employee Details Orders Tab
