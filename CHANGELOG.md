@@ -1,5 +1,63 @@
 # Changelog
 
+## [1.6.5] - 2026-04-20
+### ✨ Perfected - Attributed Total Calculation Logic
+
+#### ENHANCED - Attributed Total Now Exactly Mirrors Earnings Logic
+**IMPROVEMENT:**
+- Attributed total calculation now uses **EXACTLY** the same code structure as earnings
+- Owner (both roles) now correctly adds agent_order_value + processor_order_value
+- Perfect symmetry between earnings and attributed total calculations
+
+**THE CHANGE:**
+```php
+// BEFORE (used order total for owner)
+if ( $is_agent && $is_processor ) {
+    $attributed_value = floatval( $order->get_total() ); // ❌ Not consistent
+}
+
+// AFTER (adds both values like earnings does)
+if ( $is_agent && $is_processor ) {
+    // Owner gets both agent and processor attributed values
+    $attributed_value = floatval( $commission_data['agent_order_value'] ) + floatval( $commission_data['processor_order_value'] ); // ✅ Consistent
+}
+```
+
+**PERFECT SYMMETRY:**
+
+**Earnings Logic:**
+```php
+if ( $is_agent && $is_processor ) {
+    $user_earnings = agent_earnings + processor_earnings;
+} elseif ( $user_role === 'agent' ) {
+    $user_earnings = agent_earnings;
+} else {
+    $user_earnings = processor_earnings;
+}
+```
+
+**Attributed Total Logic (NOW IDENTICAL):**
+```php
+if ( $is_agent && $is_processor ) {
+    $attributed_value = agent_order_value + processor_order_value;
+} elseif ( $user_role === 'agent' ) {
+    $attributed_value = agent_order_value;
+} else {
+    $attributed_value = processor_order_value;
+}
+```
+
+**BENEFITS:**
+- ✅ Exact same code structure as earnings
+- ✅ Reads from agent_order_value and processor_order_value
+- ✅ Owner correctly gets sum of both values
+- ✅ Perfect consistency and maintainability
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Made attributed total logic identical to earnings logic
+
+---
+
 ## [1.6.4] - 2026-04-20
 ### 🐛 Fixed - Attributed Total Display Issue
 
