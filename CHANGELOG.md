@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.1] - 2026-04-19
+### Fixed
+- **CRITICAL FIX**: Added missing require_once for class-ajax-handlers.php
+- This was causing "Error loading orders" because AJAX handlers were never loaded
+
 ## [1.7.0] - 2026-04-19
 ### Fixed
 - Added detailed error logging to diagnose orders loading issue
