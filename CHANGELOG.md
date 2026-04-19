@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.2] - 2026-04-19
+### Debug
+- Added direct file logging to wp-content/wc-tp-debug.log for troubleshooting
+
 ## [1.7.1] - 2026-04-19
 ### Fixed
 - **CRITICAL FIX**: Added missing require_once for class-ajax-handlers.php

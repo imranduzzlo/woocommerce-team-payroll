@@ -39,6 +39,11 @@ class WC_Team_Payroll_AJAX_Handlers {
 	}
 
 	public static function get_employee_orders() {
+		// Force error logging to file
+		$log_file = WP_CONTENT_DIR . '/wc-tp-debug.log';
+		file_put_contents( $log_file, date( 'Y-m-d H:i:s' ) . " - get_employee_orders called\n", FILE_APPEND );
+		file_put_contents( $log_file, "POST data: " . print_r( $_POST, true ) . "\n", FILE_APPEND );
+		
 		// Add error logging
 		error_log( '=== get_employee_orders called ===' );
 		error_log( 'POST data: ' . print_r( $_POST, true ) );
@@ -46,19 +51,24 @@ class WC_Team_Payroll_AJAX_Handlers {
 		// Check nonce
 		if ( ! isset( $_POST['nonce'] ) ) {
 			error_log( 'ERROR: Nonce not provided' );
+			file_put_contents( $log_file, "ERROR: Nonce not provided\n", FILE_APPEND );
 			wp_send_json_error( array( 'message' => __( 'Nonce not provided', 'wc-team-payroll' ) ) );
 		}
 		
 		$nonce_check = check_ajax_referer( 'wc_team_payroll_nonce', 'nonce', false );
 		if ( ! $nonce_check ) {
 			error_log( 'ERROR: Nonce verification failed' );
+			file_put_contents( $log_file, "ERROR: Nonce verification failed\n", FILE_APPEND );
 			wp_send_json_error( array( 'message' => __( 'Nonce verification failed', 'wc-team-payroll' ) ) );
 		}
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			error_log( 'ERROR: User does not have manage_woocommerce capability' );
+			file_put_contents( $log_file, "ERROR: User does not have manage_woocommerce capability\n", FILE_APPEND );
 			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
 		}
+
+		file_put_contents( $log_file, "All checks passed, processing orders...\n", FILE_APPEND );
 
 		$user_id = intval( $_POST['user_id'] );
 		$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( $_POST['start_date'] ) : '';
@@ -204,6 +214,10 @@ class WC_Team_Payroll_AJAX_Handlers {
 		wp_send_json_success( array(
 			'orders' => array_values( $orders ),
 		) );
+		
+		// Log success
+		$log_file = WP_CONTENT_DIR . '/wc-tp-debug.log';
+		file_put_contents( $log_file, "SUCCESS: Returned " . count( $orders ) . " orders\n", FILE_APPEND );
 	}
 
 	public static function get_employee_salary() {
