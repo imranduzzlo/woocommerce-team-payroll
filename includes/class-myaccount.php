@@ -4373,7 +4373,7 @@ class WC_Team_Payroll_MyAccount {
 															var value = context.parsed || 0;
 															var total = context.dataset.data.reduce((a, b) => a + b, 0);
 															var percentage = ((value / total) * 100).toFixed(1);
-															return label + ': $' + value.toFixed(2) + ' (' + percentage + '%)';
+															return label + ': <?php echo esc_js( $currency_symbol ); ?>' + value.toFixed(2) + ' (' + percentage + '%)';
 														}
 													}
 												}
