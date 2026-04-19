@@ -1939,6 +1939,9 @@ class WC_Team_Payroll_MyAccount {
 					<button class="performance-tab" data-tab="achievements">
 						<i class="ph ph-trophy"></i> <?php esc_html_e( 'Achievements', 'wc-team-payroll' ); ?>
 					</button>
+					<button class="performance-tab" data-tab="bonus_achieved">
+						<i class="ph ph-gift"></i> <?php esc_html_e( 'Bonus Achieved', 'wc-team-payroll' ); ?>
+					</button>
 					<button class="performance-tab" data-tab="baselines">
 						<i class="ph ph-chart-line-up"></i> <?php esc_html_e( 'Baselines', 'wc-team-payroll' ); ?>
 					</button>
