@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.6.4] - 2026-04-19
+### 🐛 Critical Fix - Remove Duplicate AJAX Handler Causing Data Issues
+
+#### FIXED - Employee Role Showing "undefined" and Attributed Total Showing "—"
+**ROOT CAUSE:**
+- Duplicate `wc_tp_get_employee_orders` AJAX handler in main plugin file was overriding the correct one
+- The duplicate handler (lines 1512-1661 in woocommerce-team-payroll.php) used old logic:
+  - Had `flag` and `flag_label` instead of `role` and `role_label`
+  - Missing `attributed_total` and `attributed_total_formatted` fields
+  - Didn't properly handle serialized commission data
+
+**SOLUTION:**
+- Removed the duplicate AJAX handler from main plugin file (156 lines deleted)
+- Now uses the correct handler from `includes/class-ajax-handlers.php` which has:
+  - Proper `role_label` field (Agent/Processor)
+  - Correct `attributed_total_formatted` calculation
+  - Proper `maybe_unserialize()` for commission data
+  - Owner detection (both agent and processor)
+
+**BENEFITS:**
+- Employee Role now displays correctly as "Agent" or "Processor"
+- Attributed Total now shows actual values instead of "—"
+- Consistent with frontend My Account orders logic
+- Single source of truth for employee orders AJAX handler
+
+**FILES MODIFIED:**
+- `woocommerce-team-payroll.php` - Removed duplicate AJAX handler (lines 1512-1661)
+
+---
+
 ## [1.6.3] - 2026-04-19
 ### 🐛 Critical Fix - Admin Attributed Total Showing Blank
 
