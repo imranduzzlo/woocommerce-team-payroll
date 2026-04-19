@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.6] - 2026-04-19
+### 🐛 Fix - AJAX Nonce Verification
+
+#### FIXED - Error Loading Orders
+**BUG FIX:**
+- Added missing nonce verification to `get_employee_orders` AJAX handler
+- This was causing "Error loading orders" message in admin employee details
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Added `check_ajax_referer()` call
+
+---
+
 ## [1.6.5] - 2026-04-19
 ### 🔧 Fix - Employee Role Column Display Logic
 
