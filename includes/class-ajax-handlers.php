@@ -105,6 +105,20 @@ class WC_Team_Payroll_AJAX_Handlers {
 				$order_commission = floatval( $commission_data['total_commission'] );
 			}
 
+			// Calculate attributed total - shows order value attribution
+			$attributed_total = 0;
+			if ( $commission_data && is_array( $commission_data ) ) {
+				// Calculate attributed total based on role(s)
+				if ( $is_agent && $is_processor ) {
+					// Owner gets both agent and processor attributed values
+					$attributed_total = floatval( $commission_data['agent_order_value'] ?? 0 ) + floatval( $commission_data['processor_order_value'] ?? 0 );
+				} elseif ( $user_role === 'agent' ) {
+					$attributed_total = floatval( $commission_data['agent_order_value'] ?? 0 );
+				} else {
+					$attributed_total = floatval( $commission_data['processor_order_value'] ?? 0 );
+				}
+			}
+
 			// Get customer info
 			$customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
 			$customer_email = $order->get_billing_email();
@@ -114,6 +128,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 				'order_id' => $order->get_id(),
 				'date' => $order->get_date_created()->format( 'Y-m-d' ),
 				'total' => $order->get_total(),
+				'attributed_total' => $attributed_total,
 				'commission' => $order_commission,
 				'earnings' => $user_earnings,
 				'user_earnings' => $user_earnings,
