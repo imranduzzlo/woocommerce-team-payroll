@@ -303,94 +303,154 @@ class WC_Team_Payroll_Employee_Detail {
 	}
 
 	/**
-	 * Render Orders Tab
+	 * Render Orders Tab - Matching Frontend My Account Orders
 	 */
 	private function render_orders_tab( $user_id ) {
 		?>
-		<div class="wc-tp-orders-tab">
-			<!-- Unified Filter Section -->
-			<div class="wc-tp-unified-filter">
-				<div class="wc-tp-filter-row">
-					<!-- Date Range Preset -->
-					<div class="wc-tp-filter-group">
-						<label><?php esc_html_e( 'Date Range:', 'wc-team-payroll' ); ?></label>
-						<select id="wc-tp-orders-date-preset">
-							<option value="this-month"><?php esc_html_e( 'This Month', 'wc-team-payroll' ); ?></option>
-							<option value="all-time"><?php esc_html_e( 'All Time', 'wc-team-payroll' ); ?></option>
-							<option value="today"><?php esc_html_e( 'Today', 'wc-team-payroll' ); ?></option>
-							<option value="this-week"><?php esc_html_e( 'This Week', 'wc-team-payroll' ); ?></option>
-							<option value="this-year"><?php esc_html_e( 'This Year', 'wc-team-payroll' ); ?></option>
-							<option value="last-week"><?php esc_html_e( 'Last Week', 'wc-team-payroll' ); ?></option>
-							<option value="last-month"><?php esc_html_e( 'Last Month', 'wc-team-payroll' ); ?></option>
-							<option value="last-year"><?php esc_html_e( 'Last Year', 'wc-team-payroll' ); ?></option>
-							<option value="last-6-months"><?php esc_html_e( 'Last 6 Months', 'wc-team-payroll' ); ?></option>
-							<option value="custom"><?php esc_html_e( 'Custom', 'wc-team-payroll' ); ?></option>
-						</select>
+		<div class="wc-tp-orders-tab wc-team-payroll-orders">
+			<!-- Orders List Section -->
+			<div class="table-wrapper">
+				<div class="section-header">
+					<div class="pv-table-controls table-controls">
+						<div class="search-control">
+							<input type="text" id="orders-search" placeholder="<?php esc_attr_e( 'Search orders...', 'wc-team-payroll' ); ?>" />
+							<i class="ph ph-magnifying-glass"></i>
+						</div>
+						<div class="filter-control">
+							<label for="role-filter"><?php esc_html_e( 'Role:', 'wc-team-payroll' ); ?></label>
+							<select id="role-filter">
+								<option value="all"><?php esc_html_e( 'All Orders', 'wc-team-payroll' ); ?></option>
+								<option value="agent"><?php esc_html_e( 'As Agent', 'wc-team-payroll' ); ?></option>
+								<option value="processor"><?php esc_html_e( 'As Processor', 'wc-team-payroll' ); ?></option>
+							</select>
+						</div>
+						<div class="filter-control">
+							<label for="status-filter"><?php esc_html_e( 'Status:', 'wc-team-payroll' ); ?></label>
+							<select id="status-filter">
+								<option value="all"><?php esc_html_e( 'All Status', 'wc-team-payroll' ); ?></option>
+								<?php
+								$order_statuses = wc_get_order_statuses();
+								foreach ( $order_statuses as $status_key => $status_label ) {
+									$clean_status = str_replace( 'wc-', '', $status_key );
+									echo '<option value="' . esc_attr( $clean_status ) . '">' . esc_html( $status_label ) . '</option>';
+								}
+								?>
+							</select>
+						</div>
+						<div class="filter-control pv-date-filter-wrapper">
+							<label for="orders-date-preset"><?php esc_html_e( 'Date Range:', 'wc-team-payroll' ); ?></label>
+							<div class="pv-date-filter-container">
+								<select id="orders-date-preset">
+									<option value="all-time"><?php esc_html_e( 'All Time', 'wc-team-payroll' ); ?></option>
+									<option value="today"><?php esc_html_e( 'Today', 'wc-team-payroll' ); ?></option>
+									<option value="this-week"><?php esc_html_e( 'This Week', 'wc-team-payroll' ); ?></option>
+									<option value="this-month"><?php esc_html_e( 'This Month', 'wc-team-payroll' ); ?></option>
+									<option value="this-year"><?php esc_html_e( 'This Year', 'wc-team-payroll' ); ?></option>
+									<option value="last-week"><?php esc_html_e( 'Last Week', 'wc-team-payroll' ); ?></option>
+									<option value="last-month"><?php esc_html_e( 'Last Month', 'wc-team-payroll' ); ?></option>
+									<option value="last-year"><?php esc_html_e( 'Last Year', 'wc-team-payroll' ); ?></option>
+									<option value="last-6-months"><?php esc_html_e( 'Last 6 Months', 'wc-team-payroll' ); ?></option>
+									<option value="custom"><?php esc_html_e( 'Custom', 'wc-team-payroll' ); ?></option>
+								</select>
+								<div class="pv-custom-date-inline" id="orders-custom-date-range" style="display: none;">
+									<div class="pv-date-input-group">
+										<label for="date-from"><?php esc_html_e( 'From:', 'wc-team-payroll' ); ?></label>
+										<input type="date" id="date-from" />
+									</div>
+									<div class="pv-date-input-group">
+										<label for="date-to"><?php esc_html_e( 'To:', 'wc-team-payroll' ); ?></label>
+										<input type="date" id="date-to" />
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="per-page-control">
+							<label for="orders-per-page"><?php esc_html_e( 'Show:', 'wc-team-payroll' ); ?></label>
+							<select id="orders-per-page">
+								<option value="10">10</option>
+								<option value="25" selected>25</option>
+								<option value="50">50</option>
+								<option value="100">100</option>
+							</select>
+							<span><?php esc_html_e( 'per page', 'wc-team-payroll' ); ?></span>
+						</div>
+						<button id="clear-filters-btn" class="btn-clear-filters" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background: transparent; cursor: pointer; font-size: 13px; font-weight: 600;">
+							<i class="ph ph-x"></i> <?php esc_html_e( 'Clear', 'wc-team-payroll' ); ?>
+						</button>
 					</div>
-
-					<!-- Custom Date Range (Hidden by default) -->
-					<div class="wc-tp-filter-group wc-tp-custom-date-range" id="wc-tp-orders-custom-date-range" style="display: none;">
-						<input type="date" id="wc-tp-orders-start-date" />
-						<span class="wc-tp-date-separator">to</span>
-						<input type="date" id="wc-tp-orders-end-date" />
-					</div>
-
-					<!-- Status Filter -->
-					<div class="wc-tp-filter-group">
-						<label><?php esc_html_e( 'Status:', 'wc-team-payroll' ); ?></label>
-						<select id="wc-tp-orders-status-filter">
-							<option value=""><?php esc_html_e( 'All Statuses', 'wc-team-payroll' ); ?></option>
-							<option value="completed"><?php esc_html_e( 'Completed', 'wc-team-payroll' ); ?></option>
-							<option value="processing"><?php esc_html_e( 'Processing', 'wc-team-payroll' ); ?></option>
-							<option value="pending"><?php esc_html_e( 'Pending', 'wc-team-payroll' ); ?></option>
-							<option value="cancelled"><?php esc_html_e( 'Cancelled', 'wc-team-payroll' ); ?></option>
-							<option value="refunded"><?php esc_html_e( 'Refunded', 'wc-team-payroll' ); ?></option>
-						</select>
-					</div>
-
-					<!-- Employee Role Filter -->
-					<div class="wc-tp-filter-group">
-						<label><?php esc_html_e( 'Employee Role:', 'wc-team-payroll' ); ?></label>
-						<select id="wc-tp-orders-role-filter">
-							<option value=""><?php esc_html_e( 'All Roles', 'wc-team-payroll' ); ?></option>
-							<option value="agent"><?php esc_html_e( 'Agent', 'wc-team-payroll' ); ?></option>
-							<option value="processor"><?php esc_html_e( 'Processor', 'wc-team-payroll' ); ?></option>
-						</select>
-					</div>
-
-					<!-- Search -->
-					<div class="wc-tp-filter-group">
-						<label><?php esc_html_e( 'Search:', 'wc-team-payroll' ); ?></label>
-						<input type="text" id="wc-tp-orders-search" placeholder="<?php esc_attr_e( 'Order ID, Customer...', 'wc-team-payroll' ); ?>" />
-					</div>
-
-					<!-- Filter Button -->
-					<div class="wc-tp-filter-group">
-						<button type="button" class="button button-primary" id="wc-tp-orders-filter-btn"><?php esc_html_e( 'Filter', 'wc-team-payroll' ); ?></button>
-					</div>
-
-					<!-- Screen Options -->
-					<div class="wc-tp-filter-group">
-						<label><?php esc_html_e( 'Per Page:', 'wc-team-payroll' ); ?></label>
-						<select id="wc-tp-orders-per-page">
-							<option value="5">5</option>
-							<option value="10" selected>10</option>
-							<option value="25">25</option>
-							<option value="50">50</option>
-							<option value="100">100</option>
-						</select>
-					</div>
+				</div>
+				
+				<div class="table-container pv-table-container">
+					<table class="pv-table woocommerce-table woocommerce-table--orders" id="orders-table">
+						<thead>
+							<tr>
+								<th class="sortable" data-sort="order_id">
+									<?php esc_html_e( 'Order ID', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="date">
+									<?php esc_html_e( 'Date', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="customer">
+									<?php esc_html_e( 'Customer', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="role">
+									<?php esc_html_e( 'Employee Role', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="total">
+									<?php esc_html_e( 'Order Total', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="attributed">
+									<?php esc_html_e( 'Attributed Total', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="commission">
+									<?php esc_html_e( 'Commission', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th class="sortable" data-sort="earning">
+									<?php esc_html_e( 'Earning', 'wc-team-payroll' ); ?>
+									<i class="ph ph-caret-up-down sort-icon"></i>
+								</th>
+								<th><?php esc_html_e( 'Status', 'wc-team-payroll' ); ?></th>
+								<th><?php esc_html_e( 'Actions', 'wc-team-payroll' ); ?></th>
+							</tr>
+						</thead>
+						<tbody id="orders-tbody">
+							<tr>
+								<td colspan="10" style="text-align: center; padding: 40px 20px;">
+									<i class="ph ph-spinner" style="font-size: 32px; animation: spin 1s linear infinite;"></i>
+									<p><?php esc_html_e( 'Loading orders...', 'wc-team-payroll' ); ?></p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
+			
+			<!-- Pagination -->
+			<div class="pagination-container" id="orders-pagination">
+				<!-- Pagination will be inserted here by JavaScript -->
+			</div>
 
-			<!-- Orders Table -->
-			<div class="wc-tp-table-section">
-				<h2><?php esc_html_e( 'Order History', 'wc-team-payroll' ); ?></h2>
-				<div id="wc-tp-orders-table-container">
-					<!-- Content will be loaded via AJAX -->
-				</div>
+			<!-- No Orders Message -->
+			<div class="no-results-message" id="no-orders-message" style="display: none; text-align: center; padding: 40px 20px;">
+				<i class="ph ph-shopping-bag" style="font-size: 48px; color: #dee2e6; margin-bottom: 15px; display: block;"></i>
+				<h4 style="margin: 15px 0 10px 0; font-size: 18px; color: #495057;"><?php esc_html_e( 'No Orders Found', 'wc-team-payroll' ); ?></h4>
+				<p style="margin: 0; font-size: 14px; color: #6c757d;"><?php esc_html_e( 'No orders match your search criteria.', 'wc-team-payroll' ); ?></p>
 			</div>
 		</div>
+
+		<style>
+			@keyframes spin {
+				from { transform: rotate(0deg); }
+				to { transform: rotate(360deg); }
+			}
+		</style>
 
 		<input type="hidden" id="wc-tp-current-user-id" value="<?php echo esc_attr( $user_id ); ?>" />
 		<?php

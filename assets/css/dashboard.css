@@ -497,3 +497,362 @@
 		margin-top: 4px;
 	}
 }
+
+
+/* ============================================================================
+   ADMIN ORDERS TABLE - MATCHING FRONTEND MY ACCOUNT ORDERS
+   ============================================================================ */
+
+/* Orders Table styling */
+.wc-team-payroll-orders .woocommerce-table--orders {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.wc-team-payroll-orders .woocommerce-table--orders thead th {
+	text-align: left;
+	padding: 15px;
+	font-weight: 600;
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.wc-team-payroll-orders .woocommerce-table--orders tbody td {
+	padding: 15px;
+	border-bottom: 1px solid #dee2e6;
+	vertical-align: middle;
+}
+
+.wc-team-payroll-orders .woocommerce-table--orders tbody tr:hover {
+	background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Order link */
+.wc-team-payroll-orders .order-link {
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.2s ease;
+	color: #0073aa;
+}
+
+.wc-team-payroll-orders .order-link:hover {
+	text-decoration: underline;
+	color: #005a87;
+}
+
+/* Role badge */
+.wc-team-payroll-orders .role-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.wc-team-payroll-orders .role-badge.role-agent {
+	background-color: rgba(52, 152, 219, 0.1);
+	color: #3498db;
+}
+
+.wc-team-payroll-orders .role-badge.role-processor {
+	background-color: rgba(46, 204, 113, 0.1);
+	color: #2ecc71;
+}
+
+/* Status badge */
+.wc-team-payroll-orders .status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.wc-team-payroll-orders .status-badge.status-completed {
+	background-color: rgba(39, 174, 96, 0.1);
+	color: #27ae60;
+}
+
+.wc-team-payroll-orders .status-badge.status-processing {
+	background-color: rgba(243, 156, 18, 0.1);
+	color: #f39c12;
+}
+
+.wc-team-payroll-orders .status-badge.status-pending {
+	background-color: rgba(52, 152, 219, 0.1);
+	color: #3498db;
+}
+
+.wc-team-payroll-orders .status-badge.status-on-hold {
+	background-color: rgba(155, 89, 182, 0.1);
+	color: #9b59b6;
+}
+
+.wc-team-payroll-orders .status-badge.status-cancelled {
+	background-color: rgba(231, 76, 60, 0.1);
+	color: #e74c3c;
+}
+
+.wc-team-payroll-orders .status-badge.status-refunded {
+	background-color: rgba(230, 126, 34, 0.1);
+	color: #e67e22;
+}
+
+/* Amount cells */
+.wc-team-payroll-orders .amount-total,
+.wc-team-payroll-orders .amount-commission,
+.wc-team-payroll-orders .amount-earning,
+.wc-team-payroll-orders .amount-attributed {
+	font-weight: 600;
+}
+
+.wc-team-payroll-orders .no-commission {
+	color: #999;
+	font-style: italic;
+}
+
+/* Action buttons */
+.wc-team-payroll-orders .btn-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: none;
+	border-radius: 4px;
+	background-color: transparent;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 16px;
+	margin-right: 6px;
+}
+
+.wc-team-payroll-orders .btn-action:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.wc-team-payroll-orders .btn-action.btn-view {
+	color: #3498db;
+}
+
+.wc-team-payroll-orders .btn-action.btn-view:hover {
+	background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Fix icon color to match button color */
+.wc-team-payroll-orders .btn-action .ph {
+	color: inherit !important;
+}
+
+.wc-team-payroll-orders .btn-action.btn-view .ph {
+	color: #3498db !important;
+}
+
+/* Table controls */
+.wc-team-payroll-orders .table-controls {
+	display: flex;
+	gap: 12px;
+	align-items: flex-end;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+	padding: 15px;
+	background: #f8f9fa;
+	border-radius: 8px;
+}
+
+.wc-team-payroll-orders .search-control,
+.wc-team-payroll-orders .filter-control,
+.wc-team-payroll-orders .per-page-control {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.wc-team-payroll-orders .search-control {
+	position: relative;
+	flex: 1;
+	min-width: 200px;
+}
+
+.wc-team-payroll-orders .search-control input {
+	width: 100%;
+	padding: 8px 35px 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.wc-team-payroll-orders .search-control .ph {
+	position: absolute;
+	right: 12px;
+	bottom: 10px;
+	color: #999;
+	pointer-events: none;
+}
+
+.wc-team-payroll-orders .filter-control label,
+.wc-team-payroll-orders .per-page-control label {
+	font-weight: 600;
+	font-size: 13px;
+	color: #333;
+}
+
+.wc-team-payroll-orders .filter-control select,
+.wc-team-payroll-orders .per-page-control select {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	min-width: 150px;
+}
+
+.wc-team-payroll-orders .per-page-control {
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+
+.wc-team-payroll-orders .per-page-control select {
+	min-width: 80px;
+}
+
+.wc-team-payroll-orders .btn-clear-filters {
+	align-self: flex-end;
+}
+
+/* Date filter */
+.wc-team-payroll-orders .pv-date-filter-wrapper {
+	position: relative;
+}
+
+.wc-team-payroll-orders .pv-custom-date-inline {
+	display: flex;
+	gap: 10px;
+	margin-top: 8px;
+}
+
+.wc-team-payroll-orders .pv-date-input-group {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.wc-team-payroll-orders .pv-date-input-group label {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.wc-team-payroll-orders .pv-date-input-group input[type="date"] {
+	padding: 6px 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+/* Pagination */
+.wc-team-payroll-orders .pagination-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 20px;
+	padding: 15px;
+	background: #f8f9fa;
+	border-radius: 8px;
+}
+
+.wc-team-payroll-orders .pagination-info {
+	font-size: 14px;
+	color: #666;
+}
+
+.wc-team-payroll-orders .pagination-controls {
+	display: flex;
+	gap: 5px;
+}
+
+.wc-team-payroll-orders .pagination-btn {
+	padding: 6px 12px;
+	border: 1px solid #ddd;
+	background: white;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: all 0.2s ease;
+}
+
+.wc-team-payroll-orders .pagination-btn:hover:not(:disabled) {
+	background: #0073aa;
+	color: white;
+	border-color: #0073aa;
+}
+
+.wc-team-payroll-orders .pagination-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.wc-team-payroll-orders .pagination-btn.active {
+	background: #0073aa;
+	color: white;
+	border-color: #0073aa;
+}
+
+/* Sortable headers */
+.wc-team-payroll-orders .sortable {
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+}
+
+.wc-team-payroll-orders .sortable:hover {
+	background-color: rgba(0, 0, 0, 0.02);
+}
+
+.wc-team-payroll-orders .sort-icon {
+	margin-left: 5px;
+	font-size: 14px;
+	opacity: 0.5;
+}
+
+.wc-team-payroll-orders .sortable.sorted-asc .sort-icon,
+.wc-team-payroll-orders .sortable.sorted-desc .sort-icon {
+	opacity: 1;
+}
+
+/* No results message */
+.wc-team-payroll-orders .no-results-message {
+	text-align: center;
+	padding: 40px 20px;
+	background: #f8f9fa;
+	border-radius: 8px;
+	margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.wc-team-payroll-orders .woocommerce-table--orders {
+		font-size: 12px;
+	}
+
+	.wc-team-payroll-orders .woocommerce-table--orders thead th,
+	.wc-team-payroll-orders .woocommerce-table--orders tbody td {
+		padding: 10px;
+	}
+
+	.wc-team-payroll-orders .table-controls {
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.wc-team-payroll-orders .filter-control {
+		flex: 1 1 calc(50% - 5px);
+		min-width: 150px;
+	}
+}

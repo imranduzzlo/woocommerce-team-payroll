@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.6.7] - 2026-04-19
+### 🎨 Major Enhancement - Rebuilt Admin Orders Table (Part 1)
+**COMPLETED:**
+- ✅ Rebuilt admin employee orders table HTML to match frontend My Account orders
+- ✅ Copied all orders.css styles to dashboard.css
+- ✅ New table structure with proper filters, search, date range, pagination
+- ✅ Matching column headers: Order ID, Date, Customer, Employee Role, Order Total, Attributed Total, Commission, Earning, Status, Actions
+- ✅ Same filter controls as frontend (role, status, date presets, search, per page)
+
+**IN PROGRESS:**
+- ⏳ JavaScript needs to be updated to match frontend functionality
+- ⏳ AJAX handler already working (wc_tp_get_employee_orders)
+- ⏳ Table rendering, sorting, filtering logic to be completed
+
+**FILES MODIFIED:**
+- `includes/class-employee-detail.php` - Rebuilt orders tab HTML structure
+- `assets/css/dashboard.css` - Added all orders table styles from frontend
+
+**NEXT STEPS (v1.6.8):**
+- Complete JavaScript implementation for table rendering
+- Add sorting, filtering, pagination functionality
+- Match frontend behavior exactly
+
+---
+
+## [1.6.7] - 2026-04-19 (Planned)
+### 🎨 Major Enhancement - Rebuild Admin Orders Table
+**PLANNED:**
+- Completely rebuild admin employee orders table to match frontend My Account orders
+- Copy exact HTML structure, CSS styling, and JavaScript functionality
+- Unified design language across frontend and admin
+- Same filters, sorting, pagination, and search functionality
+
+**FILES TO MODIFY:**
+- `includes/class-employee-detail.php` - Rebuild orders table HTML and JavaScript
+- `assets/css/dashboard.css` - Copy all styles from orders.css
+- Match frontend `includes/class-myaccount.php` orders structure exactly
+
+---
+
 ## [1.6.6] - 2026-04-19
 ### 🐛 Fix - AJAX Nonce Verification
 
