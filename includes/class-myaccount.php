@@ -1403,7 +1403,7 @@ class WC_Team_Payroll_MyAccount {
 						.append($('<button class="btn-action btn-view"></button>')
 							.append($('<i class="ph ph-eye"></i>'))
 							.on('click', function() {
-								showOrderDetails(order.order_id);
+								window.location.href = '<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>view-order/' + order.order_id + '/';
 							}));
 					
 					row.append(orderIdCell, dateCell, customerCell, roleCell, totalCell, attributedCell, commissionCell, earningCell, statusCell, actionsCell);
