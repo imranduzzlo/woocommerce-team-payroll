@@ -3250,10 +3250,12 @@ class WC_Team_Payroll_Performance_Settings {
 			'notification' => isset( $bonus_config['notification'] ) ? 1 : 0,
 			'show_progress' => isset( $bonus_config['show_progress'] ) ? 1 : 0,
 			'rules' => array(),
+			'last_updated' => current_time( 'mysql' ), // Add timestamp for cache busting
 		);
 
 		// Sanitize bonus rules
 		if ( isset( $bonus_config['rules'] ) && is_array( $bonus_config['rules'] ) ) {
+			$rule_index = 0;
 			foreach ( $bonus_config['rules'] as $rule ) {
 				// Skip empty rules
 				if ( empty( $rule['tier'] ) || empty( $rule['streak_count'] ) || empty( $rule['bonus_description'] ) ) {
@@ -3261,12 +3263,13 @@ class WC_Team_Payroll_Performance_Settings {
 				}
 
 				$sanitized_rule = array(
+					'id' => isset( $rule['id'] ) ? sanitize_text_field( $rule['id'] ) : 'rule_' . $rule_index . '_' . time(), // Add unique ID
 					'tier' => sanitize_text_field( $rule['tier'] ),
 					'streak_count' => intval( $rule['streak_count'] ),
 					'bonus_type' => sanitize_text_field( $rule['bonus_type'] ),
 					'bonus_amount' => floatval( $rule['bonus_amount'] ),
 					'bonus_description' => sanitize_text_field( $rule['bonus_description'] ),
-					'repeatable' => isset( $rule['repeatable'] ) ? 1 : 0,
+					'repeatable' => isset( $rule['repeatable'] ) && $rule['repeatable'] ? 1 : 0, // Ensure proper boolean conversion
 					'eligible_roles' => array(),
 				);
 
@@ -3278,18 +3281,25 @@ class WC_Team_Payroll_Performance_Settings {
 				}
 
 				$sanitized_config['rules'][] = $sanitized_rule;
+				$rule_index++;
 			}
 		}
 
 		// Save to database
 		update_option( 'wc_tp_achievement_bonuses', $sanitized_config );
 
-		// Clear WordPress object cache to ensure fresh data on next load
+		// Clear all related caches
 		wp_cache_delete( 'wc_tp_achievement_bonuses', 'options' );
+		delete_transient( 'wc_tp_bonus_milestones_' . get_current_user_id() );
+		
+		// Clear cache for all users (bonus config affects all employees)
+		global $wpdb;
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '%wc_tp_bonus_milestones_%'" );
 
 		wp_send_json_success( array( 
 			'message' => __( 'Bonus configuration saved successfully!', 'wc-team-payroll' ),
-			'config' => $sanitized_config
+			'config' => $sanitized_config,
+			'timestamp' => current_time( 'mysql' )
 		) );
 	}
 

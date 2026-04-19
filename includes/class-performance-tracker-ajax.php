@@ -260,10 +260,16 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			return array();
 		}
 
-		// Get bonus configuration
+		// Get bonus configuration - always fresh from database
 		$bonus_config = get_option( 'wc_tp_achievement_bonuses', array() );
 		
-		if ( empty( $bonus_config ) || empty( $bonus_config['rules'] ) ) {
+		// Validate bonus config structure
+		if ( empty( $bonus_config ) || ! isset( $bonus_config['rules'] ) || ! is_array( $bonus_config['rules'] ) ) {
+			return array();
+		}
+
+		// If no rules exist, return empty
+		if ( count( $bonus_config['rules'] ) === 0 ) {
 			return array();
 		}
 
@@ -284,18 +290,34 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		}
 
 		$milestones = array();
+		$rule_count = 0;
 
 		// Process each bonus rule
 		foreach ( $bonus_config['rules'] as $index => $rule ) {
-			// Check if user's role is eligible
-			if ( empty( $rule['eligible_roles'] ) || ! in_array( $employee_role, $rule['eligible_roles'] ) ) {
+			// Validate rule structure - all required fields must exist
+			if ( ! isset( $rule['tier'] ) || empty( $rule['tier'] ) || 
+				 ! isset( $rule['streak_count'] ) || empty( $rule['streak_count'] ) || 
+				 ! isset( $rule['bonus_description'] ) || empty( $rule['bonus_description'] ) ) {
 				continue;
 			}
 
-			$tier = $rule['tier'];
+			// Check if user's role is eligible
+			// If eligible_roles is empty or not an array, skip this rule
+			if ( ! isset( $rule['eligible_roles'] ) || ! is_array( $rule['eligible_roles'] ) || empty( $rule['eligible_roles'] ) ) {
+				continue;
+			}
+			
+			// Check if user's role is in the eligible roles list
+			if ( ! in_array( $employee_role, $rule['eligible_roles'] ) ) {
+				continue;
+			}
+
+			$tier = sanitize_text_field( $rule['tier'] );
 			$required_months = intval( $rule['streak_count'] );
 			$current_streak = isset( $streaks[ $tier ]['count'] ) ? intval( $streaks[ $tier ]['count'] ) : 0;
-			$repeatable = isset( $rule['repeatable'] ) && $rule['repeatable'];
+			
+			// Properly handle repeatable flag - ensure it's a boolean
+			$repeatable = isset( $rule['repeatable'] ) && $rule['repeatable'] ? true : false;
 
 			// Check if already awarded (for non-repeatable)
 			$bonus_key = $employee_role . '_' . $tier . '_' . $required_months;
@@ -311,14 +333,27 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				'current_streak' => $current_streak,
 				'months_remaining' => $months_remaining,
 				'progress_percentage' => $progress_percentage,
-				'bonus_type' => $rule['bonus_type'],
+				'bonus_type' => isset( $rule['bonus_type'] ) ? sanitize_text_field( $rule['bonus_type'] ) : 'money',
 				'bonus_amount' => isset( $rule['bonus_amount'] ) ? floatval( $rule['bonus_amount'] ) : 0,
-				'bonus_description' => isset( $rule['bonus_description'] ) ? $rule['bonus_description'] : '',
+				'bonus_description' => sanitize_text_field( $rule['bonus_description'] ),
 				'repeatable' => $repeatable,
 				'already_awarded' => $already_awarded,
 				'is_active' => $current_streak > 0 && $current_streak < $required_months,
 				'is_achieved' => $current_streak >= $required_months,
 			);
+			
+			$rule_count++;
+		}
+
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( sprintf( 
+				'Performance Tracker: User %d (%s) - Found %d eligible bonus milestones out of %d total rules',
+				$user_id,
+				$employee_role,
+				count( $milestones ),
+				count( $bonus_config['rules'] )
+			) );
 		}
 
 		// Sort by tier (gold first) and then by required months

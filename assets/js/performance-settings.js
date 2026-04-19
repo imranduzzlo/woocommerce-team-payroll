@@ -7,12 +7,6 @@
 jQuery(document).ready(function($) {
 	'use strict';
 
-	// Debug: Check if elements exist
-	console.log('Performance Settings JS loaded');
-	console.log('Goals role selector exists:', $('#wc-tp-goals-role-selector').length);
-	console.log('Achievements role selector exists:', $('#wc-tp-achievements-role-selector').length);
-	console.log('wcTpPerformance object:', wcTpPerformance);
-
 	// Navigation tabs
 	$('.wc-tp-perf-nav-tab').on('click', function(e) {
 		e.preventDefault(); // Prevent form submission
@@ -227,25 +221,18 @@ jQuery(document).ready(function($) {
 		$('#wc-tp-save-performance').off('click').on('click', function() {
 			const button = $(this);
 			button.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span>Saving...');
-
-			console.log('Save button clicked');
-
 			// Get active section
 			const activeSection = $('.wc-tp-perf-nav-tab.active').data('section');
-			console.log('Active section:', activeSection);
-			
 			// Collect data based on active section
 			let savePromises = [];
 			
 			// Always save performance scoring config if there's data
 			try {
 				const config = collectConfigurationData();
-				console.log('Performance config collected:', config);
 				if (config.base_score || Object.keys(config.roles).length > 0) {
 					savePromises.push(savePerformanceConfig(config));
 				}
 			} catch (e) {
-				console.error('Error collecting performance config:', e);
 			}
 			
 			// Save section-specific data
@@ -253,73 +240,58 @@ jQuery(document).ready(function($) {
 				case 'goals':
 					try {
 						const goalsConfig = collectGoalsConfigurationData();
-						console.log('Goals config collected:', goalsConfig);
 						if (goalsConfig && Object.keys(goalsConfig).length > 0) {
 							savePromises.push(saveGoalsConfig(goalsConfig));
 						}
 					} catch (e) {
-						console.error('Error collecting goals config:', e);
 					}
 					break;
 				case 'achievements':
 					try {
 						const achievementsConfig = collectAchievementsConfigurationData();
-						console.log('Achievements config collected:', achievementsConfig);
 						if (achievementsConfig && Object.keys(achievementsConfig).length > 0) {
 							savePromises.push(saveAchievementsConfig(achievementsConfig));
 						}
 					} catch (e) {
-						console.error('Error collecting achievements config:', e);
 					}
 					break;
 				case 'baselines':
 					try {
 						const baselinesConfig = collectBaselinesConfigurationData();
-						console.log('Baselines config collected:', baselinesConfig);
 						if (baselinesConfig && Object.keys(baselinesConfig).length > 0) {
 							savePromises.push(saveBaselinesConfig(baselinesConfig));
 						}
 					} catch (e) {
-						console.error('Error collecting baselines config:', e);
 					}
 					break;
 				case 'calculation':
 					try {
 						const calculationConfig = collectCalculationConfigurationData();
-						console.log('Calculation config collected:', calculationConfig);
 						if (calculationConfig && Object.keys(calculationConfig).length > 0) {
 							savePromises.push(saveCalculationConfig(calculationConfig));
 						}
 					} catch (e) {
-						console.error('Error collecting calculation config:', e);
 					}
 					break;
 				case 'system':
 					try {
 						const systemConfig = collectSystemConfigurationData();
-						console.log('System config collected:', systemConfig);
 						if (systemConfig && Object.keys(systemConfig).length > 0) {
 							savePromises.push(saveSystemConfig(systemConfig));
 						}
 					} catch (e) {
-						console.error('Error collecting system config:', e);
 					}
 					break;
 				case 'bonuses':
 					try {
 						const bonusConfig = collectBonusConfigurationData();
-						console.log('Bonus config collected:', bonusConfig);
 						if (bonusConfig && Object.keys(bonusConfig).length > 0) {
 							savePromises.push(saveBonusConfig(bonusConfig));
 						}
 					} catch (e) {
-						console.error('Error collecting bonus config:', e);
 					}
 					break;
 			}
-			
-			console.log('Total save promises:', savePromises.length);
-			
 			if (savePromises.length === 0) {
 				showMessage('warning', 'No configuration data to save');
 				button.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span>Save All Configurations');
@@ -328,7 +300,6 @@ jQuery(document).ready(function($) {
 			
 			// Execute all saves
 			Promise.all(savePromises).then(function(results) {
-				console.log('Save results:', results);
 				let hasError = false;
 				let errorMessages = [];
 				
@@ -344,24 +315,19 @@ jQuery(document).ready(function($) {
 					// Reset the main form's unsaved changes flag
 					if (typeof window.wcTpResetUnsavedChanges === 'function') {
 						window.wcTpResetUnsavedChanges();
-						console.log('Unsaved changes flag reset successfully');
 					} else {
-						console.warn('wcTpResetUnsavedChanges function not found - attempting fallback');
 						// Fallback: Try to reset the unsaved changes manually
 						try {
 							const warningDiv = $('#wc-tp-unsaved-warning');
 							if (warningDiv.length) {
 								warningDiv.fadeOut(300);
-								console.log('Fallback: Warning div hidden');
 							}
 							
 							// Try to reset the hasChanges flag if we can access it
 							if (window.parent && window.parent.hasChanges !== undefined) {
 								window.parent.hasChanges = false;
-								console.log('Fallback: Parent hasChanges reset');
 							}
 						} catch (e) {
-							console.error('Fallback reset failed:', e);
 						}
 					}
 				} else {
@@ -370,7 +336,6 @@ jQuery(document).ready(function($) {
 					});
 				}
 			}).catch(function(error) {
-				console.error('Promise.all error:', error);
 				showMessage('error', 'Error saving configurations');
 			}).finally(function() {
 				button.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span>Save All Configurations');
@@ -488,6 +453,12 @@ jQuery(document).ready(function($) {
 			// Update rule numbers on success
 			if (response.success) {
 				updateBonusRuleNumbers();
+				
+				// Clear any cached bonus milestone data for all users
+				// This ensures fresh data is fetched on next page load
+				if (typeof window.wcTpClearBonusCache === 'function') {
+					window.wcTpClearBonusCache();
+				}
 			}
 			return { success: response.success, message: response.data ? response.data.message : 'Bonus config saved' };
 		}).catch(function(xhr) {
@@ -500,9 +471,7 @@ jQuery(document).ready(function($) {
 
 	// Debug: Check if wcTpResetUnsavedChanges function exists
 	$(document).ready(function() {
-		console.log('Performance Settings JS loaded');
-		console.log('wcTpResetUnsavedChanges function available:', typeof window.wcTpResetUnsavedChanges === 'function');
-		
+
 		// Test the function after a short delay to ensure settings page JS is loaded
 		setTimeout(function() {
 			console.log('wcTpResetUnsavedChanges function available (delayed check):', typeof window.wcTpResetUnsavedChanges === 'function');
@@ -514,7 +483,6 @@ jQuery(document).ready(function($) {
 		// Mark page load as complete after a delay to allow all initial changes to settle
 		setTimeout(function() {
 			pageLoadComplete = true;
-			console.log('Performance settings page load complete - now tracking changes');
 		}, 1500);
 
 		// Ensure performance settings changes are tracked by main form
@@ -533,11 +501,9 @@ jQuery(document).ready(function($) {
 
 		// Listen for our custom event on the main form
 		$('#wc-tp-settings-form').on('wc-tp-performance-change', function() {
-			console.log('Performance change detected on main form');
 			// Manually trigger the unsaved changes detection
 			if (typeof window.wcTpCheckUnsavedChanges === 'function') {
 				const state = window.wcTpCheckUnsavedChanges();
-				console.log('Current unsaved changes state:', state);
 				if (!state.hasChanges) {
 					// Force show the warning if it's not already shown
 					$('#wc-tp-unsaved-warning').fadeIn(300);
@@ -599,7 +565,6 @@ jQuery(document).ready(function($) {
 				try {
 					config.roles[role] = JSON.parse(configData);
 				} catch (e) {
-					console.log('Error parsing stored config for role:', role);
 				}
 			}
 		});
@@ -711,8 +676,6 @@ jQuery(document).ready(function($) {
 	// Goals role selector change
 	$('#wc-tp-goals-role-selector').on('change', function() {
 		const role = $(this).val();
-		console.log('Goals role selector changed to:', role);
-		
 		if (!role) {
 			$('#wc-tp-goals-config-container').html(
 				'<div class="wc-tp-empty-state">' +
@@ -728,7 +691,6 @@ jQuery(document).ready(function($) {
 
 	// Load role goals via AJAX
 	function loadRoleGoals(role) {
-		console.log('Loading goals for role:', role);
 		$('#wc-tp-goals-config-container').html(
 			'<div class="wc-tp-loading">' +
 			'<span class="spinner is-active"></span>' +
@@ -745,7 +707,6 @@ jQuery(document).ready(function($) {
 				role: role
 			},
 			success: function(response) {
-				console.log('Goals AJAX response:', response);
 				if (response.success) {
 					$('#wc-tp-goals-config-container').html(response.data.html);
 					initializeGoalsControls();
@@ -754,7 +715,6 @@ jQuery(document).ready(function($) {
 				}
 			},
 			error: function(xhr, status, error) {
-				console.error('Goals AJAX error:', xhr, status, error);
 				showMessage('error', 'AJAX error occurred');
 			}
 		});
@@ -1545,7 +1505,7 @@ jQuery(document).ready(function($) {
 		let isValid = true;
 		const rules = [];
 		
-		$('#wc-tp-bonus-rules-list .wc-tp-bonus-rule-row').each(function() {
+		$('#wc-tp-bonus-rules-list .wc-tp-bonus-rule-row').each(function(index) {
 			const $row = $(this);
 			const tier = $row.find('[name*="[tier]"]').val();
 			const streakCount = $row.find('[name*="[streak_count]"]').val();
@@ -1590,19 +1550,27 @@ jQuery(document).ready(function($) {
 				$row.find('.wc-tp-bonus-roles').css('border-color', '#dcdcde');
 			}
 			
+			// Ensure repeatable is properly converted to 0 or 1
+			const repeatableValue = repeatable ? 1 : 0;
+			
 			rules.push({
 				tier: tier,
 				streak_count: parseInt(streakCount),
 				bonus_type: bonusType,
 				bonus_amount: parseFloat(bonusAmount) || 0,
 				bonus_description: bonusDescription,
-				repeatable: repeatable ? 1 : 0,
+				repeatable: repeatableValue,
 				eligible_roles: eligibleRoles
 			});
 		});
 		
 		if (!isValid) {
 			throw new Error('Please fill in all required fields for each bonus rule.');
+		}
+		
+		// Ensure at least one rule exists
+		if (rules.length === 0) {
+			throw new Error('Please add at least one bonus rule.');
 		}
 		
 		const config = {
@@ -1897,8 +1865,14 @@ jQuery(document).ready(function($) {
 		$('#wc-tp-bonus-rules-list').append(newRule);
 		bonusRuleIndex++;
 		
+		// Update rule numbers
+		updateBonusRuleNumbers();
+		
 		// Reinitialize bonus type change handlers
 		initializeBonusTypeHandlers();
+		
+		// Show success message
+		showMessage('success', 'New bonus rule added. Don\'t forget to save!');
 	});
 
 	// Remove bonus rule
@@ -1916,6 +1890,7 @@ jQuery(document).ready(function($) {
 		$row.fadeOut(300, function() {
 			$(this).remove();
 			updateBonusRuleNumbers();
+			showMessage('success', 'Bonus rule removed. Don\'t forget to save!');
 		});
 	});
 
@@ -1947,3 +1922,4 @@ jQuery(document).ready(function($) {
 	initializeBonusTypeHandlers();
 
 });
+

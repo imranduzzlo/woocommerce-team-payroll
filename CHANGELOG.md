@@ -1,5 +1,54 @@
 # Changelog
 
+## [1.6.22] - 2026-04-20
+### 🐛 FIXED - Performance Tracker Bonus Milestones Display Issues
+
+#### FIXED - Bonus Rules Now Display Correctly in All Scenarios
+**ISSUES FIXED:**
+1. **Repeatable Flag Display** - Now shows "Repeatable" when checked, "One Time" when unchecked
+2. **Multiple Rules Not Showing** - Fixed rule indexing and data collection for multiple bonus rules
+3. **Rules Disappearing After Changes** - Added proper cache busting and data validation
+4. **Bonus Type Changes Not Persisting** - Improved data structure and sanitization
+5. **Role Filtering Not Working** - Fixed empty eligible_roles array handling
+
+**THE FIXES:**
+
+1. **Frontend Display (performance-tracker.js)**:
+   - Repeatable flag now conditionally displays "Repeatable" or "One Time"
+   - Added cache busting with timestamp to prevent stale data
+   - Improved debug logging for troubleshooting
+
+2. **Backend Data Handling (class-performance-settings.php)**:
+   - Added unique rule IDs for better tracking
+   - Improved repeatable flag conversion (ensure 0 or 1)
+   - Added last_updated timestamp for cache invalidation
+   - Clear all related caches when bonus config is saved
+
+3. **Bonus Milestones Logic (class-performance-tracker-ajax.php)**:
+   - Enhanced role eligibility validation
+   - Fixed empty eligible_roles array check
+   - Added comprehensive rule structure validation
+   - Improved error handling and logging
+   - Sanitize all data fields properly
+
+4. **JavaScript Improvements (performance-settings.js)**:
+   - Better rule collection with proper repeatable value conversion
+   - Improved add/remove rule handlers with user feedback
+   - Enhanced validation for multiple rules
+   - Ensure at least one rule exists before saving
+
+**BENEFITS:**
+- ✅ Bonus milestones display correctly for all users
+- ✅ Multiple rules work seamlessly
+- ✅ Changes persist immediately after save
+- ✅ Role filtering works as expected
+- ✅ Repeatable flag displays correctly
+- ✅ No more missing or duplicate milestones
+
+---
+
+# Changelog
+
 ## [1.6.10] - 2026-04-20
 ### 🐛 FIXED - Attributed Total Fallback for Orders Without Commission Data
 
@@ -3042,5 +3091,6 @@ Employees can now see:
 - All features use AJAX for smooth user experience
 - Responsive design matching current version styling
 - Currency formatting with WooCommerce settings
+
 
 

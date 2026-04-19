@@ -290,13 +290,7 @@ input[type="reset"]:focus {
 	border-radius: 20px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 	z-index: 10;
-	border: 2px solid #0073aa;
-	transition: all 0.3s ease;
-}
-
-.profile-goal-counter:hover {
-	box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
-	transform: translateX(-50%) scale(1.05);
+	border: 2px solid #ff9900;
 }
 
 .goal-star-icon {
@@ -309,7 +303,7 @@ input[type="reset"]:focus {
 .goal-count {
 	font-size: 12px;
 	font-weight: 700;
-	color: #0073aa;
+	color: #ff9900;
 	line-height: 1;
 	white-space: nowrap;
 }

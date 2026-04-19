@@ -21,7 +21,6 @@
 		 * Initialize the Performance Tracker
 		 */
 		init() {
-			console.log('Performance Tracker: Initializing...');
 			// Get currency settings from WooCommerce
 			this.currencySymbol = wc_tp_reports.currency_symbol || '$';
 			this.currencyPosition = wc_tp_reports.currency_pos || 'left';
@@ -35,7 +34,6 @@
 		loadConfiguration() {
 			this.fetchData('config', (data) => {
 				this.periodType = data.period_type || 'monthly';
-				console.log('Performance Tracker: Period type =', this.periodType);
 				
 				// Update view options based on period type
 				this.updateViewOptions();
@@ -659,11 +657,10 @@
 											</div>
 										</div>
 
-										${milestone.repeatable ? `
-											<div class="milestone-repeatable">
-												<i class="ph ph-repeat"></i> Repeatable
-											</div>
-										` : ''}
+										<div class="milestone-repeatable">
+											<i class="ph ${milestone.repeatable ? 'ph-repeat' : 'ph-check-circle'}"></i> 
+											${milestone.repeatable ? 'Repeatable' : 'One Time'}
+										</div>
 									</div>
 								</div>
 							`;
