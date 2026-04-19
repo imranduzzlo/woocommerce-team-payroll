@@ -522,6 +522,7 @@ class WC_Team_Payroll_Performance_Settings {
 					<tr>
 						<th><label for="bonus_enabled"><?php esc_html_e( 'Enable Bonus System', 'wc-team-payroll' ); ?></label></th>
 						<td>
+							<input type="hidden" name="bonus_enabled" value="0" />
 							<input type="checkbox" id="bonus_enabled" name="bonus_enabled" value="1" class="wc-tp-bonus-setting" <?php checked( isset( $bonus_config['enabled'] ) ? $bonus_config['enabled'] : 1, 1 ); ?> />
 							<label for="bonus_enabled"><?php esc_html_e( 'Automatically award bonuses when streak milestones are achieved', 'wc-team-payroll' ); ?></label>
 						</td>
@@ -529,6 +530,7 @@ class WC_Team_Payroll_Performance_Settings {
 					<tr>
 						<th><label for="bonus_notification"><?php esc_html_e( 'Email Notifications', 'wc-team-payroll' ); ?></label></th>
 						<td>
+							<input type="hidden" name="bonus_notification" value="0" />
 							<input type="checkbox" id="bonus_notification" name="bonus_notification" value="1" class="wc-tp-bonus-setting" <?php checked( isset( $bonus_config['notification'] ) ? $bonus_config['notification'] : 1, 1 ); ?> />
 							<label for="bonus_notification"><?php esc_html_e( 'Send email notification when employee earns a bonus', 'wc-team-payroll' ); ?></label>
 						</td>
@@ -536,6 +538,7 @@ class WC_Team_Payroll_Performance_Settings {
 					<tr>
 						<th><label for="bonus_show_progress"><?php esc_html_e( 'Show Progress to Employees', 'wc-team-payroll' ); ?></label></th>
 						<td>
+							<input type="hidden" name="bonus_show_progress" value="0" />
 							<input type="checkbox" id="bonus_show_progress" name="bonus_show_progress" value="1" class="wc-tp-bonus-setting" <?php checked( isset( $bonus_config['show_progress'] ) ? $bonus_config['show_progress'] : 1, 1 ); ?> />
 							<label for="bonus_show_progress"><?php esc_html_e( 'Display bonus milestone progress in Performance Tracker', 'wc-team-payroll' ); ?></label>
 						</td>
@@ -659,7 +662,8 @@ class WC_Team_Payroll_Performance_Settings {
 				
 				<div class="wc-tp-bonus-field wc-tp-bonus-checkbox">
 					<label>
-						<input type="checkbox" name="bonus_rules[<?php echo esc_attr( $index_attr ); ?>][repeatable]" value="1" <?php checked( $repeatable, 1 ); ?> />
+						<input type="hidden" name="bonus_rules[<?php echo esc_attr( $index_attr ); ?>][repeatable]" value="0" />
+					<input type="checkbox" name="bonus_rules[<?php echo esc_attr( $index_attr ); ?>][repeatable]" value="1" <?php checked( $repeatable, 1 ); ?> />
 						<?php esc_html_e( 'Repeatable (can be earned multiple times)', 'wc-team-payroll' ); ?>
 					</label>
 					<p class="description"><?php esc_html_e( 'If unchecked, bonus can only be earned once per employee', 'wc-team-payroll' ); ?></p>
