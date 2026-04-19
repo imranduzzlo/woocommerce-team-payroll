@@ -1514,6 +1514,7 @@ jQuery(document).ready(function($) {
 		
 		$('#wc-tp-bonus-rules-list .wc-tp-bonus-rule-row').each(function(index) {
 			const $row = $(this);
+			const ruleId = $row.find('.wc-tp-bonus-rule-id-field').val();
 			const tier = $row.find('[name*="[tier]"]').val();
 			const streakCount = $row.find('[name*="[streak_count]"]').val();
 			const bonusType = $row.find('[name*="[bonus_type]"]').val();
@@ -1561,6 +1562,7 @@ jQuery(document).ready(function($) {
 			const repeatableValue = repeatable ? 1 : 0;
 			
 			rules.push({
+				rule_id: ruleId ? parseInt(ruleId) : 0,
 				tier: tier,
 				streak_count: parseInt(streakCount),
 				bonus_type: bonusType,

@@ -586,6 +586,7 @@ class WC_Team_Payroll_Performance_Settings {
 	 * Render a single bonus rule row
 	 */
 	private function render_bonus_rule_row( $index, $rule = array(), $all_roles = array(), $is_template = false ) {
+		$rule_id = isset( $rule['rule_id'] ) ? $rule['rule_id'] : '';
 		$tier = isset( $rule['tier'] ) ? $rule['tier'] : '';
 		$streak_count = isset( $rule['streak_count'] ) ? $rule['streak_count'] : '';
 		$bonus_type = isset( $rule['bonus_type'] ) ? $rule['bonus_type'] : 'money';
@@ -596,14 +597,20 @@ class WC_Team_Payroll_Performance_Settings {
 		
 		$index_attr = $is_template ? '{{INDEX}}' : $index;
 		?>
-		<div class="wc-tp-bonus-rule-row" data-index="<?php echo esc_attr( $index_attr ); ?>">
+		<div class="wc-tp-bonus-rule-row" data-index="<?php echo esc_attr( $index_attr ); ?>" data-rule-id="<?php echo esc_attr( $rule_id ); ?>">
 			<div class="wc-tp-bonus-rule-header">
 				<span class="wc-tp-bonus-rule-number"><?php echo esc_html( sprintf( __( 'Rule #%s', 'wc-team-payroll' ), $is_template ? '{{INDEX}}' : ( $index + 1 ) ) ); ?></span>
+				<?php if ( $rule_id ) : ?>
+					<span class="wc-tp-bonus-rule-id" style="color: #999; font-size: 12px; margin-left: 10px;"><?php echo esc_html( sprintf( __( 'ID: %d', 'wc-team-payroll' ), $rule_id ) ); ?></span>
+				<?php endif; ?>
 				<button type="button" class="button button-link-delete wc-tp-remove-bonus-rule">
 					<span class="dashicons dashicons-trash"></span>
 					<?php esc_html_e( 'Remove', 'wc-team-payroll' ); ?>
 				</button>
 			</div>
+			
+			<!-- Hidden field to store rule_id -->
+			<input type="hidden" name="bonus_rules[<?php echo esc_attr( $index_attr ); ?>][rule_id]" value="<?php echo esc_attr( $rule_id ); ?>" class="wc-tp-bonus-rule-id-field" />
 			
 			<div class="wc-tp-bonus-rule-fields">
 				<div class="wc-tp-bonus-field">
@@ -3244,32 +3251,51 @@ class WC_Team_Payroll_Performance_Settings {
 
 		$bonus_config = isset( $_POST['bonus_config'] ) ? $_POST['bonus_config'] : array();
 
+		// Get current bonus config to preserve rule IDs
+		$current_config = get_option( 'wc_tp_achievement_bonuses', array() );
+		$next_rule_id = 1;
+		
+		// Find the highest existing rule_id to continue from
+		if ( isset( $current_config['rules'] ) && is_array( $current_config['rules'] ) ) {
+			foreach ( $current_config['rules'] as $rule ) {
+				if ( isset( $rule['rule_id'] ) && is_numeric( $rule['rule_id'] ) ) {
+					$next_rule_id = max( $next_rule_id, intval( $rule['rule_id'] ) + 1 );
+				}
+			}
+		}
+
 		// Sanitize bonus configuration
 		$sanitized_config = array(
 			'enabled' => isset( $bonus_config['enabled'] ) ? 1 : 0,
 			'notification' => isset( $bonus_config['notification'] ) ? 1 : 0,
 			'show_progress' => isset( $bonus_config['show_progress'] ) ? 1 : 0,
 			'rules' => array(),
-			'last_updated' => current_time( 'mysql' ), // Add timestamp for cache busting
+			'last_updated' => current_time( 'mysql' ),
+			'next_rule_id' => $next_rule_id, // Track next ID to use
 		);
 
 		// Sanitize bonus rules
 		if ( isset( $bonus_config['rules'] ) && is_array( $bonus_config['rules'] ) ) {
-			$rule_index = 0;
 			foreach ( $bonus_config['rules'] as $rule ) {
 				// Skip empty rules
 				if ( empty( $rule['tier'] ) || empty( $rule['streak_count'] ) || empty( $rule['bonus_description'] ) ) {
 					continue;
 				}
 
+				// Preserve existing rule_id or assign new one
+				$rule_id = isset( $rule['rule_id'] ) && is_numeric( $rule['rule_id'] ) ? intval( $rule['rule_id'] ) : $next_rule_id;
+				if ( ! isset( $rule['rule_id'] ) || ! is_numeric( $rule['rule_id'] ) ) {
+					$next_rule_id++;
+				}
+
 				$sanitized_rule = array(
-					'id' => isset( $rule['id'] ) ? sanitize_text_field( $rule['id'] ) : 'rule_' . $rule_index . '_' . time(), // Add unique ID
+					'rule_id' => $rule_id, // Serial ID for this bonus rule
 					'tier' => sanitize_text_field( $rule['tier'] ),
 					'streak_count' => intval( $rule['streak_count'] ),
 					'bonus_type' => sanitize_text_field( $rule['bonus_type'] ),
 					'bonus_amount' => floatval( $rule['bonus_amount'] ),
 					'bonus_description' => sanitize_text_field( $rule['bonus_description'] ),
-					'repeatable' => isset( $rule['repeatable'] ) && $rule['repeatable'] ? 1 : 0, // Ensure proper boolean conversion
+					'repeatable' => isset( $rule['repeatable'] ) && $rule['repeatable'] ? 1 : 0,
 					'eligible_roles' => array(),
 				);
 
@@ -3281,9 +3307,11 @@ class WC_Team_Payroll_Performance_Settings {
 				}
 
 				$sanitized_config['rules'][] = $sanitized_rule;
-				$rule_index++;
 			}
 		}
+
+		// Update next_rule_id for next save
+		$sanitized_config['next_rule_id'] = $next_rule_id;
 
 		// Save to database
 		update_option( 'wc_tp_achievement_bonuses', $sanitized_config );
