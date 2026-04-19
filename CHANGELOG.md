@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.6.4] - 2026-04-19
+
+### 🚀 First Manual Installation Release
+
+**RELEASE NOTES:**
+- First official release for manual installation
+- Includes fully functional GitHub auto-updater
+- Ready for production use
+
+**INSTALLATION:**
+- Download ZIP from GitHub release
+- Extract and rename folder to `woocommerce-team-payroll`
+- Upload to `/wp-content/plugins/`
+- Activate in WordPress admin
+
+**AUTO-UPDATER:**
+- Checks for updates every 12 hours
+- Shows in WordPress Updates page
+- One-click update installation
+- Automatic folder name fixing
+
+**REPOSITORY:**
+- https://github.com/imranduzzlo/woocommerce-team-payroll
+- All future updates via GitHub releases
+
+---
+
 ## [1.6.3] - 2026-04-19
 
 ### ✅ PERFECT GITHUB UPDATER - Final Repository
