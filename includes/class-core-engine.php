@@ -327,7 +327,7 @@ class WC_Team_Payroll_Core_Engine {
 					'commission' => $commission_data['total_commission'],
 					'earnings'  => $user_earnings,
 					'role'      => $role,
-					'attributed_value' => $attributed_value, // User's attributed portion of order total
+					'attributed_value' => $attributed_value, // User's attributed portion of commission
 				);
 			}
 		}

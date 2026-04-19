@@ -1,256 +1,36 @@
 # Changelog
 
-## [1.6.11] - 2026-04-19
-### 🔧 Critical Fix - Nonce Field Selection
-**FIXED:**
-- ✅ Fixed nonce field selection from `$('#wc_team_payroll_nonce')` to `$('input[name="wc_team_payroll_nonce"]')`
-- ✅ Added console logging to show initial values (userId, nonce, ajaxurl)
+## [1.6.3] - 2026-04-20
+### ✨ Refactored - Attributed Total Column with Unified Logic
 
-**ISSUE:**
-- `wp_nonce_field()` creates input with `name` attribute, not `id`
-- JavaScript was trying to select by ID which returned undefined
-- This caused nonce verification to fail in AJAX handler
-
-**FILES MODIFIED:**
-- `includes/class-employee-detail.php` - Fixed nonce field selector
-
-**RESULT:**
-- Nonce is now correctly retrieved
-- AJAX calls pass nonce verification
-- Orders table loads successfully
-
----
-
-## [1.6.10] - 2026-04-19
-### 🔧 Critical Fix - Missing ajaxurl Variable
-**FIXED:**
-- ✅ Added missing `ajaxurl` variable definition in JavaScript
-- ✅ Added console logging for debugging AJAX calls
-- ✅ Added detailed error logging to track issues
-
-**ISSUE:**
-- JavaScript was trying to use `ajaxurl` which was undefined
-- This caused "ajaxurl is not defined" error preventing AJAX calls
-
-**FILES MODIFIED:**
-- `includes/class-employee-detail.php` - Added ajaxurl definition and console logging
-
-**RESULT:**
-- AJAX calls now work properly
-- Console shows detailed debugging information
-- Orders table loads correctly
-
----
-
-## [1.6.9] - 2026-04-19
-### 🔧 Critical Fix - Admin Orders Table AJAX and CSS
-**FIXED:**
-- ✅ Fixed AJAX parameter names (role, status, start_date, end_date instead of role_filter, status_filter, date_from, date_to)
-- ✅ Added missing orders table CSS to dashboard.css (was never added in v1.6.7)
-- ✅ Fixed filter value handling (empty string for "all" instead of "all")
-- ✅ Added error logging to AJAX calls for debugging
-- ✅ Removed duplicate date change event handlers
-- ✅ Fixed date preset functionality
-
-**FILES MODIFIED:**
-- `includes/class-employee-detail.php` - Fixed AJAX call parameters and event handlers
-- `assets/css/dashboard.css` - Added complete orders table styling
-
-**RESULT:**
-- Admin orders table now loads data correctly
-- All styling applied properly
-- Filters, search, sorting, pagination all working
-- No more "Error loading orders" message
-
----
-
-## [1.6.8] - 2026-04-19
-### ✅ Fixed - Admin Orders Table JavaScript Implementation
-**COMPLETED:**
-- ✅ Replaced entire JavaScript section to match frontend My Account orders
-- ✅ Implemented `loadOrdersData()` - AJAX call to `wc_tp_get_employee_orders`
-- ✅ Implemented `createTableRow()` - Build table rows with proper badges and icons
-- ✅ Implemented `updateTable()` - Handle search, sorting, pagination
-- ✅ Implemented `updatePagination()` - Render pagination controls
-- ✅ Added all event handlers: search input, filters, date presets, sorting, pagination clicks
-- ✅ Updated element IDs to match new HTML structure (#orders-* instead of #wc-tp-orders-*)
-- ✅ Fixed "Employee Role" display to show order role (Agent/Processor)
-- ✅ Fixed "Attributed Total" display with proper formatting
-
-**FILES MODIFIED:**
-- `includes/class-employee-detail.php` - Replaced JavaScript (lines 1790-2138)
-
-**RESULT:**
-- Admin orders table now works exactly like frontend My Account orders
-- All functionality working: search, filters, sorting, pagination, date presets
-- Same design, same behavior, same user experience
-
----
-
-## [1.6.7] - 2026-04-19
-### 🎨 Major Enhancement - Rebuilt Admin Orders Table (Part 1)
-**COMPLETED:**
-- ✅ Rebuilt admin employee orders table HTML to match frontend My Account orders
-- ✅ Copied all orders.css styles to dashboard.css
-- ✅ New table structure with proper filters, search, date range, pagination
-- ✅ Matching column headers: Order ID, Date, Customer, Employee Role, Order Total, Attributed Total, Commission, Earning, Status, Actions
-- ✅ Same filter controls as frontend (role, status, date presets, search, per page)
-
-**IN PROGRESS:**
-- ⏳ JavaScript needs to be updated to match frontend functionality
-- ⏳ AJAX handler already working (wc_tp_get_employee_orders)
-- ⏳ Table rendering, sorting, filtering logic to be completed
-
-**FILES MODIFIED:**
-- `includes/class-employee-detail.php` - Rebuilt orders tab HTML structure
-- `assets/css/dashboard.css` - Added all orders table styles from frontend
-
-**NEXT STEPS (v1.6.8):**
-- Complete JavaScript implementation for table rendering
-- Add sorting, filtering, pagination functionality
-- Match frontend behavior exactly
-
----
-
-## [1.6.7] - 2026-04-19 (Planned)
-### 🎨 Major Enhancement - Rebuild Admin Orders Table
-**PLANNED:**
-- Completely rebuild admin employee orders table to match frontend My Account orders
-- Copy exact HTML structure, CSS styling, and JavaScript functionality
-- Unified design language across frontend and admin
-- Same filters, sorting, pagination, and search functionality
-
-**FILES TO MODIFY:**
-- `includes/class-employee-detail.php` - Rebuild orders table HTML and JavaScript
-- `assets/css/dashboard.css` - Copy all styles from orders.css
-- Match frontend `includes/class-myaccount.php` orders structure exactly
-
----
-
-## [1.6.6] - 2026-04-19
-### 🐛 Fix - AJAX Nonce Verification
-
-#### FIXED - Error Loading Orders
-**BUG FIX:**
-- Added missing nonce verification to `get_employee_orders` AJAX handler
-- This was causing "Error loading orders" message in admin employee details
-
-**FILES MODIFIED:**
-- `includes/class-ajax-handlers.php` - Added `check_ajax_referer()` call
-
----
-
-## [1.6.5] - 2026-04-19
-### 🔧 Fix - Employee Role Column Display Logic
-
-#### FIXED - Employee Role Shows Order Role (Agent/Processor)
-**CLARIFICATION:**
-- "Employee Role" column now correctly shows the user's **order role** (Agent or Processor)
-- This is their role in that specific order, not their WordPress user role
-- If user is both agent AND processor in the same order, displays as "Agent"
+#### ENHANCED - Attributed Total Uses Same Logic as Earnings
+**IMPROVEMENT:**
+- Attributed Total column now uses the exact same calculation logic as "Your Earnings"
+- Reads directly from `_commission_data` meta (agent_order_value, processor_order_value)
+- Consistent behavior across all order displays
 
 **LOGIC:**
 ```php
-// Determine order role (if both, show as agent)
-if ( $is_agent ) {
-    $order_role = 'agent';
-    $order_role_label = 'Agent';
-} elseif ( $is_processor ) {
-    $order_role = 'processor';
-    $order_role_label = 'Processor';
+// Same logic as earnings calculation
+if ( $is_agent && $is_processor ) {
+    $attributed_value = $order->get_total(); // Owner gets full order total
+} elseif ( $user_role === 'agent' ) {
+    $attributed_value = $commission_data['agent_order_value']; // Agent's portion
+} elseif ( $user_role === 'processor' ) {
+    $attributed_value = $commission_data['processor_order_value']; // Processor's portion
 }
 ```
 
-**WHAT IT SHOWS:**
-- **Agent** = User is the agent for this order
-- **Processor** = User is the processor for this order
-- **Agent** = User is BOTH agent and processor (owner) for this order
-
 **BENEFITS:**
-- Clear indication of user's role in each order
-- Consistent with frontend My Account orders display
-- Proper badge styling (agent/processor colors)
+- ✅ Consistent calculation logic between Attributed Total and Earnings
+- ✅ Accurate sales attribution per employee
+- ✅ Proper performance metrics (AOV, conversion rates)
+- ✅ Fair comparison between agents and processors
+- ✅ Owner (both roles) correctly shows full order value
 
 **FILES MODIFIED:**
-- `includes/class-ajax-handlers.php` - Updated role_label to show order role
-- `includes/class-employee-detail.php` - Updated JavaScript to use order_role field
-
----
-
-## [1.6.4] - 2026-04-19
-### 🐛 Critical Fix - Remove Duplicate AJAX Handler Causing Data Issues
-
-#### FIXED - Employee Role Showing "undefined" and Attributed Total Showing "—"
-**ROOT CAUSE:**
-- Duplicate `wc_tp_get_employee_orders` AJAX handler in main plugin file was overriding the correct one
-- The duplicate handler (lines 1512-1661 in woocommerce-team-payroll.php) used old logic:
-  - Had `flag` and `flag_label` instead of `role` and `role_label`
-  - Missing `attributed_total` and `attributed_total_formatted` fields
-  - Didn't properly handle serialized commission data
-
-**SOLUTION:**
-- Removed the duplicate AJAX handler from main plugin file (156 lines deleted)
-- Now uses the correct handler from `includes/class-ajax-handlers.php` which has:
-  - Proper `role_label` field (Agent/Processor)
-  - Correct `attributed_total_formatted` calculation
-  - Proper `maybe_unserialize()` for commission data
-  - Owner detection (both agent and processor)
-
-**BENEFITS:**
-- Employee Role now displays correctly as "Agent" or "Processor"
-- Attributed Total now shows actual values instead of "—"
-- Consistent with frontend My Account orders logic
-- Single source of truth for employee orders AJAX handler
-
-**FILES MODIFIED:**
-- `woocommerce-team-payroll.php` - Removed duplicate AJAX handler (lines 1512-1661)
-
----
-
-## [1.6.3] - 2026-04-19
-### 🐛 Critical Fix - Admin Attributed Total Showing Blank
-
-#### FIXED - Serialized Commission Data Not Being Unserialized
-**BUG FIX:**
-- Fixed Admin Employee Details "Attributed Total" column showing "—" instead of actual values
-- Root cause: `_commission_data` order meta was sometimes stored as serialized string
-- The `is_array($commission_data)` check failed, preventing calculation entirely
-- Added explicit `maybe_unserialize()` to handle both array and serialized string formats
-
-**ISSUE:**
-```php
-// Commission data from database (serialized string):
-a:11:{s:8:"order_id";i:8038;s:17:"agent_order_value";d:549.5;...}
-
-// OLD CODE - Failed for serialized strings:
-$commission_data = $order->get_meta( '_commission_data' );
-if ( is_array( $commission_data ) ) { // ❌ Returns false for serialized strings
-    // Calculate attributed total
-}
-```
-
-**SOLUTION:**
-```php
-// NEW CODE - Handles both formats:
-$commission_data = $order->get_meta( '_commission_data' );
-
-// Ensure commission_data is properly unserialized
-if ( is_string( $commission_data ) && ! empty( $commission_data ) ) {
-    $commission_data = maybe_unserialize( $commission_data );
-}
-
-// Now safely check if it's an array
-$has_commission = is_array( $commission_data ) && ! empty( $commission_data );
-```
-
-**BENEFITS:**
-- Attributed Total now displays correctly in Admin Employee Details
-- Handles both array and serialized string formats
-- Consistent with My Account view (which already worked)
-- No data loss or calculation errors
-
-**FILES MODIFIED:**
-- `includes/class-ajax-handlers.php` - Added explicit unserialization before array check
+- `includes/class-ajax-handlers.php` - Unified attributed total calculation with earnings logic
+- `includes/class-employee-detail.php` - Restored Attributed Total column in order table
 
 ---
 
