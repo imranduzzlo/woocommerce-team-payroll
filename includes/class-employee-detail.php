@@ -1965,7 +1965,7 @@ class WC_Team_Payroll_Employee_Detail {
 
 						$.each(paginatedOrders, function(i, order) {
 							const statusClass = 'wc-tp-status-' + order.status.toLowerCase();
-							const roleClass = 'wc-tp-badge-' + order.role;
+							const roleClass = 'wc-tp-badge-' + (order.order_role || 'agent');
 							const viewUrl = '<?php echo admin_url("post.php"); ?>?post=' + order.order_id + '&action=edit';
 							const editUrl = viewUrl;
 
@@ -1977,7 +1977,7 @@ class WC_Team_Payroll_Employee_Detail {
 							html += '<td><span class="wc-tp-badge ' + statusClass + '">' + order.status + '</span></td>';
 							html += '<td>' + formatCurrency(order.commission) + '</td>';
 							html += '<td><strong>' + formatCurrency(order.user_earnings) + '</strong></td>';
-							html += '<td><span class="wc-tp-badge ' + roleClass + '">' + order.role_label + '</span></td>';
+							html += '<td><span class="wc-tp-badge ' + roleClass + '">' + (order.role_label || 'Agent') + '</span></td>';
 							html += '<td>' + order.date + '</td>';
 							html += '<td><div class="wc-tp-action-icons">';
 							html += '<a href="' + viewUrl + '" class="wc-tp-action-icon" title="View Order"><span class="dashicons dashicons-visibility"></span></a>';
