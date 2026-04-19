@@ -684,6 +684,7 @@ class WC_Team_Payroll_Settings {
 						<tr>
 							<th><label for="enable_salary_debug">Enable Salary Debug Tools</label></th>
 							<td>
+								<input type="hidden" name="wc_team_payroll_settings[enable_salary_debug]" value="0" />
 								<input type="checkbox" id="enable_salary_debug" name="wc_team_payroll_settings[enable_salary_debug]" value="1" <?php checked( isset( $settings['enable_salary_debug'] ) ? $settings['enable_salary_debug'] : 0, 1 ); ?> />
 								<p class="description">Enable advanced debugging tools for salary accumulation and testing</p>
 								
