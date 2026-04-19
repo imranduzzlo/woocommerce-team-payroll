@@ -1901,19 +1901,6 @@ class WC_Team_Payroll_Employee_Detail {
 							success: function(response) {
 								if (response.success) {
 									allOrders = response.data.orders;
-									
-									// DEBUG: Log the response
-									console.log('=== AJAX RESPONSE DEBUG ===');
-									console.log('Total orders:', allOrders.length);
-									if (allOrders.length > 0) {
-										console.log('First order:', allOrders[0]);
-										console.log('First order attributed_total:', allOrders[0].attributed_total);
-										console.log('First order attributed_total type:', typeof allOrders[0].attributed_total);
-										console.log('First order attributed_total_debug:', allOrders[0].attributed_total_debug);
-										console.log('All keys in first order:', Object.keys(allOrders[0]));
-									}
-									console.log('=== END AJAX DEBUG ===');
-									
 									renderOrdersTable(allOrders);
 								} else {
 									$('#wc-tp-orders-table-container').html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">📦</div><p>Failed to load orders</p></div>');
@@ -1931,10 +1918,6 @@ class WC_Team_Payroll_Employee_Detail {
 					function renderOrdersTable(orders) {
 						const container = $('#wc-tp-orders-table-container');
 						
-						// DEBUG: Log rendering
-						console.log('=== RENDER TABLE DEBUG ===');
-						console.log('Orders to render:', orders.length);
-						
 						if (!orders || orders.length === 0) {
 							container.html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">📦</div><p>No orders found</p></div>');
 							return;
@@ -1948,13 +1931,6 @@ class WC_Team_Payroll_Employee_Detail {
 						const startIndex = (currentPage - 1) * itemsPerPage;
 						const endIndex = startIndex + itemsPerPage;
 						const paginatedOrders = orders.slice(startIndex, endIndex);
-						
-						// DEBUG: Log first paginated order
-						if (paginatedOrders.length > 0) {
-							console.log('First paginated order:', paginatedOrders[0]);
-							console.log('attributed_total value:', paginatedOrders[0].attributed_total);
-							console.log('formatCurrency result:', formatCurrency(paginatedOrders[0].attributed_total));
-						}
 
 						let html = '<div class="wc-tp-table-wrapper"><table class="wc-tp-data-table"><thead><tr>';
 						html += '<th class="wc-tp-sortable-header" data-column="order_id">';
@@ -1965,9 +1941,6 @@ class WC_Team_Payroll_Employee_Detail {
 						html += '</th>';
 						html += '<th class="wc-tp-sortable-header" data-column="total">';
 						html += '<span class="th-content">Total</span>' + getSortIcon('total');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="attributed_total">';
-						html += '<span class="th-content">Attributed&nbsp;Total</span>' + getSortIcon('attributed_total');
 						html += '</th>';
 						html += '<th class="wc-tp-sortable-header" data-column="status">';
 						html += '<span class="th-content">Status</span>' + getSortIcon('status');
@@ -1997,7 +1970,6 @@ class WC_Team_Payroll_Employee_Detail {
 							html += '<td><strong>#' + order.order_id + '</strong></td>';
 							html += '<td>' + order.customer_name + '</td>';
 							html += '<td>' + formatCurrency(order.total) + '</td>';
-							html += '<td>' + formatCurrency(order.attributed_total) + '</td>';
 							html += '<td><span class="wc-tp-badge ' + statusClass + '">' + order.status + '</span></td>';
 							html += '<td>' + formatCurrency(order.commission) + '</td>';
 							html += '<td><strong>' + formatCurrency(order.user_earnings) + '</strong></td>';
