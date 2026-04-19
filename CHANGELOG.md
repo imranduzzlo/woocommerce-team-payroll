@@ -2,6 +2,25 @@
 
 All notable changes to WooCommerce Team Payroll & Commission System will be documented in this file.
 
+## [1.0.1] - 2026-04-19
+
+### 🐛 Debug - Orders Tab Empty Results
+
+**CHANGES:**
+- Added debug logging to AJAX handler to identify why orders aren't showing
+- Logs total orders, matched orders, and final count
+- Returns debug info in AJAX response
+- Helps identify if user has no assigned orders or if there's a filtering issue
+
+**DEBUG INFO:**
+- Check browser console for debug object in AJAX response
+- Check WordPress debug.log for backend logging
+- Shows: user_id, total_orders, matched_orders, final_count
+
+**LIKELY ISSUE:**
+- User ID 1 (admin) may not have any orders assigned as agent or processor
+- Orders need `_primary_agent_id` or `_processor_user_id` meta to match user
+
 ## [1.0.0] - 2026-04-19
 
 ### 🎉 Initial Release - Professional GitHub Updater
