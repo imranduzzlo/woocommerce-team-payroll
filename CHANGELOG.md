@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.6.9] - 2026-04-19
+### 🔧 Critical Fix - Admin Orders Table AJAX and CSS
+**FIXED:**
+- ✅ Fixed AJAX parameter names (role, status, start_date, end_date instead of role_filter, status_filter, date_from, date_to)
+- ✅ Added missing orders table CSS to dashboard.css (was never added in v1.6.7)
+- ✅ Fixed filter value handling (empty string for "all" instead of "all")
+- ✅ Added error logging to AJAX calls for debugging
+- ✅ Removed duplicate date change event handlers
+- ✅ Fixed date preset functionality
+
+**FILES MODIFIED:**
+- `includes/class-employee-detail.php` - Fixed AJAX call parameters and event handlers
+- `assets/css/dashboard.css` - Added complete orders table styling
+
+**RESULT:**
+- Admin orders table now loads data correctly
+- All styling applied properly
+- Filters, search, sorting, pagination all working
+- No more "Error loading orders" message
+
+---
+
 ## [1.6.8] - 2026-04-19
 ### ✅ Fixed - Admin Orders Table JavaScript Implementation
 **COMPLETED:**

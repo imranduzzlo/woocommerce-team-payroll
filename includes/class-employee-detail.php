@@ -1807,16 +1807,23 @@ class WC_Team_Payroll_Employee_Detail {
 					loadOrdersData();
 
 					function loadOrdersData() {
+						// Get filter values
+						const dateFrom = $('#date-from').val();
+						const dateTo = $('#date-to').val();
+						const statusValue = $('#status-filter').val();
+						const roleValue = $('#role-filter').val();
+						
 						$.ajax({
 							url: ajaxurl,
 							type: 'POST',
 							data: {
 								action: 'wc_tp_get_employee_orders',
 								user_id: userId,
-								role_filter: roleFilter,
-								status_filter: statusFilter,
-								date_from: $('#date-from').val(),
-								date_to: $('#date-to').val(),
+								role: roleValue === 'all' ? '' : roleValue,
+								status: statusValue === 'all' ? '' : statusValue,
+								start_date: dateFrom,
+								end_date: dateTo,
+								search: '',
 								nonce: nonce
 							},
 							success: function(response) {
@@ -1849,9 +1856,12 @@ class WC_Team_Payroll_Employee_Detail {
 										$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p><?php esc_html_e( 'No orders found', 'wc-team-payroll' ); ?></p></td></tr>');
 										$('#orders-pagination').html('');
 									}
+								} else {
+									$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p style="color: #dc3545;"><?php esc_html_e( 'Failed to load orders', 'wc-team-payroll' ); ?></p></td></tr>');
 								}
 							},
-							error: function() {
+							error: function(xhr, status, error) {
+								console.error('AJAX Error:', status, error);
 								$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p style="color: #dc3545;"><?php esc_html_e( 'Error loading orders', 'wc-team-payroll' ); ?></p></td></tr>');
 							}
 						});
@@ -2127,16 +2137,9 @@ class WC_Team_Payroll_Employee_Detail {
 						loadOrdersData();
 					});
 
-					$('#date-from').on('change', function() {
-						// Store the custom dates for later restoration
-						lastCustomDateFrom = $(this).val();
-						currentPage = 1;
-						loadOrdersData();
-					});
-
-					$('#date-to').on('change', function() {
-						// Store the custom dates for later restoration
-						lastCustomDateTo = $(this).val();
+					$('#date-from, #date-to').on('change', function() {
+						lastCustomDateFrom = $('#date-from').val();
+						lastCustomDateTo = $('#date-to').val();
 						currentPage = 1;
 						loadOrdersData();
 					});
@@ -2237,14 +2240,6 @@ class WC_Team_Payroll_Employee_Detail {
 							currentPage = 1;
 							loadOrdersData();
 						}
-					});
-
-					// Custom date inputs - auto-filter when changed
-					$('#date-from, #date-to').on('change', function() {
-						lastCustomDateFrom = $('#date-from').val();
-						lastCustomDateTo = $('#date-to').val();
-						currentPage = 1;
-						loadOrdersData();
 					});
 
 					$(document).on('click', '.page-btn[data-page]', function(e) {

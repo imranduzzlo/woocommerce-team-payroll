@@ -856,3 +856,308 @@
 		min-width: 150px;
 	}
 }
+
+
+/* ============================================================================
+   Orders Table Styling (from orders.css)
+   ============================================================================ */
+
+.orders-summary {
+	/* Grid layout handled by .pv-summary-grid parent */
+	margin-bottom: 20px !important;
+}
+
+.order-card {
+	/* Base card styling handled by .pv-card parent */
+	position: relative;
+	border-left: 4px solid;
+	transition: all 0.3s ease;
+}
+
+.order-card.total-orders {
+	border-left-color: #3498db;
+}
+
+.order-card.total-commission {
+	border-left-color: #2ecc71;
+}
+
+.order-card.my-earnings {
+	border-left-color: #f39c12;
+}
+
+.order-card.status-completed {
+	border-left-color: #27ae60;
+}
+
+.order-card.status-processing {
+	border-left-color: #f39c12;
+}
+
+.order-card.status-pending {
+	border-left-color: #3498db;
+}
+
+.order-card.status-on-hold {
+	border-left-color: #9b59b6;
+}
+
+.order-card.status-cancelled {
+	border-left-color: #e74c3c;
+}
+
+.order-card.status-refunded {
+	border-left-color: #e67e22;
+}
+
+.order-card .card-header {
+	position: relative !important;
+	margin-bottom: 15px;
+	pointer-events: none;
+}
+
+.order-card .card-header i {
+	position: absolute !important;
+	top: -5px !important;
+	right: 0 !important;
+	font-size: 80px !important;
+	opacity: 0.08 !important;
+}
+
+.order-card .card-label-amount-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid;
+}
+
+.order-card .card-label {
+	font-size: 17px;
+	font-weight: 600;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.order-card .amount {
+	font-size: 17px;
+	font-weight: 600;
+	margin: 0;
+}
+
+.order-card .card-breakdown {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 15px;
+}
+
+.order-card .breakdown-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 13px;
+}
+
+.order-card .breakdown-item small {
+	font-weight: 500;
+	opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+	.orders-summary {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 768px) {
+	.orders-summary {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 480px) {
+	.orders-summary {
+		grid-template-columns: 1fr;
+		gap: 15px;
+	}
+
+	.order-card {
+		padding: 15px;
+	}
+
+	.order-card .card-label {
+		font-size: 14px;
+	}
+
+	.order-card .amount {
+		font-size: 14px;
+	}
+}
+
+/* Table styling */
+.wc-team-payroll-orders .woocommerce-table--orders {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.wc-team-payroll-orders .woocommerce-table--orders thead th {
+	text-align: left;
+	padding: 15px;
+	font-weight: 600;
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.wc-team-payroll-orders .woocommerce-table--orders tbody td {
+	padding: 15px;
+	border-bottom: 1px solid;
+	vertical-align: middle;
+}
+
+.wc-team-payroll-orders .woocommerce-table--orders tbody tr:hover {
+	background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Order link */
+.wc-team-payroll-orders .order-link {
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.2s ease;
+}
+
+.wc-team-payroll-orders .order-link:hover {
+	text-decoration: underline;
+}
+
+/* Role badge */
+.wc-team-payroll-orders .role-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.wc-team-payroll-orders .role-badge.role-agent {
+	background-color: rgba(52, 152, 219, 0.1);
+	color: #3498db;
+}
+
+.wc-team-payroll-orders .role-badge.role-processor {
+	background-color: rgba(46, 204, 113, 0.1);
+	color: #2ecc71;
+}
+
+/* Status badge */
+.wc-team-payroll-orders .status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.wc-team-payroll-orders .status-badge.status-completed {
+	background-color: rgba(39, 174, 96, 0.1);
+	color: #27ae60;
+}
+
+.wc-team-payroll-orders .status-badge.status-processing {
+	background-color: rgba(243, 156, 18, 0.1);
+	color: #f39c12;
+}
+
+.wc-team-payroll-orders .status-badge.status-pending {
+	background-color: rgba(52, 152, 219, 0.1);
+	color: #3498db;
+}
+
+.wc-team-payroll-orders .status-badge.status-on-hold {
+	background-color: rgba(155, 89, 182, 0.1);
+	color: #9b59b6;
+}
+
+.wc-team-payroll-orders .status-badge.status-cancelled {
+	background-color: rgba(231, 76, 60, 0.1);
+	color: #e74c3c;
+}
+
+.wc-team-payroll-orders .status-badge.status-refunded {
+	background-color: rgba(230, 126, 34, 0.1);
+	color: #e67e22;
+}
+
+/* Amount cells */
+.wc-team-payroll-orders .amount-total,
+.wc-team-payroll-orders .amount-commission,
+.wc-team-payroll-orders .amount-earning {
+	font-weight: 600;
+}
+
+/* Action buttons */
+.wc-team-payroll-orders .btn-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: none;
+	border-radius: 4px;
+	background-color: transparent;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 16px;
+	margin-right: 6px;
+}
+
+.wc-team-payroll-orders .btn-action:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.wc-team-payroll-orders .btn-action.btn-view {
+	color: #3498db;
+}
+
+.wc-team-payroll-orders .btn-action.btn-view:hover {
+	background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Fix icon color to match button color - override global .ph styling */
+.wc-team-payroll-orders .btn-action .ph {
+	color: inherit !important;
+}
+
+.wc-team-payroll-orders .btn-action.btn-view .ph {
+	color: #3498db !important;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+	.wc-team-payroll-orders .woocommerce-table--orders {
+		font-size: 12px;
+	}
+
+	.wc-team-payroll-orders .woocommerce-table--orders thead th,
+	.wc-team-payroll-orders .woocommerce-table--orders tbody td {
+		padding: 10px;
+	}
+
+	.wc-team-payroll-orders .table-controls {
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.filter-control {
+		flex: 1 1 calc(50% - 5px);
+		min-width: 150px;
+	}
+}
