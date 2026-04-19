@@ -107,17 +107,48 @@ class WC_Team_Payroll_AJAX_Handlers {
 
 			// Calculate attributed total - shows order value attribution
 			$attributed_total = 0;
+			
+			// DEBUG: Log the calculation process
+			error_log('=== ATTRIBUTED TOTAL DEBUG ===');
+			error_log('Order ID: ' . $order->get_id());
+			error_log('User ID: ' . $user_id);
+			error_log('User Role: ' . $user_role);
+			error_log('Is Agent: ' . ($is_agent ? 'YES' : 'NO'));
+			error_log('Is Processor: ' . ($is_processor ? 'YES' : 'NO'));
+			error_log('Commission Data Exists: ' . ($commission_data ? 'YES' : 'NO'));
+			
 			if ( $commission_data && is_array( $commission_data ) ) {
+				error_log('Commission Data Keys: ' . implode(', ', array_keys($commission_data)));
+				error_log('agent_order_value: ' . ($commission_data['agent_order_value'] ?? 'NOT SET'));
+				error_log('processor_order_value: ' . ($commission_data['processor_order_value'] ?? 'NOT SET'));
+				
 				// Calculate attributed total based on role(s)
 				if ( $is_agent && $is_processor ) {
 					// Owner gets both agent and processor attributed values
-					$attributed_total = floatval( $commission_data['agent_order_value'] ?? 0 ) + floatval( $commission_data['processor_order_value'] ?? 0 );
+					$agent_val = floatval( $commission_data['agent_order_value'] ?? 0 );
+					$processor_val = floatval( $commission_data['processor_order_value'] ?? 0 );
+					$attributed_total = $agent_val + $processor_val;
+					error_log('Role: BOTH (Owner)');
+					error_log('Agent Value: ' . $agent_val);
+					error_log('Processor Value: ' . $processor_val);
+					error_log('Total (Agent + Processor): ' . $attributed_total);
 				} elseif ( $user_role === 'agent' ) {
 					$attributed_total = floatval( $commission_data['agent_order_value'] ?? 0 );
+					error_log('Role: AGENT ONLY');
+					error_log('Attributed Total: ' . $attributed_total);
 				} else {
 					$attributed_total = floatval( $commission_data['processor_order_value'] ?? 0 );
+					error_log('Role: PROCESSOR ONLY');
+					error_log('Attributed Total: ' . $attributed_total);
 				}
+			} else {
+				error_log('No commission_data - attributed_total = 0');
 			}
+			
+			error_log('Final Attributed Total: ' . $attributed_total);
+			error_log('Type: ' . gettype($attributed_total));
+			error_log('Is Numeric: ' . (is_numeric($attributed_total) ? 'YES' : 'NO'));
+			error_log('=== END DEBUG ===');
 
 			// Get customer info
 			$customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
@@ -129,6 +160,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 				'date' => $order->get_date_created()->format( 'Y-m-d' ),
 				'total' => $order->get_total(),
 				'attributed_total' => $attributed_total,
+				'attributed_total_debug' => 'Value: ' . $attributed_total . ' | Type: ' . gettype($attributed_total) . ' | Numeric: ' . (is_numeric($attributed_total) ? 'YES' : 'NO'),
 				'commission' => $order_commission,
 				'earnings' => $user_earnings,
 				'user_earnings' => $user_earnings,
