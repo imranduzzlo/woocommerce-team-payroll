@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.6.9] - 2026-04-20
+### 🐛 FIXED - Attributed Total Showing NaN
+
+#### CRITICAL FIX - Attributed Total Now Shows Values
+**THE PROBLEM:**
+- Attributed Total was showing "৳ NaN" (Not a Number)
+- The calculation was only running when `$has_commission` was true
+- Orders without commission status showed NaN because `$attributed_value` was 0/undefined
+
+**THE ROOT CAUSE:**
+```php
+// BEFORE - Only calculated when commission applies
+if ( $has_commission && is_array( $commission_data ) ) {
+    $attributed_value = floatval( $commission_data['agent_order_value'] );
+}
+// Result: Orders without commission = $attributed_value stays 0 = NaN in frontend
+```
+
+**THE FIX:**
+```php
+// AFTER - Always calculate attributed total, regardless of commission status
+if ( $commission_data && is_array( $commission_data ) ) {
+    $attributed_value = floatval( $commission_data['agent_order_value'] );
+}
+// Result: Shows attributed value for ALL orders with commission_data
+```
+
+**IMPACT:**
+- ✅ Attributed Total now shows correct values (৳785.00)
+- ✅ Works for all orders, not just commission-eligible ones
+- ✅ No more NaN errors
+
+---
+
 ## [1.6.8] - 2026-04-20
 ### 🐛 FIXED - Attributed Total Display Issue
 

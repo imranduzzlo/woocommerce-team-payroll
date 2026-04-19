@@ -89,9 +89,9 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
 			$has_commission = $commission_data && in_array( $order_status, $commission_statuses );
 
-			// Calculate attributed total (same logic as earnings)
+			// Calculate attributed total - ALWAYS show, not dependent on commission status
 			$attributed_value = 0;
-			if ( $has_commission && is_array( $commission_data ) ) {
+			if ( $commission_data && is_array( $commission_data ) ) {
 				// Calculate attributed total based on role(s)
 				if ( $is_agent && $is_processor ) {
 					// Owner gets both agent and processor attributed values
@@ -103,7 +103,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 				}
 			}
 
-			// Calculate user earnings
+			// Calculate user earnings - depends on commission status
 			$user_earnings = 0;
 			$order_commission = 0;
 			if ( $has_commission && is_array( $commission_data ) ) {
