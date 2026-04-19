@@ -5037,6 +5037,121 @@ class WC_Team_Payroll_MyAccount {
 			</div>
 		</div>
 
+		<!-- SALARY HISTORY TABLE -->
+		<div class="reports-table-wrapper table-wrapper">
+			<h3 class="reports-table-title">
+				<?php esc_html_e( 'My Salary History', 'wc-team-payroll' ); ?>
+			</h3>
+			
+			<div class="reports-table-controls section-header">
+				<div class="pv-table-controls table-controls">
+					<div class="reports-table-search search-control">
+						<input type="text" class="table-search-input" placeholder="<?php esc_attr_e( 'Search by date...', 'wc-team-payroll' ); ?>" data-table="salary-table" />
+						<i class="ph ph-magnifying-glass"></i>
+					</div>
+					<div class="reports-table-per-page per-page-control">
+						<label><?php esc_html_e( 'Show:', 'wc-team-payroll' ); ?></label>
+						<select class="table-per-page-select" data-table="salary-table">
+							<option value="10">10</option>
+							<option value="25">25</option>
+							<option value="50">50</option>
+						</select>
+						<span><?php esc_html_e( 'per page', 'wc-team-payroll' ); ?></span>
+					</div>
+				</div>
+			</div>
+
+			<div class="reports-table-container table-container pv-table-container">
+				<table class="reports-table pv-table woocommerce-table woocommerce-table--salary" id="salary-table">
+					<thead>
+						<tr>
+							<th class="sortable" data-sort="date">
+								<?php esc_html_e( 'Date', 'wc-team-payroll' ); ?>
+								<i class="ph ph-caret-up-down sort-icon"></i>
+							</th>
+							<th class="sortable" data-sort="type">
+								<?php esc_html_e( 'Type', 'wc-team-payroll' ); ?>
+								<i class="ph ph-caret-up-down sort-icon"></i>
+							</th>
+							<th class="sortable" data-sort="amount">
+								<?php esc_html_e( 'Amount', 'wc-team-payroll' ); ?>
+								<i class="ph ph-caret-up-down sort-icon"></i>
+							</th>
+							<th class="sortable" data-sort="description">
+								<?php esc_html_e( 'Description', 'wc-team-payroll' ); ?>
+								<i class="ph ph-caret-up-down sort-icon"></i>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php 
+						$salary_transactions = get_user_meta( $user_id, '_wc_tp_salary_transactions', true );
+						if ( is_array( $salary_transactions ) && ! empty( $salary_transactions ) ) :
+							// Sort transactions by date (newest first)
+							usort( $salary_transactions, function( $a, $b ) {
+								$date_a = strtotime( $a['date'] ?? 'now' );
+								$date_b = strtotime( $b['date'] ?? 'now' );
+								return $date_b - $date_a;
+							});
+							foreach ( $salary_transactions as $transaction ) :
+								$trans_date = isset( $transaction['date'] ) ? $transaction['date'] : date( 'Y-m-d' );
+								$trans_type = isset( $transaction['type'] ) ? $transaction['type'] : 'unknown';
+								$trans_amount = floatval( $transaction['amount'] ?? 0 );
+								$trans_description = isset( $transaction['description'] ) ? $transaction['description'] : '';
+								
+								// Format type for display
+								$type_display = ucfirst( str_replace( '_', ' ', $trans_type ) );
+								$type_icon = 'ph-wallet';
+								if ( strpos( $trans_type, 'transfer' ) !== false ) {
+									$type_icon = 'ph-arrow-right';
+								} elseif ( strpos( $trans_type, 'salary' ) !== false ) {
+									$type_icon = 'ph-currency-dollar';
+								}
+						?>
+							<tr>
+								<td data-sort-value="<?php echo esc_attr( strtotime( $trans_date ) ); ?>">
+									<?php echo esc_html( date( 'M j, Y', strtotime( $trans_date ) ) ); ?>
+								</td>
+								<td data-sort-value="<?php echo esc_attr( strtolower( $trans_type ) ); ?>">
+									<span class="salary-type-badge">
+										<i class="ph <?php echo esc_attr( $type_icon ); ?>"></i>
+										<?php echo esc_html( $type_display ); ?>
+									</span>
+								</td>
+								<td data-sort-value="<?php echo esc_attr( $trans_amount ); ?>">
+									<strong><?php echo wp_kses_post( wc_price( $trans_amount ) ); ?></strong>
+								</td>
+								<td>
+									<?php echo esc_html( $trans_description ); ?>
+								</td>
+							</tr>
+						<?php 
+							endforeach;
+						else :
+						?>
+							<tr>
+								<td colspan="4" class="reports-no-data">
+									<i class="ph ph-inbox"></i>
+									<p><?php esc_html_e( 'No salary transactions found', 'wc-team-payroll' ); ?></p>
+								</td>
+							</tr>
+						<?php endif; ?>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="reports-pagination pagination-container" data-table="salary-table">
+				<div class="reports-pagination-info pagination-info">
+					<?php 
+					$salary_count = is_array( $salary_transactions ) ? count( $salary_transactions ) : 0;
+					esc_html_e( 'Showing', 'wc-team-payroll' ); ?> <span class="pagination-start">1</span> <?php esc_html_e( 'to', 'wc-team-payroll' ); ?> <span class="pagination-end">10</span> <?php esc_html_e( 'of', 'wc-team-payroll' ); ?> <span class="pagination-total"><?php echo esc_html( $salary_count ); ?></span> <?php esc_html_e( 'entries', 'wc-team-payroll' ); ?>
+				</div>
+				<div class="reports-pagination-controls pagination-controls">
+					<!-- Pagination buttons will be generated by JavaScript -->
+				</div>
+			</div>
+		</div>
+
 		<!-- ORDER PROCESSING TABLE -->
 		<div class="reports-table-wrapper table-wrapper">
 			<h3 class="reports-table-title">

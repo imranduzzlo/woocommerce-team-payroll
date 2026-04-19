@@ -28,6 +28,13 @@ jQuery(document).ready(function($) {
 			sortOrder: 'asc',
 			searchTerm: ''
 		},
+		'salary-table': {
+			currentPage: 1,
+			perPage: 10,
+			sortColumn: null,
+			sortOrder: 'asc',
+			searchTerm: ''
+		},
 		'orders-table': {
 			currentPage: 1,
 			perPage: 10,

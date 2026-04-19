@@ -292,3 +292,49 @@
 		font-size: 11px;
 	}
 }
+
+
+/* ============================================================================
+   SALARY TABLE SPECIFIC STYLING
+   ============================================================================ */
+
+.salary-type-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 600;
+	background: #e7f3ff;
+	color: #0073aa;
+	border: 1px solid #b3d9ff;
+}
+
+.salary-type-badge i {
+	font-size: 14px;
+}
+
+.woocommerce-table--salary tbody td {
+	padding: 12px;
+	vertical-align: middle;
+}
+
+.woocommerce-table--salary tbody tr:hover {
+	background-color: #f9f9f9;
+}
+
+.woocommerce-table--salary .sortable {
+	cursor: pointer;
+	user-select: none;
+}
+
+.woocommerce-table--salary .sort-icon {
+	margin-left: 5px;
+	opacity: 0.5;
+	transition: opacity 0.2s ease;
+}
+
+.woocommerce-table--salary .sortable:hover .sort-icon {
+	opacity: 1;
+}
