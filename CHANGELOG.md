@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.6.6] - 2026-04-20
+### 🎯 FIXED - Attributed Total for Owner-Only Orders
+
+#### CRITICAL FIX - Full Order Value Attribution
+**PROBLEM:**
+- When no processor was assigned (owner-only orders), attributed total showed only 70% of order value
+- Database stored `agent_order_value` as 70% and `processor_order_value` as 30% even when there was no processor
+- Example: Order ৳785 showed attributed total of ৳549.50 instead of ৳785
+
+**THE FIX:**
+- Attributed order values now calculated at the SOURCE (commission calculation)
+- When no processor or same user: Owner gets 100% of order total
+- When different users: Split by percentage (70% agent, 30% processor)
+- Matches the exact logic used for earnings distribution
+
+**CODE CHANGE:**
+```php
+// BEFORE - Always split by percentage
+'agent_order_value' => ( $order_total * 70 ) / 100,  // Always 70%
+'processor_order_value' => ( $order_total * 30 ) / 100,  // Always 30%
+
+// AFTER - Smart attribution based on roles
+if ( $agent_id === $processor_id || ! $processor_id ) {
+    $agent_order_value = $order_total;  // Owner gets 100%
+    $processor_order_value = 0;
+} else {
+    $agent_order_value = ( $order_total * 70 ) / 100;  // Split when different users
+    $processor_order_value = ( $order_total * 30 ) / 100;
+}
+```
+
+**IMPACT:**
+- ✅ Owner-only orders now show full order value in attributed total
+- ✅ Split orders still show correct percentage attribution
+- ✅ Database values now correctly reflect actual attribution
+- ✅ Consistent with how commission earnings are calculated
+
+---
+
 ## [1.6.5] - 2026-04-20
 ### ✨ Perfected - Attributed Total Calculation Logic
 

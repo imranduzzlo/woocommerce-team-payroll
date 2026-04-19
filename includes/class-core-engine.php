@@ -60,6 +60,22 @@ class WC_Team_Payroll_Core_Engine {
 		// Get order total for attributed value calculation
 		$order_total = floatval( $order->get_total() );
 
+		// Calculate attributed order values based on whether there's a processor
+		// If no processor or same user, owner gets 100% of order value
+		// If different users, split by percentage
+		$agent_order_value = 0;
+		$processor_order_value = 0;
+		
+		if ( $agent_id === $processor_id || ! $processor_id ) {
+			// Same user or no processor - owner gets full order value
+			$agent_order_value = $order_total;
+			$processor_order_value = 0;
+		} else {
+			// Different users - split by percentage
+			$agent_order_value = ( $order_total * $agent_percentage ) / 100;
+			$processor_order_value = ( $order_total * $processor_percentage ) / 100;
+		}
+
 		$commission_data = array(
 			'order_id'       => $order->get_id(),
 			'agent_id'       => $agent_id,
@@ -68,8 +84,8 @@ class WC_Team_Payroll_Core_Engine {
 			'total_commission' => 0,
 			'agent_earnings' => 0,
 			'processor_earnings' => 0,
-			'agent_order_value' => ( $order_total * $agent_percentage ) / 100, // Agent's attributed order value
-			'processor_order_value' => ( $order_total * $processor_percentage ) / 100, // Processor's attributed order value
+			'agent_order_value' => $agent_order_value, // Agent's attributed order value
+			'processor_order_value' => $processor_order_value, // Processor's attributed order value
 			'order_total'    => $order_total, // Store full order total for reference
 			'calculated_at'  => current_time( 'mysql' ),
 		);
