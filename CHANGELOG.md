@@ -1,3 +1,23 @@
+## [1.6.23] - 2026-04-20
+### 🐛 FIXED - Bonus Config Not Saving
+
+#### FIXED - Bonus Configuration Now Saves Properly
+**ISSUE:**
+- Bonus config was only saved when the "bonuses" tab was active
+- Switching to other tabs and saving would not persist bonus rule changes
+
+**THE FIX:**
+- Bonus config is now always collected and saved regardless of active tab
+- Moved bonus config collection to "always save" section
+- Proper error handling for bonus config validation
+
+**BENEFITS:**
+- ✅ Bonus config saves from any tab
+- ✅ No data loss when switching tabs
+- ✅ Consistent save behavior across all sections
+
+---
+
 # Changelog
 
 ## [1.6.22] - 2026-04-20
@@ -3091,6 +3111,7 @@ Employees can now see:
 - All features use AJAX for smooth user experience
 - Responsive design matching current version styling
 - Currency formatting with WooCommerce settings
+
 
 
 
