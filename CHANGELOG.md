@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.8] - 2026-04-19
+### Fixed
+- Fixed Attributed Total column not displaying in admin employee orders table
+- Removed duplicate AJAX handler that was preventing attributed_total from being calculated
+- Cleaned up debug logging code
+
 ## [1.6.7] - 2026-04-19
 
 ### 🔍 Debug - Always Active Logging

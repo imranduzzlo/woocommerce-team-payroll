@@ -50,11 +50,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 		$role = isset( $_POST['role'] ) ? sanitize_text_field( $_POST['role'] ) : '';
 		$search = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
 
-		// Debug: Log the AJAX call
-		error_log( '=== WC_TP: get_employee_orders called ===' );
-		error_log( 'User ID: ' . $user_id );
-		error_log( 'Date Range: ' . $start_date . ' to ' . $end_date );
-
 		// Get all orders
 		$args = array(
 			'limit'  => -1,
@@ -63,8 +58,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 
 		$all_orders = wc_get_orders( $args );
 		$orders = array();
-
-		error_log( 'Total orders found: ' . count( $all_orders ) );
 
 		foreach ( $all_orders as $order ) {
 			$agent_id = $order->get_meta( '_primary_agent_id' );
@@ -79,22 +72,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 			// Check if user is involved in this order
 			$is_agent = intval( $agent_id ) === intval( $user_id );
 			$is_processor = intval( $processor_id ) === intval( $user_id );
-
-			// Debug logging for order 8036
-			if ( $order->get_id() == 8036 ) {
-				error_log( '=== Order 8036 Debug ===' );
-				error_log( 'Agent ID: ' . var_export( $agent_id, true ) );
-				error_log( 'Processor ID: ' . var_export( $processor_id, true ) );
-				error_log( 'User ID: ' . var_export( $user_id, true ) );
-				error_log( 'Is Agent: ' . var_export( $is_agent, true ) );
-				error_log( 'Is Processor: ' . var_export( $is_processor, true ) );
-				error_log( 'Commission Data Type: ' . gettype( $commission_data ) );
-				error_log( 'Commission Data Is Array: ' . var_export( is_array( $commission_data ), true ) );
-				if ( is_array( $commission_data ) ) {
-					error_log( 'Has agent_order_value: ' . var_export( isset( $commission_data['agent_order_value'] ), true ) );
-					error_log( 'Agent Order Value: ' . var_export( $commission_data['agent_order_value'] ?? 'NOT SET', true ) );
-				}
-			}
 
 			// Determine user role (if both, show as agent)
 			$user_role = null;
@@ -131,12 +108,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 			} else {
 				// No commission data yet - show full order total as fallback
 				$attributed_value = floatval( $order->get_total() );
-			}
-
-			// Debug logging for attributed value
-			if ( $order->get_id() == 8036 ) {
-				error_log( 'User Role: ' . var_export( $user_role, true ) );
-				error_log( 'Attributed Value Calculated: ' . var_export( $attributed_value, true ) );
 			}
 
 			// Calculate user earnings
@@ -211,13 +182,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 					   strpos( strtolower( $order['customer_email'] ?? '' ), $search_lower ) !== false ||
 					   strpos( strtolower( $order['customer_phone'] ?? '' ), $search_lower ) !== false;
 			} );
-		}
-
-		// Debug: Log final results
-		error_log( 'Total orders returned: ' . count( $orders ) );
-		if ( count( $orders ) > 0 ) {
-			$first_order = reset( $orders );
-			error_log( 'First order sample: ' . print_r( $first_order, true ) );
 		}
 
 		wp_send_json_success( array(
