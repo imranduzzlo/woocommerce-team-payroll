@@ -1,3 +1,48 @@
+## [1.6.25] - 2026-04-20
+### ✨ FRONTEND - Bonus Achieved Tab Integration
+
+#### ADDED - Frontend Bonus Achieved Tab
+**NEW FEATURES:**
+
+1. **Frontend Bonus Achieved Tab**
+   - Added "Bonus Achieved" tab button to frontend Performance Tracker
+   - Displays all achieved bonuses in a professional table format
+   - Shows: Tier, Description, Amount/Type, Status, Action buttons
+
+2. **Employee Bonus Claiming**
+   - Money bonuses: "Claim" button automatically adds to earnings
+   - Physical bonuses: "Claim" button prompts for secret code verification
+   - Status updates from "Pending" to "Claimed" after claiming
+
+3. **Physical Bonus Secret Code View**
+   - "View Code" button for submitted physical bonuses
+   - Shows secret code in popup for employee reference
+   - "Resend Email" button to request code resend from admin
+
+4. **JavaScript Integration**
+   - `loadBonusAchieved()` function loads bonus data via AJAX
+   - `renderBonusAchieved()` function renders the bonus table
+   - `claimMoneyBonus()` and `claimPhysicalBonus()` handle claiming
+   - `showSecretCodePopup()` displays secret code information
+
+5. **AJAX Endpoint**
+   - `wc_tp_get_performance_tracker_data` with `bonus_achieved` section
+   - Returns all achieved bonuses with current status
+   - Supports both employee and admin contexts
+
+**BENEFITS:**
+- ✅ Employees can now claim bonuses from frontend
+- ✅ Seamless integration with Performance Tracker
+- ✅ Professional UI with status badges and action buttons
+- ✅ Real-time status updates
+- ✅ Easy access to secret codes for physical bonuses
+
+**FILES MODIFIED:**
+- `woocommerce-team-payroll.php` - Updated version to 1.6.25
+- `includes/class-myaccount.php` - Added Bonus Achieved tab button to frontend Performance Tracker
+
+---
+
 ## [1.6.24] - 2026-04-20
 ### ✨ COMPLETE - Bonus Claim System with Email Notifications
 
