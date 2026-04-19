@@ -393,7 +393,13 @@ class WC_Team_Payroll_Core_Engine {
 			$salary_earnings = 0;
 		}
 
-		return $commission_earnings + $salary_earnings;
+		// Get bonus earnings (from achievement bonuses)
+		$bonus_earnings = get_user_meta( $user_id, '_wc_tp_bonus_earnings', true );
+		if ( ! $bonus_earnings ) {
+			$bonus_earnings = 0;
+		}
+
+		return $commission_earnings + $salary_earnings + $bonus_earnings;
 	}
 
 	/**

@@ -142,8 +142,14 @@ class WC_Team_Payroll_Payroll_Engine {
 				}
 			}
 			
-			// Update total to include salary (Total Earnings = Commission + Salary)
-			$payroll[ $user_id ]['total'] = $data['total'] + $salary_for_period;
+			// Update total to include salary and bonus (Total Earnings = Commission + Salary + Bonus)
+			$bonus_for_period = 0;
+			$bonus_earnings = get_user_meta( $user_id, '_wc_tp_bonus_earnings', true );
+			if ( $bonus_earnings ) {
+				$bonus_for_period = floatval( $bonus_earnings );
+			}
+			
+			$payroll[ $user_id ]['total'] = $data['total'] + $salary_for_period + $bonus_for_period;
 			$payroll[ $user_id ]['paid'] = $paid;
 			// Calculate due based on complete earnings (Due = Total Earnings - Paid)
 			$payroll[ $user_id ]['due'] = $payroll[ $user_id ]['total'] - $paid;
@@ -333,8 +339,14 @@ class WC_Team_Payroll_Payroll_Engine {
 				}
 			}
 			
-			// Update total to include salary (Total Earnings = Commission + Salary)
-			$payroll[ $user_id ]['total'] = $data['total'] + $salary_for_period;
+			// Update total to include salary and bonus (Total Earnings = Commission + Salary + Bonus)
+			$bonus_for_period = 0;
+			$bonus_earnings = get_user_meta( $user_id, '_wc_tp_bonus_earnings', true );
+			if ( $bonus_earnings ) {
+				$bonus_for_period = floatval( $bonus_earnings );
+			}
+			
+			$payroll[ $user_id ]['total'] = $data['total'] + $salary_for_period + $bonus_for_period;
 			$payroll[ $user_id ]['paid'] = $paid;
 			// Calculate due based on complete earnings (Due = Total Earnings - Paid)
 			$payroll[ $user_id ]['due'] = $payroll[ $user_id ]['total'] - $paid;
