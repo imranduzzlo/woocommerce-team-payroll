@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.6.5] - 2026-04-19
+
+### 🐛 Bug Fixes - Admin Employee Details Orders Tab
+
+**FIXED - Orders Not Loading:**
+- Fixed orders tab not loading any data on page load
+- Issue: `currentStartDate` and `currentEndDate` were empty, preventing AJAX call
+- Solution: Set default date range (2020-01-01 to today) and auto-load on page load
+
+**FIXED - Attributed Total Column Showing Blank:**
+- Fixed attributed total showing "—" even when commission data exists
+- Now shows proper attributed values from `agent_order_value` or `processor_order_value`
+- Falls back to full order total if commission data not yet calculated
+
+**ENHANCED - Admin Orders Table:**
+- Updated to match My Account orders table style
+- Clean WordPress admin table design
+- Better filter controls layout
+- Improved user experience
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Fixed attributed total calculation logic
+- `includes/class-employee-detail.php` - Updated table HTML and auto-load functionality
+
+---
+
 ## [1.6.4] - 2026-04-19
 
 ### 🚀 First Manual Installation Release
