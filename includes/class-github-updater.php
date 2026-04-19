@@ -25,7 +25,7 @@ class WC_Team_Payroll_GitHub_Updater {
 	 * GitHub repository name
 	 * @var string
 	 */
-	private $github_repo = 'pv-team-payroll';
+	private $github_repo = 'woocommerce-team-payroll';
 
 	/**
 	 * Plugin slug (must match folder name)

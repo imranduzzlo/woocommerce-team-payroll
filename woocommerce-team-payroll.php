@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WooCommerce Team Payroll & Commission System
- * Plugin URI: https://github.com/imranduzzlo/pv-team-payroll
+ * Plugin URI: https://github.com/imranduzzlo/woocommerce-team-payroll
  * Description: Manage team-based commission and payroll system with agents and processors
  * Version: 1.6.3
  * Author: Imran
@@ -12,7 +12,7 @@
  * WC tested up to: 8.0
  * Text Domain: wc-team-payroll
  * Domain Path: /languages
- * GitHub Plugin URI: https://github.com/imranduzzlo/pv-team-payroll
+ * GitHub Plugin URI: https://github.com/imranduzzlo/woocommerce-team-payroll
  * GitHub Branch: main
  * Primary Branch: main
  */
