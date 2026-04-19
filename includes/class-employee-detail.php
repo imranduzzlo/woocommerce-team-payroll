@@ -1793,346 +1793,470 @@ class WC_Team_Payroll_Employee_Detail {
 				// ORDERS TAB
 				// ============================================================================
 				if ($('.wc-tp-orders-tab').length) {
-					let currentStartDate = '';
-					let currentEndDate = '';
-					let currentSortColumn = 'date';
-					let currentSortDirection = 'desc';
 					let currentPage = 1;
-					let itemsPerPage = 10;
-					let allOrders = [];
+					let perPage = 25;
+					let currentSort = { column: 'date', direction: 'desc' };
+					let searchTerm = '';
+					let roleFilter = 'all';
+					let statusFilter = 'all';
+					let allRows = [];
+					let lastCustomDateFrom = '';
+					let lastCustomDateTo = '';
 
-					// Load saved items per page from localStorage
-					const savedOrdersPerPage = localStorage.getItem('wc_tp_orders_per_page');
-					if (savedOrdersPerPage) {
-						itemsPerPage = parseInt(savedOrdersPerPage);
-						$('#wc-tp-orders-per-page').val(itemsPerPage);
-					}
-
-					// Initialize with default preset (This Month)
-					updateDateRangeFromPreset('this-month');
+					// Load orders data on page load
 					loadOrdersData();
 
-					// Screen options for items per page
-					$('#wc-tp-orders-per-page').on('change', function() {
-						itemsPerPage = parseInt($(this).val());
-						localStorage.setItem('wc_tp_orders_per_page', itemsPerPage);
-						currentPage = 1;
-						renderOrdersTable(allOrders);
-					});
-
-					// Date preset change
-					$('#wc-tp-orders-date-preset').on('change', function() {
-						const preset = $(this).val();
-						
-						if (preset === 'custom') {
-							$('#wc-tp-orders-custom-date-range').slideDown(200);
-						} else {
-							$('#wc-tp-orders-custom-date-range').slideUp(200);
-							updateDateRangeFromPreset(preset);
-						}
-					});
-
-					// Filter button click
-					$('#wc-tp-orders-filter-btn').on('click', function() {
-						loadOrdersData();
-					});
-
-					// Search on enter key
-					$('#wc-tp-orders-search').on('keypress', function(e) {
-						if (e.which === 13) {
-							loadOrdersData();
-						}
-					});
-
-					function getDateRangeFromPreset(preset) {
-						const today = new Date();
-						const year = today.getFullYear();
-						const month = String(today.getMonth() + 1).padStart(2, '0');
-						const date = String(today.getDate()).padStart(2, '0');
-						const todayStr = `${year}-${month}-${date}`;
-
-						let startDate, endDate;
-
-						switch (preset) {
-							case 'today':
-								startDate = todayStr;
-								endDate = todayStr;
-								break;
-							case 'this-week':
-								const firstDay = new Date(today);
-								firstDay.setDate(today.getDate() - today.getDay());
-								startDate = formatDateForInput(firstDay);
-								endDate = todayStr;
-								break;
-							case 'this-month':
-								startDate = `${year}-${month}-01`;
-								endDate = todayStr;
-								break;
-							case 'this-year':
-								startDate = `${year}-01-01`;
-								endDate = todayStr;
-								break;
-							case 'last-week':
-								const lastWeekEnd = new Date(today);
-								lastWeekEnd.setDate(today.getDate() - today.getDay() - 1);
-								const lastWeekStart = new Date(lastWeekEnd);
-								lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
-								startDate = formatDateForInput(lastWeekStart);
-								endDate = formatDateForInput(lastWeekEnd);
-								break;
-							case 'last-month':
-								const lastMonthDate = new Date(year, parseInt(month) - 2, 1);
-								const lastMonthYear = lastMonthDate.getFullYear();
-								const lastMonthMonth = String(lastMonthDate.getMonth() + 1).padStart(2, '0');
-								startDate = `${lastMonthYear}-${lastMonthMonth}-01`;
-								const lastMonthLastDay = new Date(lastMonthYear, parseInt(lastMonthMonth), 0);
-								endDate = `${lastMonthYear}-${lastMonthMonth}-${String(lastMonthLastDay.getDate()).padStart(2, '0')}`;
-								break;
-							case 'last-year':
-								const lastYear = year - 1;
-								startDate = `${lastYear}-01-01`;
-								endDate = `${lastYear}-12-31`;
-								break;
-							case 'last-6-months':
-								const sixMonthsAgo = new Date(today);
-								sixMonthsAgo.setMonth(today.getMonth() - 6);
-								startDate = formatDateForInput(sixMonthsAgo);
-								endDate = todayStr;
-								break;
-							case 'all-time':
-								startDate = '2000-01-01';
-								endDate = todayStr;
-								break;
-							default:
-								startDate = `${year}-${month}-01`;
-								endDate = todayStr;
-						}
-
-						return { start: startDate, end: endDate };
-					}
-
-					function formatDateForInput(date) {
-						const year = date.getFullYear();
-						const month = String(date.getMonth() + 1).padStart(2, '0');
-						const day = String(date.getDate()).padStart(2, '0');
-						return `${year}-${month}-${day}`;
-					}
-
-					function updateDateRangeFromPreset(preset) {
-						const range = getDateRangeFromPreset(preset);
-						currentStartDate = range.start;
-						currentEndDate = range.end;
-						$('#wc-tp-orders-start-date').val(range.start);
-						$('#wc-tp-orders-end-date').val(range.end);
-					}
-
 					function loadOrdersData() {
-						const preset = $('#wc-tp-orders-date-preset').val();
-						
-						if (preset === 'custom') {
-							currentStartDate = $('#wc-tp-orders-start-date').val();
-							currentEndDate = $('#wc-tp-orders-end-date').val();
-						}
-
-						const status = $('#wc-tp-orders-status-filter').val();
-						const role = $('#wc-tp-orders-role-filter').val();
-						const search = $('#wc-tp-orders-search').val();
-
-						if (!currentStartDate || !currentEndDate) {
-							return;
-						}
-
-						currentPage = 1;
-						$('#wc-tp-orders-filter-btn').prop('disabled', true).text('Loading...');
-
 						$.ajax({
 							url: ajaxurl,
 							type: 'POST',
 							data: {
 								action: 'wc_tp_get_employee_orders',
 								user_id: userId,
-								start_date: currentStartDate,
-								end_date: currentEndDate,
-								status: status,
-								role: role,
-								search: search,
+								role_filter: roleFilter,
+								status_filter: statusFilter,
+								date_from: $('#date-from').val(),
+								date_to: $('#date-to').val(),
 								nonce: nonce
 							},
 							success: function(response) {
 								if (response.success) {
-									allOrders = response.data.orders;
-									renderOrdersTable(allOrders);
-								} else {
-									$('#wc-tp-orders-table-container').html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">📦</div><p>Failed to load orders</p></div>');
+									const data = response.data;
+									
+									// Populate table rows
+									allRows = [];
+									if (data.orders && data.orders.length > 0) {
+										data.orders.forEach(function(order) {
+											allRows.push({
+												element: createTableRow(order),
+												data: {
+													order_id: order.order_id,
+													date: new Date(order.date).getTime(),
+													customer: order.customer_name.toLowerCase(),
+													role: (order.order_role || 'agent').toLowerCase(),
+													total: parseFloat(order.total),
+													attributed: parseFloat(order.attributed_total) || 0,
+													commission: parseFloat(order.commission),
+													earning: parseFloat(order.user_earnings),
+													text: (order.order_id + ' ' + order.customer_name).toLowerCase()
+												}
+											});
+										});
+										$('#orders-table').show();
+										$('#orders-pagination').show();
+										updateTable();
+									} else {
+										$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p><?php esc_html_e( 'No orders found', 'wc-team-payroll' ); ?></p></td></tr>');
+										$('#orders-pagination').html('');
+									}
 								}
 							},
 							error: function() {
-								$('#wc-tp-orders-table-container').html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">❌</div><p>Error loading orders</p></div>');
-							},
-							complete: function() {
-								$('#wc-tp-orders-filter-btn').prop('disabled', false).text('Filter');
+								$('#orders-tbody').html('<tr><td colspan="10" style="text-align: center; padding: 20px;"><p style="color: #dc3545;"><?php esc_html_e( 'Error loading orders', 'wc-team-payroll' ); ?></p></td></tr>');
 							}
 						});
 					}
 
-					function renderOrdersTable(orders) {
-						const container = $('#wc-tp-orders-table-container');
+					function createTableRow(order) {
+						const row = $('<tr></tr>');
 						
-						if (!orders || orders.length === 0) {
-							container.html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">📦</div><p>No orders found</p></div>');
+						// Order ID
+						const orderIdCell = $('<td></td>').attr('data-sort-value', order.order_id)
+							.append($('<a href="<?php echo admin_url("post.php"); ?>?post=' + order.order_id + '&action=edit" class="order-link"></a>').text('#' + order.order_id));
+						
+						// Date
+						const dateCell = $('<td></td>').attr('data-sort-value', new Date(order.date).getTime())
+							.append($('<span class="order-date"></span>').text(order.date));
+						
+						// Customer
+						const customerCell = $('<td></td>').attr('data-sort-value', order.customer_name.toLowerCase())
+							.append($('<span class="customer-name"></span>').text(order.customer_name));
+						
+						// Employee Role
+						const roleCell = $('<td></td>').attr('data-sort-value', (order.order_role || 'agent').toLowerCase())
+							.append($('<span class="role-badge role-' + (order.order_role || 'agent') + '"></span>')
+								.append($('<i class="ph ' + ((order.order_role || 'agent') === 'agent' ? 'ph-user-check' : 'ph-gear') + '"></i>'))
+								.append(' ' + (order.role_label || 'Agent')));
+						
+						// Order Total
+						const totalCell = $('<td></td>').attr('data-sort-value', order.total)
+							.append($('<span class="amount-total"></span>').html('<?php echo get_woocommerce_currency_symbol(); ?>' + parseFloat(order.total).toFixed(2)));
+						
+						// Attributed Order Total
+						const attributedCell = $('<td></td>').attr('data-sort-value', order.attributed_total || 0)
+							.append($('<span class="amount-attributed"></span>').html(order.attributed_total_formatted || '—'));
+						
+						// Commission
+						const commissionCell = $('<td></td>').attr('data-sort-value', order.commission);
+						commissionCell.append($('<span class="amount-commission"></span>').html('<?php echo get_woocommerce_currency_symbol(); ?>' + parseFloat(order.commission).toFixed(2)));
+						
+						// Earning
+						const earningCell = $('<td></td>').attr('data-sort-value', order.user_earnings);
+						earningCell.append($('<span class="amount-earning"></span>').html('<?php echo get_woocommerce_currency_symbol(); ?>' + parseFloat(order.user_earnings).toFixed(2)));
+						
+						// Status
+						const statusCell = $('<td></td>').append($('<span class="status-badge status-' + order.status + '"></span>')
+							.append($('<i class="ph ' + getStatusIcon(order.status) + '"></i>'))
+							.append(' ' + order.status.charAt(0).toUpperCase() + order.status.slice(1)));
+						
+						// Actions
+						const actionsCell = $('<td></td>')
+							.append($('<button class="btn-action btn-view"></button>')
+								.append($('<i class="ph ph-eye"></i>'))
+								.on('click', function() {
+									window.location.href = '<?php echo admin_url("post.php"); ?>?post=' + order.order_id + '&action=edit';
+								}));
+						
+						row.append(orderIdCell, dateCell, customerCell, roleCell, totalCell, attributedCell, commissionCell, earningCell, statusCell, actionsCell);
+						return row;
+					}
+
+					function getStatusIcon(status) {
+						const icons = {
+							'completed': 'ph-check-circle',
+							'processing': 'ph-hourglass',
+							'pending': 'ph-clock',
+							'on-hold': 'ph-pause-circle',
+							'cancelled': 'ph-x-circle',
+							'refunded': 'ph-warning'
+						};
+						return icons[status] || 'ph-question';
+					}
+
+					function updateTable() {
+						let filteredRows = allRows.slice();
+						
+						// Apply search filter
+						if (searchTerm) {
+							filteredRows = filteredRows.filter(row => 
+								row.data.text.includes(searchTerm.toLowerCase())
+							);
+						}
+						
+						// Apply sorting
+						filteredRows.sort((a, b) => {
+							let aVal = a.data[currentSort.column];
+							let bVal = b.data[currentSort.column];
+							
+							if (typeof aVal === 'string') {
+								aVal = aVal.toLowerCase();
+								bVal = bVal.toLowerCase();
+							}
+							
+							if (currentSort.direction === 'asc') {
+								return aVal > bVal ? 1 : -1;
+							} else {
+								return aVal < bVal ? 1 : -1;
+							}
+						});
+						
+						// Calculate pagination
+						const totalRows = filteredRows.length;
+						const totalPages = Math.ceil(totalRows / perPage);
+						const startIndex = (currentPage - 1) * perPage;
+						const endIndex = startIndex + perPage;
+						const pageRows = filteredRows.slice(startIndex, endIndex);
+						
+						// Update table body
+						const tbody = $('#orders-tbody');
+						tbody.empty();
+						
+						if (pageRows.length === 0) {
+							tbody.append(`
+								<tr>
+									<td colspan="10" class="no-results">
+										<div class="no-results-message">
+											<i class="ph ph-magnifying-glass"></i>
+											<p><?php esc_html_e( 'No orders found matching your search.', 'wc-team-payroll' ); ?></p>
+										</div>
+									</td>
+								</tr>
+							`);
+						} else {
+							pageRows.forEach(row => {
+								tbody.append(row.element);
+							});
+						}
+						
+						// Update pagination
+						updatePagination(totalPages, totalRows, startIndex + 1, Math.min(endIndex, totalRows));
+						
+						// Update sort icons
+						updateSortIcons();
+					}
+
+					function updatePagination(totalPages, totalRows, start, end) {
+						const container = $('#orders-pagination');
+						
+						if (totalPages <= 1) {
+							container.html('');
 							return;
 						}
-
-						// Sort orders based on current sort settings
-						orders = sortOrders(orders, currentSortColumn, currentSortDirection);
-
-						// Calculate pagination
-						const totalPages = Math.ceil(orders.length / itemsPerPage);
-						const startIndex = (currentPage - 1) * itemsPerPage;
-						const endIndex = startIndex + itemsPerPage;
-						const paginatedOrders = orders.slice(startIndex, endIndex);
-
-						let html = '<div class="wc-tp-table-wrapper"><table class="wc-tp-data-table"><thead><tr>';
-						html += '<th class="wc-tp-sortable-header" data-column="order_id">';
-						html += '<span class="th-content">Order&nbsp;ID</span>' + getSortIcon('order_id');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="customer_name">';
-						html += '<span class="th-content">Customer</span>' + getSortIcon('customer_name');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="total">';
-						html += '<span class="th-content">Total</span>' + getSortIcon('total');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="attributed_total">';
-						html += '<span class="th-content">Attributed&nbsp;Total</span>' + getSortIcon('attributed_total');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="status">';
-						html += '<span class="th-content">Status</span>' + getSortIcon('status');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="commission">';
-						html += '<span class="th-content">Commission</span>' + getSortIcon('commission');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="user_earnings">';
-						html += '<span class="th-content">Your&nbsp;Earnings</span>' + getSortIcon('user_earnings');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="role">';
-						html += '<span class="th-content">Employee&nbsp;Role</span>' + getSortIcon('role');
-						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="date">';
-						html += '<span class="th-content">Date</span>' + getSortIcon('date');
-						html += '</th>';
-						html += '<th><span class="th-content">Actions</span></th>';
-						html += '</tr></thead><tbody>';
-
-						$.each(paginatedOrders, function(i, order) {
-							const statusClass = 'wc-tp-status-' + order.status.toLowerCase();
-							const roleClass = 'wc-tp-badge-' + (order.order_role || 'agent');
-							const viewUrl = '<?php echo admin_url("post.php"); ?>?post=' + order.order_id + '&action=edit';
-							const editUrl = viewUrl;
-
-							html += '<tr>';
-							html += '<td><strong>#' + order.order_id + '</strong></td>';
-							html += '<td>' + order.customer_name + '</td>';
-							html += '<td>' + formatCurrency(order.total) + '</td>';
-							html += '<td>' + (order.attributed_total_formatted || '—') + '</td>';
-							html += '<td><span class="wc-tp-badge ' + statusClass + '">' + order.status + '</span></td>';
-							html += '<td>' + formatCurrency(order.commission) + '</td>';
-							html += '<td><strong>' + formatCurrency(order.user_earnings) + '</strong></td>';
-							html += '<td><span class="wc-tp-badge ' + roleClass + '">' + (order.role_label || 'Agent') + '</span></td>';
-							html += '<td>' + order.date + '</td>';
-							html += '<td><div class="wc-tp-action-icons">';
-							html += '<a href="' + viewUrl + '" class="wc-tp-action-icon" title="View Order"><span class="dashicons dashicons-visibility"></span></a>';
-							html += '<a href="' + editUrl + '" class="wc-tp-action-icon" title="Edit Order"><span class="dashicons dashicons-edit"></span></a>';
-							html += '</div></td>';
-							html += '</tr>';
-						});
-
-						html += '</tbody></table></div>';
-
-						// Add pagination controls
-						html += '<div class="wc-tp-pagination">';
-						html += '<div class="wc-tp-pagination-info">';
-						html += 'Showing ' + (startIndex + 1) + ' to ' + Math.min(endIndex, orders.length) + ' of ' + orders.length + ' orders';
-						html += '</div>';
-						html += '<div class="wc-tp-pagination-controls">';
 						
+						let paginationHTML = '<div class="pagination-wrapper">';
+						paginationHTML += '<div class="pagination-info">';
+						paginationHTML += `<?php esc_html_e( 'Showing', 'wc-team-payroll' ); ?> ${start} <?php esc_html_e( 'to', 'wc-team-payroll' ); ?> ${end} <?php esc_html_e( 'of', 'wc-team-payroll' ); ?> ${totalRows} <?php esc_html_e( 'entries', 'wc-team-payroll' ); ?>`;
+						paginationHTML += '</div>';
+						paginationHTML += '<div class="pagination-controls">';
+						
+						// Previous button
 						if (currentPage > 1) {
-							html += '<button class="wc-tp-pagination-btn wc-tp-prev-page" data-page="' + (currentPage - 1) + '"><span class="dashicons dashicons-arrow-left"></span></button>';
+							paginationHTML += `<a href="#" class="page-btn prev-btn" data-page="${currentPage - 1}"><i class="ph ph-caret-left"></i></a>`;
 						}
 						
+						// Page numbers
 						for (let i = 1; i <= totalPages; i++) {
 							if (i === currentPage) {
-								html += '<button class="wc-tp-pagination-btn wc-tp-page-btn active" data-page="' + i + '">' + i + '</button>';
-							} else if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-								html += '<button class="wc-tp-pagination-btn wc-tp-page-btn" data-page="' + i + '">' + i + '</button>';
-							} else if (i === 2 || i === totalPages - 1) {
-								html += '<span class="wc-tp-pagination-ellipsis">...</span>';
+								paginationHTML += `<a href="#" class="page-btn current-page">${i}</a>`;
+							} else if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+								paginationHTML += `<a href="#" class="page-btn" data-page="${i}">${i}</a>`;
+							} else if (i === currentPage - 3 || i === currentPage + 3) {
+								paginationHTML += '<span class="page-ellipsis">...</span>';
 							}
 						}
 						
+						// Next button
 						if (currentPage < totalPages) {
-							html += '<button class="wc-tp-pagination-btn wc-tp-next-page" data-page="' + (currentPage + 1) + '"><span class="dashicons dashicons-arrow-right"></span></button>';
+							paginationHTML += `<a href="#" class="page-btn next-btn" data-page="${currentPage + 1}"><i class="ph ph-caret-right"></i></a>`;
 						}
 						
-						html += '</div>';
-						html += '</div>';
+						paginationHTML += '</div></div>';
+						container.html(paginationHTML);
+					}
 
-						container.html(html);
+					function updateSortIcons() {
+						$('.sortable .sort-icon').removeClass('ph-caret-up ph-caret-down').addClass('ph-caret-up-down');
+						$(`.sortable[data-sort="${currentSort.column}"] .sort-icon`)
+							.removeClass('ph-caret-up-down')
+							.addClass(currentSort.direction === 'asc' ? 'ph-caret-up' : 'ph-caret-down');
+					}
 
-						// Attach click handlers to sortable headers
-						$('.wc-tp-sortable-header').on('click', function() {
-							const column = $(this).data('column');
+					// Event handlers
+					$('.sortable').on('click', function() {
+						const column = $(this).data('sort');
+						if (currentSort.column === column) {
+							currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+						} else {
+							currentSort.column = column;
+							currentSort.direction = 'desc';
+						}
+						currentPage = 1;
+						updateTable();
+					});
+
+					$('#orders-search').on('input', function() {
+						searchTerm = $(this).val();
+						currentPage = 1;
+
+						// Toggle search icon
+						var $icon = $(this).siblings('i');
+						if (searchTerm.length > 0) {
+							$icon.removeClass('ph-magnifying-glass').addClass('ph-x');
+						} else {
+							$icon.removeClass('ph-x').addClass('ph-magnifying-glass');
+						}
+
+						updateTable();
+					});
+
+					// Clear search on icon click
+					$(document).on('click', '.search-control i.ph-x', function() {
+						$('#orders-search').val('').trigger('input');
+					});
+
+					// Clear all filters
+					$('#clear-filters-btn').on('click', function() {
+						$('#orders-search').val('');
+						$('#role-filter').val('all');
+						$('#status-filter').val('all');
+						$('#orders-date-preset').val('all-time');
+						$('#orders-custom-date-range').hide();
+						$('#date-from').val('');
+						$('#date-to').val('');
+						$('#orders-per-page').val('25');
+						roleFilter = 'all';
+						statusFilter = 'all';
+						searchTerm = '';
+						currentPage = 1;
+						perPage = 25;
+						updateClearButtonState();
+						loadOrdersData();
+					});
+
+					// Function to update clear button state based on filter changes
+					function updateClearButtonState() {
+						const $clearBtn = $('#clear-filters-btn');
+						const hasActiveFilters = 
+							$('#orders-search').val() !== '' ||
+							$('#role-filter').val() !== 'all' ||
+							$('#status-filter').val() !== 'all' ||
+							$('#orders-date-preset').val() !== 'all-time' ||
+							$('#date-from').val() !== '' ||
+							$('#date-to').val() !== '';
+						
+						if (hasActiveFilters) {
+							$clearBtn.addClass('filters-active');
+						} else {
+							$clearBtn.removeClass('filters-active');
+						}
+					}
+
+					// Monitor filter changes to update clear button state
+					$('#orders-search, #role-filter, #status-filter, #orders-date-preset, #date-from, #date-to').on('change input', function() {
+						updateClearButtonState();
+					});
+
+					// Initialize clear button state
+					updateClearButtonState();
+
+					$('#orders-per-page').on('change', function() {
+						perPage = parseInt($(this).val());
+						currentPage = 1;
+						updateTable();
+					});
+
+					$('#role-filter').on('change', function() {
+						roleFilter = $(this).val();
+						currentPage = 1;
+						loadOrdersData();
+					});
+
+					$('#status-filter').on('change', function() {
+						statusFilter = $(this).val();
+						currentPage = 1;
+						loadOrdersData();
+					});
+
+					$('#date-from').on('change', function() {
+						// Store the custom dates for later restoration
+						lastCustomDateFrom = $(this).val();
+						currentPage = 1;
+						loadOrdersData();
+					});
+
+					$('#date-to').on('change', function() {
+						// Store the custom dates for later restoration
+						lastCustomDateTo = $(this).val();
+						currentPage = 1;
+						loadOrdersData();
+					});
+
+					// Date preset functionality - using click instead of change to handle repeated clicks
+					$('#orders-date-preset').on('click', function() {
+						const preset = $(this).val();
+						const customDateInline = $('#orders-custom-date-range');
+						const dateFrom = $('#date-from');
+						const dateTo = $('#date-to');
+						
+						if (preset === 'custom') {
+							// Restore previously selected custom dates if available
+							if (lastCustomDateFrom) {
+								dateFrom.val(lastCustomDateFrom);
+							}
+							if (lastCustomDateTo) {
+								dateTo.val(lastCustomDateTo);
+							}
+							customDateInline.show();
+						}
+					});
+
+					// Handle change event for all presets (including custom)
+					$('#orders-date-preset').on('change', function() {
+						const preset = $(this).val();
+						const customDateInline = $('#orders-custom-date-range');
+						const dateFrom = $('#date-from');
+						const dateTo = $('#date-to');
+						
+						if (preset === 'custom') {
+							// Restore previously selected custom dates if available
+							if (lastCustomDateFrom) {
+								dateFrom.val(lastCustomDateFrom);
+							}
+							if (lastCustomDateTo) {
+								dateTo.val(lastCustomDateTo);
+							}
+							customDateInline.show();
+						} else {
+							customDateInline.hide();
 							
-							if (currentSortColumn === column) {
-								// Toggle direction if same column
-								currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
-							} else {
-								// New column, default to desc
-								currentSortColumn = column;
-								currentSortDirection = 'desc';
+							// Store current custom dates before switching preset
+							lastCustomDateFrom = dateFrom.val();
+							lastCustomDateTo = dateTo.val();
+							
+							// Calculate date ranges based on preset
+							const today = new Date();
+							let startDate, endDate;
+							
+							switch (preset) {
+								case 'all-time':
+									dateFrom.val('');
+									dateTo.val('');
+									break;
+								case 'today':
+									startDate = new Date(today);
+									endDate = new Date(today);
+									break;
+								case 'this-week':
+									startDate = new Date(today.setDate(today.getDate() - today.getDay()));
+									endDate = new Date();
+									break;
+								case 'this-month':
+									startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+									endDate = new Date();
+									break;
+								case 'this-year':
+									startDate = new Date(today.getFullYear(), 0, 1);
+									endDate = new Date();
+									break;
+								case 'last-week':
+									const lastWeekEnd = new Date(today.setDate(today.getDate() - today.getDay() - 1));
+									const lastWeekStart = new Date(lastWeekEnd.setDate(lastWeekEnd.getDate() - 6));
+									startDate = lastWeekStart;
+									endDate = new Date(today.setDate(today.getDate() - today.getDay() - 1));
+									break;
+								case 'last-month':
+									const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+									startDate = lastMonth;
+									endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+									break;
+								case 'last-year':
+									startDate = new Date(today.getFullYear() - 1, 0, 1);
+									endDate = new Date(today.getFullYear() - 1, 11, 31);
+									break;
+								case 'last-6-months':
+									startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+									endDate = new Date();
+									break;
+							}
+							
+							if (startDate && endDate) {
+								dateFrom.val(startDate.toISOString().split('T')[0]);
+								dateTo.val(endDate.toISOString().split('T')[0]);
 							}
 							
 							currentPage = 1;
-							renderOrdersTable(allOrders);
-						});
-
-						// Attach click handlers to pagination buttons
-						$('.wc-tp-page-btn, .wc-tp-prev-page, .wc-tp-next-page').on('click', function() {
-							currentPage = parseInt($(this).data('page'));
-							renderOrdersTable(allOrders);
-						});
-					}
-
-					function getSortIcon(column) {
-						if (currentSortColumn !== column) {
-							return '';
+							loadOrdersData();
 						}
-						
-						const icon = currentSortDirection === 'asc' ? 'arrow-up' : 'arrow-down';
-						return ' <span class="dashicons dashicons-' + icon + '" style="font-size: 14px; margin-left: 4px;"></span>';
-					}
+					});
 
-					function sortOrders(orders, column, direction) {
-						const sorted = [...orders].sort((a, b) => {
-							let aVal = a[column];
-							let bVal = b[column];
-							
-							// Handle numeric values
-							if (typeof aVal === 'string' && !isNaN(aVal)) {
-								aVal = parseFloat(aVal);
-								bVal = parseFloat(bVal);
-							}
-							
-							if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-							if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-							return 0;
-						});
-						
-						return sorted;
-					}
+					// Custom date inputs - auto-filter when changed
+					$('#date-from, #date-to').on('change', function() {
+						lastCustomDateFrom = $('#date-from').val();
+						lastCustomDateTo = $('#date-to').val();
+						currentPage = 1;
+						loadOrdersData();
+					});
 
-					function formatCurrency(value) {
-						return '<?php echo get_woocommerce_currency_symbol(); ?>' + parseFloat(value).toFixed(2);
-					}
+					$(document).on('click', '.page-btn[data-page]', function(e) {
+						e.preventDefault();
+						currentPage = parseInt($(this).data('page'));
+						updateTable();
+
+						// Scroll to table header smoothly
+						$('html, body').animate({
+							scrollTop: $('#orders-table').offset().top - 100
+						}, 300);
+					});
 				}
 
 				// ============================================================================

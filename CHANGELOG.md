@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.6.8] - 2026-04-19
+### ✅ Fixed - Admin Orders Table JavaScript Implementation
+**COMPLETED:**
+- ✅ Replaced entire JavaScript section to match frontend My Account orders
+- ✅ Implemented `loadOrdersData()` - AJAX call to `wc_tp_get_employee_orders`
+- ✅ Implemented `createTableRow()` - Build table rows with proper badges and icons
+- ✅ Implemented `updateTable()` - Handle search, sorting, pagination
+- ✅ Implemented `updatePagination()` - Render pagination controls
+- ✅ Added all event handlers: search input, filters, date presets, sorting, pagination clicks
+- ✅ Updated element IDs to match new HTML structure (#orders-* instead of #wc-tp-orders-*)
+- ✅ Fixed "Employee Role" display to show order role (Agent/Processor)
+- ✅ Fixed "Attributed Total" display with proper formatting
+
+**FILES MODIFIED:**
+- `includes/class-employee-detail.php` - Replaced JavaScript (lines 1790-2138)
+
+**RESULT:**
+- Admin orders table now works exactly like frontend My Account orders
+- All functionality working: search, filters, sorting, pagination, date presets
+- Same design, same behavior, same user experience
+
+---
+
 ## [1.6.7] - 2026-04-19
 ### 🎨 Major Enhancement - Rebuilt Admin Orders Table (Part 1)
 **COMPLETED:**
