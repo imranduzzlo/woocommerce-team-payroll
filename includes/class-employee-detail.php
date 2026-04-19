@@ -1903,15 +1903,41 @@ class WC_Team_Payroll_Employee_Detail {
 								nonce: nonce
 							},
 							success: function(response) {
+								console.log('AJAX Response:', response);
 								if (response.success) {
 									allOrders = response.data.orders;
 									renderOrdersTable(allOrders);
 								} else {
-									$('#wc-tp-orders-table-container').html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">📦</div><p>Failed to load orders</p></div>');
+									var errorMsg = response.data && response.data.message ? response.data.message : 'Failed to load orders';
+									var debugHtml = '<div class="wc-tp-empty-state" style="text-align: left; max-width: 800px; margin: 0 auto;">';
+									debugHtml += '<div class="wc-tp-empty-icon">❌</div>';
+									debugHtml += '<h3>Error Loading Orders</h3>';
+									debugHtml += '<p><strong>Error Message:</strong> ' + errorMsg + '</p>';
+									debugHtml += '<pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow: auto;">' + JSON.stringify(response, null, 2) + '</pre>';
+									debugHtml += '</div>';
+									$('#wc-tp-orders-table-container').html(debugHtml);
 								}
 							},
-							error: function() {
-								$('#wc-tp-orders-table-container').html('<div class="wc-tp-empty-state"><div class="wc-tp-empty-icon">❌</div><p>Error loading orders</p></div>');
+							error: function(xhr, status, error) {
+								console.error('AJAX Error:', xhr, status, error);
+								var debugHtml = '<div class="wc-tp-empty-state" style="text-align: left; max-width: 800px; margin: 0 auto;">';
+								debugHtml += '<div class="wc-tp-empty-icon">❌</div>';
+								debugHtml += '<h3>AJAX Request Failed</h3>';
+								debugHtml += '<p><strong>Status:</strong> ' + status + '</p>';
+								debugHtml += '<p><strong>Error:</strong> ' + error + '</p>';
+								debugHtml += '<p><strong>Response Status:</strong> ' + xhr.status + '</p>';
+								debugHtml += '<p><strong>Response Text:</strong></p>';
+								debugHtml += '<pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow: auto; max-height: 400px;">' + xhr.responseText + '</pre>';
+								debugHtml += '<hr style="margin: 20px 0;">';
+								debugHtml += '<p><strong>Request Data:</strong></p>';
+								debugHtml += '<pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow: auto;">Action: wc_tp_get_employee_orders\n';
+								debugHtml += 'User ID: ' + userId + '\n';
+								debugHtml += 'Start Date: ' + currentStartDate + '\n';
+								debugHtml += 'End Date: ' + currentEndDate + '\n';
+								debugHtml += 'Nonce: ' + nonce.substring(0, 10) + '...\n';
+								debugHtml += 'Ajax URL: ' + ajaxurl + '</pre>';
+								debugHtml += '</div>';
+								$('#wc-tp-orders-table-container').html(debugHtml);
 							},
 							complete: function() {
 								$('#wc-tp-orders-filter-btn').prop('disabled', false).text('Filter');

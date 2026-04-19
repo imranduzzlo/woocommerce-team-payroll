@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.3] - 2026-04-19
+### Debug
+- Added detailed error display in frontend table for debugging
+- Shows full AJAX response and request details on error
+
 ## [1.7.2] - 2026-04-19
 ### Debug
 - Added direct file logging to wp-content/wc-tp-debug.log for troubleshooting
