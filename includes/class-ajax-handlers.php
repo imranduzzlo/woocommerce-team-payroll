@@ -89,18 +89,25 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
 			$has_commission = $commission_data && in_array( $order_status, $commission_statuses );
 
-			// Calculate attributed total - ALWAYS show, not dependent on commission status
+			// Calculate attributed total - ALWAYS show, even without commission_data
 			$attributed_value = 0;
 			if ( $commission_data && is_array( $commission_data ) ) {
-				// Calculate attributed total based on role(s)
+				// Calculate attributed total based on role(s) from commission_data
 				if ( $is_agent && $is_processor ) {
 					// Owner gets both agent and processor attributed values
-					$attributed_value = floatval( $commission_data['agent_order_value'] ) + floatval( $commission_data['processor_order_value'] );
+					$agent_val = isset( $commission_data['agent_order_value'] ) ? floatval( $commission_data['agent_order_value'] ) : 0;
+					$processor_val = isset( $commission_data['processor_order_value'] ) ? floatval( $commission_data['processor_order_value'] ) : 0;
+					$attributed_value = $agent_val + $processor_val;
 				} elseif ( $user_role === 'agent' ) {
-					$attributed_value = floatval( $commission_data['agent_order_value'] );
+					$attributed_value = isset( $commission_data['agent_order_value'] ) ? floatval( $commission_data['agent_order_value'] ) : 0;
 				} else {
-					$attributed_value = floatval( $commission_data['processor_order_value'] );
+					$attributed_value = isset( $commission_data['processor_order_value'] ) ? floatval( $commission_data['processor_order_value'] ) : 0;
 				}
+			}
+			
+			// Fallback: if still 0 and no commission_data, use order total
+			if ( $attributed_value == 0 && ! $commission_data ) {
+				$attributed_value = floatval( $order->get_total() );
 			}
 
 			// Calculate user earnings - depends on commission status
@@ -129,6 +136,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 				'date' => $order->get_date_created()->format( 'Y-m-d' ),
 				'total' => $order->get_total(),
 				'attributed_total' => $attributed_value,
+				'attributed_total_debug' => 'Value: ' . $attributed_value . ' | Type: ' . gettype( $attributed_value ),
 				'commission' => $order_commission,
 				'earnings' => $user_earnings,
 				'user_earnings' => $user_earnings,

@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.6.10] - 2026-04-20
+### 🐛 FIXED - Attributed Total Fallback for Orders Without Commission Data
+
+#### CRITICAL FIX - Attributed Total Always Shows Value
+**THE PROBLEM:**
+- Orders without commission_data still showed "৳ NaN"
+- attributed_value was 0 when commission_data didn't exist
+- "Total" column always worked because it uses $order->get_total() directly
+
+**THE FIX:**
+Added fallback logic - if no commission_data, use order total:
+```php
+if ( $commission_data && is_array( $commission_data ) ) {
+    // Use calculated attribution from commission_data
+    $attributed_value = floatval( $commission_data['agent_order_value'] );
+} else {
+    // Fallback: Use full order total
+    $attributed_value = floatval( $order->get_total() );
+}
+```
+
+**IMPACT:**
+- ✅ Attributed Total ALWAYS shows a value (like Total column)
+- ✅ Orders with commission_data: Shows calculated attribution
+- ✅ Orders without commission_data: Shows full order total
+- ✅ No more NaN errors
+
+---
+
 ## [1.6.9] - 2026-04-20
 ### 🐛 FIXED - Attributed Total Showing NaN
 
