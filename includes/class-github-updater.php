@@ -2,11 +2,11 @@
 /**
  * GitHub Plugin Updater
  * 
- * Professional GitHub updater that checks for plugin updates from GitHub releases
- * Works like WordPress.org plugins - shows updates whether plugin is active or not
+ * Professional GitHub updater for WordPress plugins
+ * Handles automatic updates from GitHub releases
  * 
  * @package WC_Team_Payroll
- * @version 1.0.0
+ * @version 1.6.3
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,10 +25,10 @@ class WC_Team_Payroll_GitHub_Updater {
 	 * GitHub repository name
 	 * @var string
 	 */
-	private $github_repo = 'pv-team-payroll';
+	private $github_repo = 'woocommerce-team-payroll';
 
 	/**
-	 * Plugin slug (folder name)
+	 * Plugin slug (must match folder name)
 	 * @var string
 	 */
 	private $plugin_slug = 'woocommerce-team-payroll';
@@ -65,7 +65,7 @@ class WC_Team_Payroll_GitHub_Updater {
 		// Get plugin data
 		$this->plugin_data = $this->get_plugin_data();
 
-		// Hook into WordPress update system
+		// Initialize hooks
 		$this->init_hooks();
 	}
 
@@ -73,22 +73,17 @@ class WC_Team_Payroll_GitHub_Updater {
 	 * Initialize WordPress hooks
 	 */
 	private function init_hooks() {
-		// Check for updates (runs on every update check)
+		// Check for updates
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
 		
-		// Provide plugin information for update details
+		// Provide plugin information
 		add_filter( 'plugins_api', array( $this, 'get_plugin_info' ), 20, 3 );
 		
-		// Add "View details" link
-		add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
+		// Fix folder name during installation (CRITICAL FIX)
+		add_filter( 'upgrader_source_selection', array( $this, 'fix_folder_name' ), 10, 4 );
 		
-		// Clear cache when needed
+		// Clear cache after update
 		add_action( 'upgrader_process_complete', array( $this, 'clear_update_cache' ), 10, 2 );
-		
-		// Force check on admin init (optional - can be removed for production)
-		if ( isset( $_GET['force-check'] ) && current_user_can( 'update_plugins' ) ) {
-			add_action( 'admin_init', array( $this, 'force_update_check' ) );
-		}
 	}
 
 	/**
@@ -137,7 +132,7 @@ class WC_Team_Payroll_GitHub_Updater {
 		$latest_version = $this->normalize_version( $latest_release->version );
 		$current_version = $this->normalize_version( $current_version );
 
-		// Debug log (only if WP_DEBUG is enabled)
+		// Debug log
 		$this->log( sprintf(
 			'Update Check: Current=%s, Latest=%s, Update Available=%s',
 			$current_version,
@@ -222,6 +217,51 @@ class WC_Team_Payroll_GitHub_Updater {
 		$plugin_info->icons = array();
 
 		return $plugin_info;
+	}
+
+	/**
+	 * Fix folder name during installation
+	 * 
+	 * GitHub creates folders like: woocommerce-team-payroll-1.6.3
+	 * WordPress needs: woocommerce-team-payroll
+	 * 
+	 * @param string $source File source location
+	 * @param string $remote_source Remote file source location
+	 * @param WP_Upgrader $upgrader WP_Upgrader instance
+	 * @param array $hook_extra Extra arguments passed to hooked filters
+	 * @return string|WP_Error Modified source location or WP_Error
+	 */
+	public function fix_folder_name( $source, $remote_source, $upgrader, $hook_extra ) {
+		global $wp_filesystem;
+
+		// Check if this is our plugin
+		if ( ! isset( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== $this->plugin_basename ) {
+			return $source;
+		}
+
+		// Get the correct folder name
+		$correct_folder = $this->plugin_slug;
+		
+		// Get current folder name from source
+		$path_parts = explode( '/', trim( $source, '/' ) );
+		$current_folder = array_pop( $path_parts );
+
+		// If folder name is already correct, return as is
+		if ( $current_folder === $correct_folder ) {
+			return $source;
+		}
+
+		// Build new source path with correct folder name
+		$new_source = trailingslashit( $remote_source ) . $correct_folder . '/';
+
+		// Rename the folder
+		if ( $wp_filesystem->move( $source, $new_source ) ) {
+			$this->log( "Renamed folder from '{$current_folder}' to '{$correct_folder}'" );
+			return $new_source;
+		}
+
+		// If rename failed, return error
+		return new WP_Error( 'rename_failed', 'Could not rename plugin folder during installation.' );
 	}
 
 	/**
@@ -341,25 +381,6 @@ class WC_Team_Payroll_GitHub_Updater {
 	}
 
 	/**
-	 * Add plugin row meta links
-	 * 
-	 * @param array $links Plugin row meta
-	 * @param string $file Plugin basename
-	 * @return array Modified links
-	 */
-	public function plugin_row_meta( $links, $file ) {
-		if ( $file === $this->plugin_basename ) {
-			$links[] = sprintf(
-				'<a href="%s" target="_blank">%s</a>',
-				'https://github.com/' . $this->github_user . '/' . $this->github_repo,
-				__( 'View on GitHub', 'wc-team-payroll' )
-			);
-		}
-
-		return $links;
-	}
-
-	/**
 	 * Clear update cache after plugin update
 	 * 
 	 * @param WP_Upgrader $upgrader Upgrader instance
@@ -370,23 +391,6 @@ class WC_Team_Payroll_GitHub_Updater {
 			$cache_key = 'wc_tp_github_release_' . md5( $this->github_repo );
 			delete_transient( $cache_key );
 		}
-	}
-
-	/**
-	 * Force update check (for debugging)
-	 */
-	public function force_update_check() {
-		// Clear cache
-		$cache_key = 'wc_tp_github_release_' . md5( $this->github_repo );
-		delete_transient( $cache_key );
-		delete_site_transient( 'update_plugins' );
-		
-		// Trigger update check
-		wp_update_plugins();
-		
-		// Redirect to plugins page
-		wp_redirect( admin_url( 'plugins.php' ) );
-		exit;
 	}
 
 	/**

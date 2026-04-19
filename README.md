@@ -2,156 +2,61 @@
 
 A comprehensive WordPress plugin for managing team-based commission and payroll systems with agents and processors.
 
-## 🚀 Features
+## Features
 
-- **Employee Management**: Manage agents and processors with detailed profiles
-- **Commission Tracking**: Automatic commission calculation based on roles
-- **Payroll System**: Track earnings, payments, and salary history
-- **Orders Management**: View and filter orders by employee role
-- **Performance Tracking**: Monitor employee performance metrics
-- **My Account Integration**: Custom endpoints for employees to view their data
-- **Admin Dashboard**: Comprehensive admin interface for managing team payroll
+- **Commission Management**: Flexible commission calculation with agent/processor split (customizable percentages)
+- **Salary Types**: Fixed salary, commission-based, or combined (base + commission)
+- **Salary History**: Track all salary changes with timestamps and change logs
+- **Manual Payments**: Add payments with date/time picker via AJAX
+- **Per-Order Bonuses**: Add employee-specific bonuses to orders
+- **Extra Earnings Rules**: Define conditional earnings rules with multiple condition types
+- **Refunded Order Commission**: Handle commission for refunded orders (None/Percentage/Flat)
+- **Order Change Logging**: Automatic logging of all order updates and changes
+- **Frontend Integration**: My Account tabs for employees to view earnings and orders
+- **Checkout Integration**: Auto-populate agent dropdown with role-based filtering
+- **Admin Dashboards**: Team Dashboard, Payroll Management, Employee Management
+- **AJAX Operations**: All operations work without page reloads
+- **Shortcode System**: Display earnings data anywhere on your site
 
-## 📋 Requirements
+## Requirements
 
-- WordPress 5.0 or higher
-- WooCommerce 5.0 or higher
-- PHP 7.2 or higher
+- WordPress 5.0+
+- WooCommerce 5.0+
+- Advanced Custom Fields (ACF) or Smart Custom Fields (SCF)
+- PHP 7.2+
 
-## 📦 Installation
+## Installation
 
-### From GitHub Release (Recommended)
+1. Download the plugin from GitHub
+2. Upload to `/wp-content/plugins/`
+3. Activate the plugin in WordPress admin
+4. Configure settings in Team Payroll > Settings
 
-1. Download the latest release ZIP from [Releases](https://github.com/imranduzzlo/pv-team-payroll/releases)
-2. Go to WordPress Admin → Plugins → Add New → Upload Plugin
-3. Upload the ZIP file and click "Install Now"
-4. Activate the plugin
+## Automatic Updates
 
-### Manual Installation
+This plugin supports automatic updates from GitHub. Updates will appear in your WordPress admin panel like any other plugin update.
 
-1. Clone this repository or download as ZIP
-2. Upload to `/wp-content/plugins/woocommerce-team-payroll/`
-3. Activate the plugin through the 'Plugins' menu in WordPress
+## Configuration
 
-## 🔄 Automatic Updates
+### Commission Settings
+- Set agent and processor commission percentages
+- Configure refunded order commission handling
+- Enable/disable breakdown tables and features
 
-This plugin supports automatic updates from GitHub:
+### Field Mapping
+- Map your custom checkout fields (ThemeHigh)
+- Map your ACF/SCF product fields
+- Select which user roles can be agents
 
-- Updates are checked automatically every 12 hours
-- Update notifications appear in WordPress admin (Plugins page)
-- Click "Update Now" to install the latest version
-- Works whether the plugin is active or inactive
+### Extra Earnings Rules
+- Create conditional earnings rules
+- Set conditions: order total, specific products, categories, or agents
+- Set rule end dates for automatic deactivation
 
-### Force Update Check
+## Support
 
-To manually check for updates, add `?force-check=1` to your plugins page URL:
-```
-https://yoursite.com/wp-admin/plugins.php?force-check=1
-```
+For issues and feature requests, visit: https://github.com/imranduzzlo/pv-team-payroll
 
-## ⚙️ Configuration
+## License
 
-1. Go to **WooCommerce → Team Payroll** in WordPress admin
-2. Configure your settings:
-   - Commission rates
-   - Salary types
-   - Payment methods
-   - Performance metrics
-3. Add employees and assign roles (Agent/Processor)
-4. Start tracking commissions and payroll!
-
-## 📖 Documentation
-
-### Employee Roles
-
-- **Agent**: Sales representatives who bring in orders
-- **Processor**: Order processors who fulfill orders
-- **Both**: Employees can have both roles simultaneously
-
-### Commission Calculation
-
-- Commissions are calculated based on order totals
-- Different rates for agents and processors
-- Attributed totals show the portion of order value for each role
-- Automatic calculation on order status change
-
-### My Account Endpoints
-
-Employees can access their data through custom My Account pages:
-- `/my-account/salary-details/` - View salary information
-- `/my-account/my-earnings/` - View earnings history
-- `/my-account/orders-commission/` - View orders and commissions
-- `/my-account/reports/` - View performance reports
-
-## 🛠️ Development
-
-### File Structure
-
-```
-woocommerce-team-payroll/
-├── assets/
-│   ├── css/          # Stylesheets
-│   └── js/           # JavaScript files
-├── includes/
-│   ├── class-*.php   # Core classes
-│   └── ...
-├── languages/        # Translation files
-├── woocommerce-team-payroll.php  # Main plugin file
-├── CHANGELOG.md      # Version history
-└── README.md         # This file
-```
-
-### Creating a Release
-
-1. Update version in `woocommerce-team-payroll.php`
-2. Update `CHANGELOG.md` with changes
-3. Commit and push changes
-4. Create a new tag: `git tag v1.0.1`
-5. Push tag: `git push origin v1.0.1`
-6. Create GitHub Release from the tag
-7. WordPress sites will automatically detect the update
-
-## 🐛 Bug Reports
-
-Found a bug? Please create an issue on [GitHub Issues](https://github.com/imranduzzlo/pv-team-payroll/issues).
-
-## 📝 Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
-
-## 👨‍💻 Author
-
-**Imran Hossain**
-- Website: [imranhossain.me](https://imranhossain.me/)
-- GitHub: [@imranduzzlo](https://github.com/imranduzzlo)
-
-## 📄 License
-
-This plugin is licensed under the GPL v2 or later.
-
-```
-Copyright (C) 2026 Imran Hossain
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-```
-
-## 🙏 Support
-
-If you find this plugin helpful, please consider:
-- ⭐ Starring the repository
-- 🐛 Reporting bugs
-- 💡 Suggesting new features
-- 📖 Improving documentation
-
----
-
-**Version:** 1.0.0  
-**Last Updated:** April 19, 2026
+GPL v2 or later

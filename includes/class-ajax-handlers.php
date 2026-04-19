@@ -50,11 +50,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 		$role = isset( $_POST['role'] ) ? sanitize_text_field( $_POST['role'] ) : '';
 		$search = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
 
-		// Debug logging
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( '[WC Team Payroll] get_employee_orders called for user_id: ' . $user_id );
-		}
-
 		// Get all orders
 		$args = array(
 			'limit'  => -1,
@@ -63,13 +58,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 
 		$all_orders = wc_get_orders( $args );
 		$orders = array();
-		
-		// Debug logging
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( '[WC Team Payroll] Total orders found: ' . count( $all_orders ) );
-		}
 
-		$matched_orders = 0;
 		foreach ( $all_orders as $order ) {
 			$agent_id = $order->get_meta( '_primary_agent_id' );
 			$processor_id = $order->get_meta( '_processor_user_id' );
@@ -94,8 +83,6 @@ class WC_Team_Payroll_AJAX_Handlers {
 			if ( ! $user_role ) {
 				continue;
 			}
-			
-			$matched_orders++;
 
 			// Get order status and check if commission applies
 			$order_status = $order->get_status();
@@ -165,14 +152,14 @@ class WC_Team_Payroll_AJAX_Handlers {
 		}
 
 		// Filter by status
-		if ( $status && $status !== 'all' ) {
+		if ( $status ) {
 			$orders = array_filter( $orders, function( $order ) use ( $status ) {
 				return ( $order['status'] ?? '' ) === $status;
 			} );
 		}
 
 		// Filter by role (instead of flag)
-		if ( $role && $role !== 'all' ) {
+		if ( $role ) {
 			$orders = array_filter( $orders, function( $order ) use ( $role ) {
 				return ( $order['role'] ?? '' ) === $role;
 			} );
@@ -189,20 +176,8 @@ class WC_Team_Payroll_AJAX_Handlers {
 			} );
 		}
 
-		// Debug logging
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( '[WC Team Payroll] Matched orders for user: ' . $matched_orders );
-			error_log( '[WC Team Payroll] Final orders count after filters: ' . count( $orders ) );
-		}
-
 		wp_send_json_success( array(
 			'orders' => array_values( $orders ),
-			'debug' => array(
-				'user_id' => $user_id,
-				'total_orders' => count( $all_orders ),
-				'matched_orders' => $matched_orders,
-				'final_count' => count( $orders ),
-			),
 		) );
 	}
 

@@ -2234,7 +2234,7 @@ class WC_Team_Payroll_MyAccount {
 				.pv-page-wrapper .ph {
 					color: {$primary_color};
 				}				
-				.pv-page-wrapper button .ph, .btn-action .ph{
+				.pv-page-wrapper button .ph {
 					color: {$button_text_color} !important;
 				}
 				
