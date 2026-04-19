@@ -235,6 +235,19 @@ jQuery(document).ready(function($) {
 			} catch (e) {
 			}
 			
+			// Always try to save bonus config (regardless of active tab)
+			try {
+				const bonusConfig = collectBonusConfigurationData();
+				if (bonusConfig && Object.keys(bonusConfig).length > 0) {
+					savePromises.push(saveBonusConfig(bonusConfig));
+				}
+			} catch (e) {
+				// Only show error if we're on the bonuses tab
+				if (activeSection === 'bonuses') {
+					showMessage('error', e.message);
+				}
+			}
+			
 			// Save section-specific data
 			switch (activeSection) {
 				case 'goals':
@@ -283,13 +296,7 @@ jQuery(document).ready(function($) {
 					}
 					break;
 				case 'bonuses':
-					try {
-						const bonusConfig = collectBonusConfigurationData();
-						if (bonusConfig && Object.keys(bonusConfig).length > 0) {
-							savePromises.push(saveBonusConfig(bonusConfig));
-						}
-					} catch (e) {
-					}
+					// Bonus config is already handled in the "always save" section above
 					break;
 			}
 			if (savePromises.length === 0) {
