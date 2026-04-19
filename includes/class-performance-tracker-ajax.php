@@ -18,6 +18,9 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 	 */
 	public static function init() {
 		add_action( 'wp_ajax_wc_tp_get_performance_tracker_data', array( __CLASS__, 'ajax_get_performance_tracker_data' ) );
+		add_action( 'wp_ajax_wc_tp_claim_bonus', array( __CLASS__, 'ajax_claim_bonus' ) );
+		add_action( 'wp_ajax_wc_tp_submit_bonus', array( __CLASS__, 'ajax_submit_bonus' ) );
+		add_action( 'wp_ajax_wc_tp_resend_secret_code', array( __CLASS__, 'ajax_resend_secret_code' ) );
 	}
 
 	/**
@@ -55,6 +58,15 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				// Get admin-configured period type
 				$goals_config = get_option( 'wc_tp_goals_config', array() );
 				$data['period_type'] = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
+				break;
+
+			case 'bonus_achieved':
+				// Get achieved bonuses for current user
+				$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+				if ( ! is_array( $achieved_bonuses ) ) {
+					$achieved_bonuses = array();
+				}
+				$data['achieved_bonuses'] = $achieved_bonuses;
 				break;
 
 			case 'overview':
@@ -370,6 +382,215 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		});
 
 		return $milestones;
+	}
+
+	/**
+	 * AJAX: Claim bonus (STEP 6)
+	 */
+	public static function ajax_claim_bonus() {
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		$bonus_id = isset( $_POST['bonus_id'] ) ? sanitize_text_field( $_POST['bonus_id'] ) : '';
+		$bonus_type = isset( $_POST['bonus_type'] ) ? sanitize_text_field( $_POST['bonus_type'] ) : '';
+		$secret_code = isset( $_POST['secret_code'] ) ? sanitize_text_field( $_POST['secret_code'] ) : '';
+
+		if ( empty( $bonus_id ) || empty( $bonus_type ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid bonus data', 'wc-team-payroll' ) ) );
+		}
+
+		// Get achieved bonuses
+		$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+		if ( ! is_array( $achieved_bonuses ) ) {
+			wp_send_json_error( array( 'message' => __( 'No bonuses found', 'wc-team-payroll' ) ) );
+		}
+
+		// Find the bonus
+		$bonus_index = -1;
+		$bonus = null;
+		foreach ( $achieved_bonuses as $index => $b ) {
+			if ( $b['id'] === $bonus_id ) {
+				$bonus_index = $index;
+				$bonus = $b;
+				break;
+			}
+		}
+
+		if ( $bonus_index === -1 || ! $bonus ) {
+			wp_send_json_error( array( 'message' => __( 'Bonus not found', 'wc-team-payroll' ) ) );
+		}
+
+		// Check if already claimed
+		if ( $bonus['status'] === 'claimed' ) {
+			wp_send_json_error( array( 'message' => __( 'Bonus already claimed', 'wc-team-payroll' ) ) );
+		}
+
+		// Handle money bonus
+		if ( $bonus_type === 'money' ) {
+			// Add to earnings
+			$current_earnings = get_user_meta( $user_id, '_wc_tp_total_earnings', true );
+			if ( ! is_numeric( $current_earnings ) ) {
+				$current_earnings = 0;
+			}
+			$new_earnings = floatval( $current_earnings ) + floatval( $bonus['bonus_amount'] );
+			update_user_meta( $user_id, '_wc_tp_total_earnings', $new_earnings );
+
+			// Update bonus status
+			$achieved_bonuses[ $bonus_index ]['status'] = 'claimed';
+			$achieved_bonuses[ $bonus_index ]['claimed_date'] = current_time( 'Y-m-d H:i:s' );
+			$achieved_bonuses[ $bonus_index ]['claimed_by_user'] = true;
+			update_user_meta( $user_id, '_wc_tp_achieved_bonuses', $achieved_bonuses );
+
+			wp_send_json_success( array( 'message' => __( 'Bonus claimed successfully!', 'wc-team-payroll' ) ) );
+		}
+		// Handle physical bonus
+		else {
+			// Verify secret code
+			if ( empty( $secret_code ) ) {
+				wp_send_json_error( array( 'message' => __( 'Secret code required', 'wc-team-payroll' ) ) );
+			}
+
+			if ( $secret_code !== $bonus['secret_code'] ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid secret code', 'wc-team-payroll' ) ) );
+			}
+
+			// Update bonus status
+			$achieved_bonuses[ $bonus_index ]['status'] = 'claimed';
+			$achieved_bonuses[ $bonus_index ]['claimed_date'] = current_time( 'Y-m-d H:i:s' );
+			$achieved_bonuses[ $bonus_index ]['claimed_by_user'] = true;
+			update_user_meta( $user_id, '_wc_tp_achieved_bonuses', $achieved_bonuses );
+
+			wp_send_json_success( array( 'message' => __( 'Bonus claimed successfully!', 'wc-team-payroll' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX: Submit bonus (Admin) (STEP 8)
+	 */
+	public static function ajax_submit_bonus() {
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+
+		// Check if user is admin
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		$user_id = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : 0;
+		$bonus_id = isset( $_POST['bonus_id'] ) ? sanitize_text_field( $_POST['bonus_id'] ) : '';
+		$bonus_type = isset( $_POST['bonus_type'] ) ? sanitize_text_field( $_POST['bonus_type'] ) : '';
+
+		if ( ! $user_id || empty( $bonus_id ) || empty( $bonus_type ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid bonus data', 'wc-team-payroll' ) ) );
+		}
+
+		// Get achieved bonuses
+		$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+		if ( ! is_array( $achieved_bonuses ) ) {
+			wp_send_json_error( array( 'message' => __( 'No bonuses found', 'wc-team-payroll' ) ) );
+		}
+
+		// Find the bonus
+		$bonus_index = -1;
+		$bonus = null;
+		foreach ( $achieved_bonuses as $index => $b ) {
+			if ( $b['id'] === $bonus_id ) {
+				$bonus_index = $index;
+				$bonus = $b;
+				break;
+			}
+		}
+
+		if ( $bonus_index === -1 || ! $bonus ) {
+			wp_send_json_error( array( 'message' => __( 'Bonus not found', 'wc-team-payroll' ) ) );
+		}
+
+		// Handle money bonus
+		if ( $bonus_type === 'money' ) {
+			// Add to earnings
+			$current_earnings = get_user_meta( $user_id, '_wc_tp_total_earnings', true );
+			if ( ! is_numeric( $current_earnings ) ) {
+				$current_earnings = 0;
+			}
+			$new_earnings = floatval( $current_earnings ) + floatval( $bonus['bonus_amount'] );
+			update_user_meta( $user_id, '_wc_tp_total_earnings', $new_earnings );
+
+			// Update bonus status to submitted
+			$achieved_bonuses[ $bonus_index ]['status'] = 'submitted';
+			$achieved_bonuses[ $bonus_index ]['claimed_date'] = current_time( 'Y-m-d H:i:s' );
+			$achieved_bonuses[ $bonus_index ]['claimed_by_user'] = false;
+			update_user_meta( $user_id, '_wc_tp_achieved_bonuses', $achieved_bonuses );
+
+			wp_send_json_success( array( 
+				'message' => __( 'Bonus submitted successfully!', 'wc-team-payroll' ),
+				'secret_code' => null
+			) );
+		}
+		// Handle physical bonus
+		else {
+			// Send email with secret code (STEP 9)
+			$tracker = new WC_Team_Payroll_Performance_Tracker();
+			$tracker->send_physical_bonus_email_public( $user_id, $bonus );
+
+			// Update bonus status to submitted
+			$achieved_bonuses[ $bonus_index ]['status'] = 'submitted';
+			$achieved_bonuses[ $bonus_index ]['claimed_date'] = current_time( 'Y-m-d H:i:s' );
+			$achieved_bonuses[ $bonus_index ]['claimed_by_user'] = false;
+			update_user_meta( $user_id, '_wc_tp_achieved_bonuses', $achieved_bonuses );
+
+			// Return secret code for admin to copy and send
+			wp_send_json_success( array( 
+				'message' => __( 'Secret code generated and email sent!', 'wc-team-payroll' ),
+				'secret_code' => $bonus['secret_code']
+			) );
+		}
+	}
+
+	/**
+	 * AJAX: Resend secret code email (STEP 10)
+	 */
+	public static function ajax_resend_secret_code() {
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+
+		// Check if user is admin
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		$user_id = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : 0;
+		$secret_code = isset( $_POST['secret_code'] ) ? sanitize_text_field( $_POST['secret_code'] ) : '';
+
+		if ( ! $user_id || empty( $secret_code ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid data', 'wc-team-payroll' ) ) );
+		}
+
+		// Get achieved bonuses
+		$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+		if ( ! is_array( $achieved_bonuses ) ) {
+			wp_send_json_error( array( 'message' => __( 'No bonuses found', 'wc-team-payroll' ) ) );
+		}
+
+		// Find the bonus with this secret code
+		$bonus = null;
+		foreach ( $achieved_bonuses as $b ) {
+			if ( $b['secret_code'] === $secret_code && $b['status'] === 'submitted' ) {
+				$bonus = $b;
+				break;
+			}
+		}
+
+		if ( ! $bonus ) {
+			wp_send_json_error( array( 'message' => __( 'Bonus not found', 'wc-team-payroll' ) ) );
+		}
+
+		// Send email with secret code
+		$tracker = new WC_Team_Payroll_Performance_Tracker();
+		$tracker->send_physical_bonus_email_public( $user_id, $bonus );
+
+		wp_send_json_success( array( 'message' => __( 'Secret code email resent successfully!', 'wc-team-payroll' ) ) );
 	}
 }
 

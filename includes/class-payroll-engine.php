@@ -144,9 +144,19 @@ class WC_Team_Payroll_Payroll_Engine {
 			
 			// Update total to include salary and bonus (Total Earnings = Commission + Salary + Bonus)
 			$bonus_for_period = 0;
-			$bonus_earnings = get_user_meta( $user_id, '_wc_tp_bonus_earnings', true );
-			if ( $bonus_earnings ) {
-				$bonus_for_period = floatval( $bonus_earnings );
+			
+			// Get claimed bonus earnings (STEP 11)
+			// Only include bonuses with status 'claimed' or 'submitted' (submitted by admin)
+			$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+			if ( is_array( $achieved_bonuses ) ) {
+				foreach ( $achieved_bonuses as $bonus ) {
+					// Only add money bonuses that are claimed or submitted
+					if ( isset( $bonus['bonus_type'] ) && $bonus['bonus_type'] === 'money' ) {
+						if ( isset( $bonus['status'] ) && in_array( $bonus['status'], array( 'claimed', 'submitted' ) ) ) {
+							$bonus_for_period += floatval( $bonus['bonus_amount'] );
+						}
+					}
+				}
 			}
 			
 			$payroll[ $user_id ]['total'] = $data['total'] + $salary_for_period + $bonus_for_period;
@@ -341,9 +351,19 @@ class WC_Team_Payroll_Payroll_Engine {
 			
 			// Update total to include salary and bonus (Total Earnings = Commission + Salary + Bonus)
 			$bonus_for_period = 0;
-			$bonus_earnings = get_user_meta( $user_id, '_wc_tp_bonus_earnings', true );
-			if ( $bonus_earnings ) {
-				$bonus_for_period = floatval( $bonus_earnings );
+			
+			// Get claimed bonus earnings (STEP 11)
+			// Only include bonuses with status 'claimed' or 'submitted' (submitted by admin)
+			$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+			if ( is_array( $achieved_bonuses ) ) {
+				foreach ( $achieved_bonuses as $bonus ) {
+					// Only add money bonuses that are claimed or submitted
+					if ( isset( $bonus['bonus_type'] ) && $bonus['bonus_type'] === 'money' ) {
+						if ( isset( $bonus['status'] ) && in_array( $bonus['status'], array( 'claimed', 'submitted' ) ) ) {
+							$bonus_for_period += floatval( $bonus['bonus_amount'] );
+						}
+					}
+				}
 			}
 			
 			$payroll[ $user_id ]['total'] = $data['total'] + $salary_for_period + $bonus_for_period;

@@ -1370,13 +1370,49 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $employee_role Employee role
 	 */
 	private function award_streak_bonus( $user_id, $bonus_rule, $tier, $streak_count, $employee_role ) {
+		$rule_id = isset( $bonus_rule['rule_id'] ) ? intval( $bonus_rule['rule_id'] ) : 0;
 		$bonus_type = isset( $bonus_rule['bonus_type'] ) ? $bonus_rule['bonus_type'] : 'money';
 		$bonus_amount = isset( $bonus_rule['bonus_amount'] ) ? floatval( $bonus_rule['bonus_amount'] ) : 0;
 		$bonus_description = isset( $bonus_rule['bonus_description'] ) ? $bonus_rule['bonus_description'] : '';
 		$repeatable = isset( $bonus_rule['repeatable'] ) && $bonus_rule['repeatable'];
 
-		// Create bonus record
-		$bonus_record = array(
+		// Generate secret code for physical/other bonuses
+		$secret_code = '';
+		if ( $bonus_type !== 'money' ) {
+			$secret_code = strtoupper( substr( md5( $user_id . $rule_id . time() . wp_rand() ), 0, 8 ) );
+		}
+
+		// Create achieved bonus record (lifetime storage)
+		$achieved_bonus = array(
+			'id' => time() . '_' . $user_id . '_' . $rule_id,
+			'rule_id' => $rule_id,
+			'tier' => $tier,
+			'streak_count' => $streak_count,
+			'bonus_type' => $bonus_type,
+			'bonus_amount' => $bonus_amount,
+			'bonus_description' => $bonus_description,
+			'achieved_date' => current_time( 'Y-m-d H:i:s' ),
+			'status' => 'pending', // pending, claimed
+			'secret_code' => $secret_code, // For physical bonuses
+			'claimed_date' => null,
+			'claimed_by_user' => false,
+		);
+
+		// Save to achieved bonuses (lifetime storage)
+		$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+		if ( ! is_array( $achieved_bonuses ) ) {
+			$achieved_bonuses = array();
+		}
+		array_unshift( $achieved_bonuses, $achieved_bonus );
+		update_user_meta( $user_id, '_wc_tp_achieved_bonuses', $achieved_bonuses );
+
+		// Create bonus history record (for display purposes)
+		$bonus_history = get_user_meta( $user_id, '_wc_tp_bonus_history', true );
+		if ( ! is_array( $bonus_history ) ) {
+			$bonus_history = array();
+		}
+		
+		$history_record = array(
 			'user_id' => $user_id,
 			'tier' => $tier,
 			'streak_count' => $streak_count,
@@ -1386,46 +1422,11 @@ class WC_Team_Payroll_Performance_Tracker {
 			'awarded_date' => current_time( 'Y-m-d H:i:s' ),
 			'period' => date( 'Y-m' ),
 			'repeatable' => $repeatable,
-			'status' => 'pending', // pending, fulfilled, cancelled
 		);
-
-		// Save to bonus history
-		$bonus_history = get_user_meta( $user_id, '_wc_tp_bonus_history', true );
-		if ( ! is_array( $bonus_history ) ) {
-			$bonus_history = array();
-		}
-		array_unshift( $bonus_history, $bonus_record );
+		
+		array_unshift( $bonus_history, $history_record );
 		$bonus_history = array_slice( $bonus_history, 0, 50 ); // Keep last 50
 		update_user_meta( $user_id, '_wc_tp_bonus_history', $bonus_history );
-
-		// If money bonus, add to user's earnings
-		if ( $bonus_type === 'money' && $bonus_amount > 0 ) {
-			$this->add_bonus_to_earnings( $user_id, $bonus_amount, $tier, $streak_count );
-		}
-
-		// If physical or other bonus, track in pending bonuses for admin fulfillment
-		if ( $bonus_type !== 'money' ) {
-			$pending_bonuses = get_user_meta( $user_id, '_wc_tp_pending_physical_bonuses', true );
-			if ( ! is_array( $pending_bonuses ) ) {
-				$pending_bonuses = array();
-			}
-			
-			$pending_bonus = array(
-				'id' => time() . '_' . $user_id,
-				'tier' => $tier,
-				'streak_count' => $streak_count,
-				'bonus_type' => $bonus_type,
-				'bonus_description' => $bonus_description,
-				'awarded_date' => current_time( 'Y-m-d H:i:s' ),
-				'status' => 'pending', // pending, fulfilled, cancelled
-				'fulfilled_date' => null,
-				'fulfilled_by' => null,
-				'notes' => '',
-			);
-			
-			array_unshift( $pending_bonuses, $pending_bonus );
-			update_user_meta( $user_id, '_wc_tp_pending_physical_bonuses', $pending_bonuses );
-		}
 
 		// Mark as awarded (for non-repeatable)
 		if ( ! $repeatable ) {
@@ -1433,13 +1434,13 @@ class WC_Team_Payroll_Performance_Tracker {
 			if ( ! is_array( $awarded_bonuses ) ) {
 				$awarded_bonuses = array();
 			}
-			$bonus_key = $employee_role . '_' . $tier . '_' . $streak_count;
+			$bonus_key = $employee_role . '_' . $tier . '_' . $streak_count . '_' . $rule_id;
 			$awarded_bonuses[] = $bonus_key;
 			update_user_meta( $user_id, '_wc_tp_awarded_bonuses', $awarded_bonuses );
 		}
 
 		// Send notification email
-		$this->send_bonus_notification_email( $user_id, $bonus_record );
+		$this->send_bonus_notification_email( $user_id, $history_record );
 	}
 
 	/**
@@ -1527,6 +1528,76 @@ class WC_Team_Payroll_Performance_Tracker {
 
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 		wp_mail( $user->user_email, $subject, $message, $headers );
+	}
+
+	/**
+	 * Send physical bonus secret code email (STEP 9)
+	 *
+	 * @param int $user_id User ID
+	 * @param array $bonus Achieved bonus record
+	 */
+	private function send_physical_bonus_email( $user_id, $bonus ) {
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) {
+			return;
+		}
+
+		$tier = ucfirst( $bonus['tier'] );
+		$secret_code = $bonus['secret_code'];
+		$bonus_description = $bonus['bonus_description'];
+
+		$tier_emojis = array(
+			'gold' => '🥇',
+			'silver' => '🥈',
+			'bronze' => '🥉',
+		);
+		$emoji = isset( $tier_emojis[ $bonus['tier'] ] ) ? $tier_emojis[ $bonus['tier'] ] : '🏆';
+
+		$subject = sprintf(
+			__( '%s Your Physical Bonus - Secret Code Inside', 'wc-team-payroll' ),
+			$emoji
+		);
+
+		$message = $this->get_physical_bonus_email_template(
+			$user->display_name,
+			$tier,
+			$bonus_description,
+			$secret_code,
+			$emoji
+		);
+
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+		wp_mail( $user->user_email, $subject, $message, $headers );
+
+		// Also send to admin
+		$admin_email = get_option( 'admin_email' );
+		if ( $admin_email ) {
+			$admin_subject = sprintf(
+				__( 'Physical Bonus Submitted to %s - Secret Code: %s', 'wc-team-payroll' ),
+				$user->display_name,
+				$secret_code
+			);
+
+			$admin_message = $this->get_admin_physical_bonus_email_template(
+				$user->display_name,
+				$tier,
+				$bonus_description,
+				$secret_code,
+				$emoji
+			);
+
+			wp_mail( $admin_email, $admin_subject, $admin_message, $headers );
+		}
+	}
+
+	/**
+	 * Public wrapper for sending physical bonus email (for AJAX calls)
+	 *
+	 * @param int $user_id User ID
+	 * @param array $bonus Achieved bonus record
+	 */
+	public function send_physical_bonus_email_public( $user_id, $bonus ) {
+		$this->send_physical_bonus_email( $user_id, $bonus );
 	}
 
 	/**
@@ -1631,6 +1702,230 @@ class WC_Team_Payroll_Performance_Tracker {
 								<td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
 									<p style="margin: 0; font-size: 12px; color: #6c757d;">
 										This is an automated bonus notification from your performance tracking system.
+									</p>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</body>
+		</html>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Get physical bonus email template for employee (STEP 9)
+	 *
+	 * @param string $name Employee name
+	 * @param string $tier Bonus tier
+	 * @param string $bonus_description Bonus description
+	 * @param string $secret_code Secret code
+	 * @param string $emoji Tier emoji
+	 * @return string HTML email template
+	 */
+	private function get_physical_bonus_email_template( $name, $tier, $bonus_description, $secret_code, $emoji ) {
+		$tier_colors = array(
+			'Gold' => '#FFD700',
+			'Silver' => '#C0C0C0',
+			'Bronze' => '#CD7F32',
+		);
+		$color = isset( $tier_colors[ $tier ] ) ? $tier_colors[ $tier ] : '#FFD700';
+
+		ob_start();
+		?>
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		</head>
+		<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+			<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+				<tr>
+					<td align="center">
+						<table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+							<!-- Header -->
+							<tr>
+								<td style="background: linear-gradient(135deg, <?php echo esc_attr( $color ); ?> 0%, <?php echo esc_attr( $color ); ?>CC 100%); padding: 40px 20px; text-align: center;">
+									<h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: bold;">
+										<?php echo esc_html( $emoji ); ?> BONUS AWARDED!
+									</h1>
+									<p style="margin: 10px 0 0 0; color: #ffffff; font-size: 20px; font-weight: bold;">
+										<?php echo esc_html( $tier ); ?> Badge Physical Bonus
+									</p>
+								</td>
+							</tr>
+							
+							<!-- Content -->
+							<tr>
+								<td style="padding: 40px 30px;">
+									<p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
+										Dear <strong><?php echo esc_html( $name ); ?></strong>,
+									</p>
+									<p style="margin: 0 0 30px 0; font-size: 18px; color: #333333; line-height: 1.6;">
+										🎉 <strong>Congratulations!</strong> Your physical bonus has been approved and is ready to claim!
+									</p>
+									
+									<!-- Bonus Details -->
+									<table width="100%" cellpadding="20" cellspacing="0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; margin: 30px 0; border: 2px solid <?php echo esc_attr( $color ); ?>;">
+										<tr>
+											<td align="center">
+												<h2 style="margin: 0 0 15px 0; color: <?php echo esc_attr( $color ); ?>; font-size: 24px;">
+													Your Bonus Reward
+												</h2>
+												<p style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #333333;">
+													<?php echo esc_html( $bonus_description ); ?>
+												</p>
+												
+												<h3 style="margin: 20px 0 10px 0; color: #333333; font-size: 16px;">
+													Secret Code to Claim:
+												</h3>
+												<div style="background: #ffffff; border: 3px dashed <?php echo esc_attr( $color ); ?>; border-radius: 8px; padding: 20px; margin: 15px 0;">
+													<p style="margin: 0; font-size: 32px; font-weight: bold; letter-spacing: 3px; color: <?php echo esc_attr( $color ); ?>; font-family: 'Courier New', monospace;">
+														<?php echo esc_html( $secret_code ); ?>
+													</p>
+												</div>
+												
+												<p style="margin: 15px 0 0 0; font-size: 13px; color: #6c757d;">
+													Use this code in your Performance Tracker to claim your bonus.
+												</p>
+											</td>
+										</tr>
+									</table>
+									
+									<div style="background: #e7f3ff; border-left: 4px solid #0073aa; padding: 15px; border-radius: 4px; margin: 20px 0;">
+										<p style="margin: 0; font-size: 14px; color: #0073aa; line-height: 1.6;">
+											<strong>📝 How to Claim:</strong><br>
+											1. Log in to your account<br>
+											2. Go to Performance Tracker → Bonus Achieved<br>
+											3. Click "Claim" on this bonus<br>
+											4. Enter the secret code above<br>
+											5. Your bonus will be marked as claimed!
+										</p>
+									</div>
+									
+									<p style="margin: 20px 0 0 0; font-size: 14px; color: #6c757d; line-height: 1.6;">
+										Best regards,<br>
+										<strong>Povaly Group Team</strong>
+									</p>
+								</td>
+							</tr>
+							
+							<!-- Footer -->
+							<tr>
+								<td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
+									<p style="margin: 0; font-size: 12px; color: #6c757d;">
+										This is an automated bonus notification from your performance tracking system.
+									</p>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</body>
+		</html>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Get physical bonus email template for admin (STEP 9)
+	 *
+	 * @param string $employee_name Employee name
+	 * @param string $tier Bonus tier
+	 * @param string $bonus_description Bonus description
+	 * @param string $secret_code Secret code
+	 * @param string $emoji Tier emoji
+	 * @return string HTML email template
+	 */
+	private function get_admin_physical_bonus_email_template( $employee_name, $tier, $bonus_description, $secret_code, $emoji ) {
+		$tier_colors = array(
+			'Gold' => '#FFD700',
+			'Silver' => '#C0C0C0',
+			'Bronze' => '#CD7F32',
+		);
+		$color = isset( $tier_colors[ $tier ] ) ? $tier_colors[ $tier ] : '#FFD700';
+
+		ob_start();
+		?>
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		</head>
+		<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+			<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+				<tr>
+					<td align="center">
+						<table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+							<!-- Header -->
+							<tr>
+								<td style="background: linear-gradient(135deg, <?php echo esc_attr( $color ); ?> 0%, <?php echo esc_attr( $color ); ?>CC 100%); padding: 40px 20px; text-align: center;">
+									<h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: bold;">
+										<?php echo esc_html( $emoji ); ?> BONUS SUBMITTED
+									</h1>
+									<p style="margin: 10px 0 0 0; color: #ffffff; font-size: 20px; font-weight: bold;">
+										Physical Bonus - Admin Notification
+									</p>
+								</td>
+							</tr>
+							
+							<!-- Content -->
+							<tr>
+								<td style="padding: 40px 30px;">
+									<p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
+										<strong>Admin Notification:</strong>
+									</p>
+									<p style="margin: 0 0 30px 0; font-size: 16px; color: #333333; line-height: 1.6;">
+										A physical bonus has been submitted to <strong><?php echo esc_html( $employee_name ); ?></strong>.
+									</p>
+									
+									<!-- Bonus Details -->
+									<table width="100%" cellpadding="20" cellspacing="0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; margin: 30px 0; border: 2px solid <?php echo esc_attr( $color ); ?>;">
+										<tr>
+											<td>
+												<p style="margin: 0 0 10px 0; font-size: 14px; color: #6c757d;">
+													<strong>Employee:</strong> <?php echo esc_html( $employee_name ); ?>
+												</p>
+												<p style="margin: 0 0 10px 0; font-size: 14px; color: #6c757d;">
+													<strong>Tier:</strong> <?php echo esc_html( $tier ); ?> <?php echo esc_html( $emoji ); ?>
+												</p>
+												<p style="margin: 0 0 10px 0; font-size: 14px; color: #6c757d;">
+													<strong>Bonus:</strong> <?php echo esc_html( $bonus_description ); ?>
+												</p>
+												<p style="margin: 0; font-size: 14px; color: #6c757d;">
+													<strong>Submitted:</strong> <?php echo esc_html( current_time( 'Y-m-d H:i:s' ) ); ?>
+												</p>
+											</td>
+										</tr>
+									</table>
+									
+									<div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0;">
+										<p style="margin: 0; font-size: 14px; color: #856404; line-height: 1.6;">
+											<strong>Secret Code:</strong><br>
+											<code style="font-size: 18px; font-weight: bold; letter-spacing: 2px; font-family: 'Courier New', monospace;">
+												<?php echo esc_html( $secret_code ); ?>
+											</code><br><br>
+											This code has been sent to the employee. They will use it to claim the bonus in their Performance Tracker.
+										</p>
+									</div>
+									
+									<p style="margin: 20px 0 0 0; font-size: 14px; color: #6c757d; line-height: 1.6;">
+										Best regards,<br>
+										<strong>Performance Tracking System</strong>
+									</p>
+								</td>
+							</tr>
+							
+							<!-- Footer -->
+							<tr>
+								<td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
+									<p style="margin: 0; font-size: 12px; color: #6c757d;">
+										This is an automated notification from your performance tracking system.
 									</p>
 								</td>
 							</tr>

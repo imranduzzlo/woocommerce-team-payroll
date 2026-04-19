@@ -138,6 +138,9 @@
 				case 'achievements':
 					this.loadAchievements();
 					break;
+				case 'bonus_achieved':
+					this.loadBonusAchieved();
+					break;
 				case 'baselines':
 					this.loadBaselines();
 					break;
@@ -181,6 +184,17 @@
 			
 			this.fetchData('achievements', (data) => {
 				this.renderAchievements(data);
+			});
+		},
+
+		/**
+		 * Load achieved bonuses data
+		 */
+		loadBonusAchieved() {
+			this.showLoading();
+			
+			this.fetchData('bonus_achieved', (data) => {
+				this.renderBonusAchieved(data);
 			});
 		},
 
@@ -715,6 +729,333 @@
 					</div>
 				</div>
 			`;
+		},
+
+		/**
+		 * Render achieved bonuses section (STEP 5)
+		 */
+		renderBonusAchieved(data) {
+			const achievedBonuses = data.achieved_bonuses || [];
+
+			if (achievedBonuses.length === 0) {
+				const html = `
+					<div class="performance-bonus-achieved">
+						<div class="bonus-achieved-header">
+							<h3><i class="ph ph-gift"></i> Achieved Bonuses</h3>
+						</div>
+						<div class="bonus-achieved-empty">
+							<i class="ph ph-smiley-blank"></i>
+							<p>No bonuses achieved yet. Keep working towards your goals!</p>
+						</div>
+					</div>
+				`;
+				$('#performance-content').html(html);
+				return;
+			}
+
+			const tierData = {
+				gold: { emoji: '🥇', color: '#FFD700', label: 'Gold' },
+				silver: { emoji: '🥈', color: '#C0C0C0', label: 'Silver' },
+				bronze: { emoji: '🥉', color: '#CD7F32', label: 'Bronze' }
+			};
+
+			const html = `
+				<div class="performance-bonus-achieved">
+					<div class="bonus-achieved-header">
+						<h3><i class="ph ph-gift"></i> Achieved Bonuses</h3>
+						<span class="bonus-count">${achievedBonuses.length} Bonus${achievedBonuses.length !== 1 ? 'es' : ''}</span>
+					</div>
+
+					<div class="bonus-achieved-table-container">
+						<table class="bonus-achieved-table">
+							<thead>
+								<tr>
+									<th>Tier</th>
+									<th>Description</th>
+									<th>Amount/Type</th>
+									<th>Status</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								${achievedBonuses.map(bonus => {
+									const tier = tierData[bonus.tier];
+									const statusClass = bonus.status === 'claimed' ? 'claimed' : (bonus.status === 'submitted' ? 'submitted' : 'pending');
+									const statusLabel = bonus.status === 'claimed' ? 'Claimed' : (bonus.status === 'submitted' ? 'Submitted' : 'Pending');
+									const isMoney = bonus.bonus_type === 'money';
+									const isPhysical = bonus.bonus_type !== 'money';
+
+									return `
+										<tr class="bonus-row status-${statusClass}">
+											<td class="tier-cell">
+												<span class="tier-badge" style="background: ${tier.color}20; color: ${tier.color};">
+													${tier.emoji} ${tier.label}
+												</span>
+											</td>
+											<td class="description-cell">
+												<div class="bonus-info">
+													<div class="bonus-title">${bonus.bonus_description}</div>
+													<div class="bonus-meta">Achieved: ${bonus.achieved_date}</div>
+												</div>
+											</td>
+											<td class="amount-cell">
+												${isMoney ? 
+													`<span class="amount-value">${this.formatValue(bonus.bonus_amount, 'value')}</span>` :
+													`<span class="type-value">${bonus.bonus_type}</span>`
+												}
+											</td>
+											<td class="status-cell">
+												<span class="status-badge status-${statusClass}">
+													${statusClass === 'claimed' ? '✓' : '⏳'} ${statusLabel}
+												</span>
+											</td>
+											<td class="action-cell">
+												${statusClass === 'pending' ? `
+													<button class="btn-claim" data-bonus-id="${bonus.id}" data-bonus-type="${bonus.bonus_type}">
+														${isMoney ? 'Claim' : 'Claim'}
+													</button>
+												` : (statusClass === 'submitted' && isPhysical ? `
+													<button class="btn-view-code" data-bonus-id="${bonus.id}" data-secret-code="${bonus.secret_code}">
+														View Code
+													</button>
+												` : `
+													<span class="action-claimed">Claimed</span>
+												`)}
+											</td>
+										</tr>
+									`;
+								}).join('')}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			`;
+
+			$('#performance-content').html(html);
+
+			// Bind claim button events
+			$(document).on('click', '.btn-claim', (e) => {
+				const $btn = $(e.currentTarget);
+				const bonusId = $btn.data('bonus-id');
+				const bonusType = $btn.data('bonus-type');
+				
+				if (bonusType === 'money') {
+					this.claimMoneyBonus(bonusId);
+				} else {
+					this.claimPhysicalBonus(bonusId);
+				}
+			});
+
+			// Bind view code button events
+			$(document).on('click', '.btn-view-code', (e) => {
+				const $btn = $(e.currentTarget);
+				const secretCode = $btn.data('secret-code');
+				this.showSecretCodePopup(secretCode, null, true);
+			});
+		},
+
+		/**
+		 * Claim money bonus
+		 */
+		claimMoneyBonus(bonusId) {
+			if (!confirm('Are you sure you want to claim this bonus?')) {
+				return;
+			}
+
+			$.ajax({
+				url: wc_tp_reports.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'wc_tp_claim_bonus',
+					nonce: wc_tp_reports.nonce,
+					bonus_id: bonusId,
+					bonus_type: 'money'
+				},
+				success: (response) => {
+					if (response.success) {
+						alert('Bonus claimed successfully!');
+						this.loadBonusAchieved();
+					} else {
+						alert('Error: ' + (response.data?.message || 'Failed to claim bonus'));
+					}
+				},
+				error: () => {
+					alert('Network error. Please try again.');
+				}
+			});
+		},
+
+		/**
+		 * Claim physical bonus
+		 */
+		claimPhysicalBonus(bonusId) {
+			const secretCode = prompt('Enter the secret code to claim this bonus:');
+			if (!secretCode) {
+				return;
+			}
+
+			$.ajax({
+				url: wc_tp_reports.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'wc_tp_claim_bonus',
+					nonce: wc_tp_reports.nonce,
+					bonus_id: bonusId,
+					bonus_type: 'physical',
+					secret_code: secretCode
+				},
+				success: (response) => {
+					if (response.success) {
+						alert('Bonus claimed successfully!');
+						this.loadBonusAchieved();
+					} else {
+						alert('Error: ' + (response.data?.message || 'Invalid secret code'));
+					}
+				},
+				error: () => {
+					alert('Network error. Please try again.');
+				}
+			});
+		},
+
+		/**
+		 * Submit money bonus (Admin)
+		 */
+		submitMoneyBonus(bonusId, userId) {
+			if (!confirm('Are you sure you want to submit this bonus? It will be added to the employee\'s earnings.')) {
+				return;
+			}
+
+			$.ajax({
+				url: wc_tp_reports.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'wc_tp_submit_bonus',
+					nonce: wc_tp_reports.nonce,
+					bonus_id: bonusId,
+					bonus_type: 'money',
+					user_id: userId
+				},
+				success: (response) => {
+					if (response.success) {
+						alert('Bonus submitted successfully!');
+						this.loadBonusAchieved();
+					} else {
+						alert('Error: ' + (response.data?.message || 'Failed to submit bonus'));
+					}
+				},
+				error: () => {
+					alert('Network error. Please try again.');
+				}
+			});
+		},
+
+		/**
+		 * Submit physical bonus (Admin) - Show secret code
+		 */
+		submitPhysicalBonus(bonusId, userId) {
+			$.ajax({
+				url: wc_tp_reports.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'wc_tp_submit_bonus',
+					nonce: wc_tp_reports.nonce,
+					bonus_id: bonusId,
+					bonus_type: 'physical',
+					user_id: userId
+				},
+				success: (response) => {
+					if (response.success) {
+						const secretCode = response.data.secret_code;
+						this.showSecretCodePopup(secretCode, userId);
+						this.loadBonusAchieved();
+					} else {
+						alert('Error: ' + (response.data?.message || 'Failed to get secret code'));
+					}
+				},
+				error: () => {
+					alert('Network error. Please try again.');
+				}
+			});
+		},
+
+		/**
+		 * Show secret code popup
+		 */
+		showSecretCodePopup(secretCode, userId, viewOnly = false) {
+			const html = `
+				<div class="secret-code-popup">
+					<div class="secret-code-content">
+						<h3>${viewOnly ? 'Physical Bonus Secret Code' : 'Physical Bonus Secret Code'}</h3>
+						<p>${viewOnly ? 'Share this code with the employee:' : 'Share this code with the employee:'}</p>
+						<div class="secret-code-display">
+							<code>${secretCode}</code>
+							<button class="btn-copy" data-code="${secretCode}">Copy</button>
+						</div>
+						${viewOnly ? `
+							<p class="secret-code-note">This code was sent to the employee's email.</p>
+							<button class="btn-resend" data-user-id="${userId}">Resend Email</button>
+						` : `
+							<p class="secret-code-note">This code has been sent to the employee's email.</p>
+						`}
+						<button class="btn-close">Close</button>
+					</div>
+				</div>
+			`;
+
+			const $popup = $(html);
+			$('body').append($popup);
+
+			$popup.find('.btn-copy').on('click', function() {
+				const code = $(this).data('code');
+				navigator.clipboard.writeText(code).then(() => {
+					alert('Code copied to clipboard!');
+				});
+			});
+
+			$popup.find('.btn-resend').on('click', (e) => {
+				const userId = $(e.currentTarget).data('user-id');
+				if (userId) {
+					this.resendSecretCodeEmail(userId, secretCode);
+					$popup.remove();
+				}
+			});
+
+			$popup.find('.btn-close').on('click', function() {
+				$popup.remove();
+			});
+
+			$popup.on('click', function(e) {
+				if (e.target === this) {
+					$popup.remove();
+				}
+			});
+		},
+
+		/**
+		 * Resend secret code email (STEP 10)
+		 */
+		resendSecretCodeEmail(userId, secretCode) {
+			$.ajax({
+				url: wc_tp_reports.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'wc_tp_resend_secret_code',
+					nonce: wc_tp_reports.nonce,
+					user_id: userId,
+					secret_code: secretCode
+				},
+				success: (response) => {
+					if (response.success) {
+						alert('Secret code email resent successfully!');
+					} else {
+						alert('Error: ' + (response.data?.message || 'Failed to resend email'));
+					}
+				},
+				error: () => {
+					alert('Network error. Please try again.');
+				}
+			});
 		},
 
 		/**

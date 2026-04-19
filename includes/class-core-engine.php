@@ -393,13 +393,22 @@ class WC_Team_Payroll_Core_Engine {
 			$salary_earnings = 0;
 		}
 
-		// Get bonus earnings (from achievement bonuses)
-		$bonus_earnings = get_user_meta( $user_id, '_wc_tp_bonus_earnings', true );
-		if ( ! $bonus_earnings ) {
-			$bonus_earnings = 0;
+		// Get claimed bonus earnings (STEP 11)
+		// Only include bonuses with status 'claimed' or 'submitted' (submitted by admin)
+		$claimed_bonus_earnings = 0;
+		$achieved_bonuses = get_user_meta( $user_id, '_wc_tp_achieved_bonuses', true );
+		if ( is_array( $achieved_bonuses ) ) {
+			foreach ( $achieved_bonuses as $bonus ) {
+				// Only add money bonuses that are claimed or submitted
+				if ( isset( $bonus['bonus_type'] ) && $bonus['bonus_type'] === 'money' ) {
+					if ( isset( $bonus['status'] ) && in_array( $bonus['status'], array( 'claimed', 'submitted' ) ) ) {
+						$claimed_bonus_earnings += floatval( $bonus['bonus_amount'] );
+					}
+				}
+			}
 		}
 
-		return $commission_earnings + $salary_earnings + $bonus_earnings;
+		return $commission_earnings + $salary_earnings + $claimed_bonus_earnings;
 	}
 
 	/**

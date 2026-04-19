@@ -1,3 +1,118 @@
+## [1.6.24] - 2026-04-20
+### ✨ COMPLETE - Bonus Claim System with Email Notifications
+
+#### IMPLEMENTED - Full Bonus Claim System (STEPS 4-11)
+**MAJOR FEATURES ADDED:**
+
+1. **Bonus Serial ID System (STEP 1)**
+   - Each bonus rule now has auto-incrementing `rule_id`
+   - Tracks `next_rule_id` in config for proper sequencing
+   - Preserves rule_id when editing (doesn't change)
+   - Displays rule ID in admin UI
+
+2. **Achieved Bonuses Storage (STEP 2-3)**
+   - Created `_wc_tp_achieved_bonuses` meta for lifetime storage
+   - Each bonus record includes: id, rule_id, tier, streak_count, bonus_type, bonus_amount, bonus_description, achieved_date, status, secret_code
+   - Generates 8-character secret code for physical/other bonuses
+   - Saves to both achieved_bonuses (lifetime) and bonus_history (display)
+
+3. **Bonus Achieved Tab - Employee View (STEP 4-6)**
+   - Added "Bonus Achieved" tab to Performance Tracker
+   - Displays table with: Tier, Description, Amount/Type, Status, Action
+   - Money bonus: "Claim" button adds to earnings
+   - Physical bonus: "Claim" button prompts for secret code verification
+   - AJAX endpoint: `wc_tp_get_performance_tracker_data` with `bonus_achieved` section
+
+4. **Bonus Achieved Tab - Admin View (STEP 7-8)**
+   - Added "Bonus Achieved" tab to Admin Employee Details
+   - Same table display as employee view
+   - Money bonus: "Submit" button adds to earnings, marks as "submitted"
+   - Physical bonus: "Submit" button shows secret code popup with copy button
+   - AJAX endpoint: `wc_tp_submit_bonus` for admin submissions
+
+5. **Email System for Physical Bonuses (STEP 9)**
+   - Employee email template with secret code prominently displayed
+   - Admin email template with confirmation and secret code
+   - Automatic email sending when admin submits physical bonus
+   - Professional HTML templates with tier-specific colors
+   - Includes step-by-step claiming instructions for employee
+
+6. **Not Claimed View & Resend (STEP 10)**
+   - Three-status bonus system: pending → submitted → claimed
+   - "View Code" button for submitted physical bonuses
+   - "Resend Email" button to resend secret code to employee
+   - Admin can resend codes anytime before employee claims
+   - AJAX endpoint: `wc_tp_resend_secret_code` for resending emails
+
+7. **Payroll Calculations Updated (STEP 11)**
+   - Updated `get_user_total_earnings()` to only include claimed bonuses
+   - Updated `get_monthly_payroll()` to only include claimed bonuses
+   - Updated `get_payroll_by_date_range()` to only include claimed bonuses
+   - Only money bonuses with status 'claimed' or 'submitted' are included
+   - Physical bonuses never included in earnings
+
+**BONUS STATUS FLOW:**
+- **Pending**: Employee hasn't claimed yet (no action available)
+- **Submitted**: Admin submitted, email sent to employee (View Code button)
+- **Claimed**: Employee claimed with secret code (Claimed label)
+
+**EMPLOYEE WORKFLOW:**
+1. Bonus achieved → Notification email sent
+2. Employee views Performance Tracker → Bonus Achieved tab
+3. Clicks "Claim" button
+4. For money: Automatically added to earnings
+5. For physical: Enters secret code from email
+6. Status changes to "Claimed"
+
+**ADMIN WORKFLOW:**
+1. Navigate to Employee Details → Performance → Bonus Achieved
+2. Click "Submit" on pending bonus
+3. For money: Automatically added to earnings, marked "Submitted"
+4. For physical: Popup shows secret code with copy button
+5. Admin copies code and sends to employee (or email auto-sent)
+6. Can click "View Code" anytime to resend email
+
+**BENEFITS:**
+- ✅ Flexible bonus claiming system
+- ✅ Money bonuses auto-add to earnings
+- ✅ Physical bonuses tracked with secret codes
+- ✅ Lifetime storage of all achieved bonuses
+- ✅ Professional email notifications
+- ✅ Admin can resend codes anytime
+- ✅ Accurate payroll calculations
+- ✅ Three-status tracking system
+
+**FILES MODIFIED:**
+- `includes/class-performance-tracker.php` - Added bonus achievement storage and email functions
+- `includes/class-performance-tracker-ajax.php` - Added AJAX endpoints for claim, submit, resend
+- `includes/class-employee-detail.php` - Added Bonus Achieved tab to admin view
+- `includes/class-core-engine.php` - Updated earnings calculation for claimed bonuses
+- `includes/class-payroll-engine.php` - Updated payroll calculations for claimed bonuses
+- `assets/js/performance-tracker.js` - Added UI for bonus claiming and resending
+- `assets/css/performance-tracker.css` - Added styling for bonus achieved table and popups
+
+---
+
+## [1.6.23] - 2026-04-20
+### 🐛 FIXED - Bonus Config Not Saving
+
+#### FIXED - Bonus Configuration Now Saves Properly
+**ISSUE:**
+- Bonus config was only saved when the "bonuses" tab was active
+- Switching to other tabs and saving would not persist bonus rule changes
+
+**THE FIX:**
+- Bonus config is now always collected and saved regardless of active tab
+- Moved bonus config collection to "always save" section
+- Proper error handling for bonus config validation
+
+**BENEFITS:**
+- ✅ Bonus config saves from any tab
+- ✅ No data loss when switching tabs
+- ✅ Consistent save behavior across all sections
+
+---
+
 ## [1.6.23] - 2026-04-20
 ### 🐛 FIXED - Bonus Config Not Saving
 

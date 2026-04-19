@@ -1363,3 +1363,514 @@
 		font-size: 16px;
 	}
 }
+
+
+/* ============================================================================
+   BONUS ACHIEVED SECTION (STEP 5)
+   ============================================================================ */
+
+.performance-bonus-achieved {
+	padding: 20px 0;
+}
+
+.bonus-achieved-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.bonus-achieved-header h3 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: #212B36;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.bonus-count {
+	font-size: 14px;
+	color: #637381;
+	background: #F4F6F8;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-weight: 600;
+}
+
+.bonus-achieved-empty {
+	text-align: center;
+	padding: 60px 20px;
+	background: #F9FAFB;
+	border: 2px dashed #E5EAF0;
+	border-radius: 12px;
+}
+
+.bonus-achieved-empty i {
+	font-size: 48px;
+	color: #919EAB;
+	margin-bottom: 16px;
+	display: block;
+}
+
+.bonus-achieved-empty p {
+	font-size: 16px;
+	color: #637381;
+	margin: 0;
+}
+
+.bonus-achieved-table-container {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	background: #ffffff;
+	border: 1px solid #E5EAF0;
+	border-radius: 12px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.bonus-achieved-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.bonus-achieved-table thead {
+	background: #F9FAFB;
+	border-bottom: 2px solid #E5EAF0;
+}
+
+.bonus-achieved-table th {
+	padding: 16px;
+	text-align: left;
+	font-weight: 600;
+	color: #637381;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-size: 12px;
+}
+
+.bonus-achieved-table tbody tr {
+	border-bottom: 1px solid #E5EAF0;
+	transition: all 0.2s ease;
+}
+
+.bonus-achieved-table tbody tr:hover {
+	background: #F9FAFB;
+}
+
+.bonus-achieved-table tbody tr.status-claimed {
+	opacity: 0.8;
+}
+
+.bonus-achieved-table td {
+	padding: 16px;
+	color: #212B36;
+}
+
+.tier-cell {
+	font-weight: 600;
+}
+
+.tier-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.description-cell {
+	color: #637381;
+}
+
+.bonus-info {
+	text-align: left;
+}
+
+.bonus-title {
+	font-weight: 600;
+	color: #212B36;
+	margin-bottom: 4px;
+}
+
+.bonus-meta {
+	font-size: 12px;
+	color: #919EAB;
+}
+
+.amount-cell {
+	font-weight: 600;
+	color: #28a745;
+}
+
+.amount-value {
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.type-value {
+	display: inline-block;
+	padding: 4px 10px;
+	background: #E3F2FD;
+	color: #1976D2;
+	border-radius: 6px;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.status-cell {
+	text-align: center;
+}
+
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.status-badge.status-pending {
+	background: #FFF9C4;
+	color: #F57C00;
+}
+
+.status-badge.status-claimed {
+	background: #E8F5E9;
+	color: #388E3C;
+}
+
+.action-cell {
+	text-align: center;
+}
+
+.btn-claim {
+	padding: 8px 16px;
+	background: #0073aa;
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.btn-claim:hover {
+	background: #005a87;
+	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3);
+	transform: translateY(-1px);
+}
+
+.btn-claim:active {
+	transform: translateY(0);
+}
+
+.action-claimed {
+	display: inline-block;
+	padding: 8px 16px;
+	background: #E8F5E9;
+	color: #388E3C;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+/* Responsive Design for Bonus Achieved Table */
+@media (max-width: 768px) {
+	.bonus-achieved-header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.bonus-achieved-table {
+		font-size: 12px;
+	}
+
+	.bonus-achieved-table th,
+	.bonus-achieved-table td {
+		padding: 12px 8px;
+	}
+
+	.bonus-title {
+		font-size: 13px;
+	}
+
+	.bonus-meta {
+		font-size: 11px;
+	}
+
+	.btn-claim,
+	.action-claimed {
+		padding: 6px 12px;
+		font-size: 12px;
+	}
+}
+
+@media (max-width: 480px) {
+	.bonus-achieved-table-container {
+		border-radius: 8px;
+	}
+
+	.bonus-achieved-table th,
+	.bonus-achieved-table td {
+		padding: 10px 6px;
+	}
+
+	.bonus-achieved-table th {
+		font-size: 10px;
+	}
+
+	.tier-badge {
+		padding: 4px 8px;
+		font-size: 11px;
+	}
+
+	.amount-value {
+		font-size: 14px;
+	}
+
+	.btn-claim,
+	.action-claimed {
+		padding: 6px 10px;
+		font-size: 11px;
+	}
+}
+
+
+/* ============================================================================
+   SECRET CODE POPUP (STEP 8)
+   ============================================================================ */
+
+.secret-code-popup {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+	animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.secret-code-content {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 32px;
+	max-width: 500px;
+	width: 90%;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+	animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+	from {
+		transform: translateY(20px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.secret-code-content h3 {
+	margin: 0 0 16px 0;
+	font-size: 20px;
+	font-weight: 700;
+	color: #212B36;
+}
+
+.secret-code-content p {
+	margin: 0 0 16px 0;
+	font-size: 14px;
+	color: #637381;
+	line-height: 1.5;
+}
+
+.secret-code-display {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: #F9FAFB;
+	border: 2px solid #E5EAF0;
+	border-radius: 8px;
+	padding: 16px;
+	margin-bottom: 16px;
+}
+
+.secret-code-display code {
+	flex: 1;
+	font-family: 'Courier New', monospace;
+	font-size: 18px;
+	font-weight: 700;
+	color: #FF9900;
+	letter-spacing: 2px;
+	word-break: break-all;
+}
+
+.btn-copy {
+	padding: 8px 16px;
+	background: #0073aa;
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.btn-copy:hover {
+	background: #005a87;
+	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3);
+}
+
+.btn-copy:active {
+	transform: scale(0.98);
+}
+
+.secret-code-note {
+	font-size: 12px;
+	color: #919EAB;
+	font-style: italic;
+	margin-bottom: 24px !important;
+}
+
+.secret-code-content .btn-close {
+	width: 100%;
+	padding: 12px 16px;
+	background: #F4F6F8;
+	color: #212B36;
+	border: 1px solid #E5EAF0;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.secret-code-content .btn-close:hover {
+	background: #E5EAF0;
+	border-color: #919EAB;
+}
+
+@media (max-width: 480px) {
+	.secret-code-content {
+		padding: 24px;
+	}
+
+	.secret-code-display {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.secret-code-display code {
+		text-align: center;
+		padding: 12px 0;
+	}
+
+	.btn-copy {
+		width: 100%;
+	}
+}
+
+
+/* ============================================================================
+   BONUS ACHIEVED TABLE - ADDITIONAL STYLES (STEP 10)
+   ============================================================================ */
+
+.bonus-row.status-submitted {
+	background: #fffbf0;
+}
+
+.status-badge.status-submitted {
+	background: #FFF9C4;
+	color: #F57C00;
+}
+
+.btn-view-code {
+	padding: 8px 16px;
+	background: #6f42c1;
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.btn-view-code:hover {
+	background: #5a32a3;
+	box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+	transform: translateY(-1px);
+}
+
+.btn-view-code:active {
+	transform: translateY(0);
+}
+
+/* ============================================================================
+   SECRET CODE POPUP - RESEND BUTTON (STEP 10)
+   ============================================================================ */
+
+.secret-code-content .btn-resend {
+	width: 100%;
+	padding: 12px 16px;
+	background: #0073aa;
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	margin-bottom: 12px;
+}
+
+.secret-code-content .btn-resend:hover {
+	background: #005a87;
+	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3);
+}
+
+.secret-code-content .btn-resend:active {
+	transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+	.btn-view-code {
+		padding: 6px 12px;
+		font-size: 12px;
+	}
+
+	.secret-code-content .btn-resend {
+		padding: 10px 12px;
+		font-size: 13px;
+	}
+}
