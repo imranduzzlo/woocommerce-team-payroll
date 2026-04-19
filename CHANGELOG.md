@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.9] - 2026-04-19
+### Fixed
+- Added missing nonce verification to get_employee_orders AJAX handler
+
 ## [1.6.8] - 2026-04-19
 ### Fixed
 - Fixed Attributed Total column not displaying in admin employee orders table

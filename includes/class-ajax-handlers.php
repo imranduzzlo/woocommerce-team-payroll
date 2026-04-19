@@ -39,6 +39,8 @@ class WC_Team_Payroll_AJAX_Handlers {
 	}
 
 	public static function get_employee_orders() {
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_send_json_error( __( 'Unauthorized', 'wc-team-payroll' ) );
 		}
