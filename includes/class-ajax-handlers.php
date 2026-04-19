@@ -39,23 +39,8 @@ class WC_Team_Payroll_AJAX_Handlers {
 	}
 
 	public static function get_employee_orders() {
-		// Check nonce first
-		if ( ! isset( $_POST['nonce'] ) ) {
-			wp_send_json_error( array( 'message' => 'Nonce not provided' ) );
-		}
-		
-		$nonce_check = check_ajax_referer( 'wc_team_payroll_nonce', 'nonce', false );
-		if ( ! $nonce_check ) {
-			wp_send_json_error( array( 'message' => 'Nonce verification failed' ) );
-		}
-
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
-		}
-		
-		// Check if WooCommerce function exists
-		if ( ! function_exists( 'wc_get_orders' ) ) {
-			wp_send_json_error( array( 'message' => 'WooCommerce not loaded' ) );
+			wp_send_json_error( __( 'Unauthorized', 'wc-team-payroll' ) );
 		}
 
 		$user_id = intval( $_POST['user_id'] );
@@ -79,7 +64,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$processor_id = $order->get_meta( '_processor_user_id' );
 			$commission_data = $order->get_meta( '_commission_data' );
 
-			// Ensure commission_data is unserialized if needed
+			// Ensure commission_data is properly unserialized (fix for serialized string issue)
 			if ( is_string( $commission_data ) && ! empty( $commission_data ) ) {
 				$commission_data = maybe_unserialize( $commission_data );
 			}
@@ -107,11 +92,11 @@ class WC_Team_Payroll_AJAX_Handlers {
 			// Get order status and check if commission applies
 			$order_status = $order->get_status();
 			$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
-			$has_commission = $commission_data && in_array( $order_status, $commission_statuses );
+			$has_commission = is_array( $commission_data ) && ! empty( $commission_data ) && in_array( $order_status, $commission_statuses );
 
 			// Calculate attributed total
 			$attributed_value = 0;
-			if ( is_array( $commission_data ) ) {
+			if ( $has_commission ) {
 				// If user is both agent and processor (owner), show full order total
 				if ( $is_agent && $is_processor ) {
 					$attributed_value = floatval( $order->get_total() );
@@ -120,15 +105,12 @@ class WC_Team_Payroll_AJAX_Handlers {
 				} elseif ( $user_role === 'processor' && isset( $commission_data['processor_order_value'] ) ) {
 					$attributed_value = floatval( $commission_data['processor_order_value'] );
 				}
-			} else {
-				// No commission data yet - show full order total as fallback
-				$attributed_value = floatval( $order->get_total() );
 			}
 
 			// Calculate user earnings
 			$user_earnings = 0;
 			$order_commission = 0;
-			if ( $has_commission && is_array( $commission_data ) ) {
+			if ( $has_commission ) {
 				// Calculate earnings based on role(s)
 				if ( $is_agent && $is_processor ) {
 					// Owner gets both agent and processor earnings
@@ -169,7 +151,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 			$start_timestamp = strtotime( $start_date );
 			$end_timestamp = strtotime( $end_date . ' 23:59:59' );
 			$orders = array_filter( $orders, function( $order ) use ( $start_timestamp, $end_timestamp ) {
-				$order_time = strtotime( isset( $order['date'] ) ? $order['date'] : '' );
+				$order_time = strtotime( $order['date'] ?? '' );
 				return $order_time >= $start_timestamp && $order_time <= $end_timestamp;
 			} );
 		}
@@ -177,14 +159,14 @@ class WC_Team_Payroll_AJAX_Handlers {
 		// Filter by status
 		if ( $status ) {
 			$orders = array_filter( $orders, function( $order ) use ( $status ) {
-				return ( isset( $order['status'] ) ? $order['status'] : '' ) === $status;
+				return ( $order['status'] ?? '' ) === $status;
 			} );
 		}
 
 		// Filter by role (instead of flag)
 		if ( $role ) {
 			$orders = array_filter( $orders, function( $order ) use ( $role ) {
-				return ( isset( $order['role'] ) ? $order['role'] : '' ) === $role;
+				return ( $order['role'] ?? '' ) === $role;
 			} );
 		}
 
@@ -192,10 +174,10 @@ class WC_Team_Payroll_AJAX_Handlers {
 		if ( $search ) {
 			$orders = array_filter( $orders, function( $order ) use ( $search ) {
 				$search_lower = strtolower( $search );
-				return strpos( strtolower( isset( $order['order_id'] ) ? $order['order_id'] : '' ), $search_lower ) !== false ||
-					   strpos( strtolower( isset( $order['customer_name'] ) ? $order['customer_name'] : '' ), $search_lower ) !== false ||
-					   strpos( strtolower( isset( $order['customer_email'] ) ? $order['customer_email'] : '' ), $search_lower ) !== false ||
-					   strpos( strtolower( isset( $order['customer_phone'] ) ? $order['customer_phone'] : '' ), $search_lower ) !== false;
+				return strpos( strtolower( $order['order_id'] ?? '' ), $search_lower ) !== false ||
+					   strpos( strtolower( $order['customer_name'] ?? '' ), $search_lower ) !== false ||
+					   strpos( strtolower( $order['customer_email'] ?? '' ), $search_lower ) !== false ||
+					   strpos( strtolower( $order['customer_phone'] ?? '' ), $search_lower ) !== false;
 			} );
 		}
 

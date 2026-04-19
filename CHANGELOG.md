@@ -1,181 +1,51 @@
 # Changelog
 
-## [1.7.5] - 2026-04-19
-### Fixed
-- **CRITICAL**: Replaced ?? operator with isset() for PHP 5.6 compatibility
-- Removed try-catch that was causing issues
-- Added WooCommerce function check
-
-## [1.7.4] - 2026-04-19
-### Fixed
-- Wrapped AJAX handler in try-catch to prevent fatal errors
-- Removed file logging that was causing crashes
-- Added detailed exception reporting
-
-## [1.7.3] - 2026-04-19
-### Debug
-- Added detailed error display in frontend table for debugging
-- Shows full AJAX response and request details on error
-
-## [1.7.2] - 2026-04-19
-### Debug
-- Added direct file logging to wp-content/wc-tp-debug.log for troubleshooting
-
-## [1.7.1] - 2026-04-19
-### Fixed
-- **CRITICAL FIX**: Added missing require_once for class-ajax-handlers.php
-- This was causing "Error loading orders" because AJAX handlers were never loaded
-
-## [1.7.0] - 2026-04-19
-### Fixed
-- Added detailed error logging to diagnose orders loading issue
-- Improved nonce verification error handling
-
-## [1.6.9] - 2026-04-19
-### Fixed
-- Added missing nonce verification to get_employee_orders AJAX handler
-
-## [1.6.8] - 2026-04-19
-### Fixed
-- Fixed Attributed Total column not displaying in admin employee orders table
-- Removed duplicate AJAX handler that was preventing attributed_total from being calculated
-- Cleaned up debug logging code
-
-## [1.6.7] - 2026-04-19
-
-### 🔍 Debug - Always Active Logging
-
-**FIXED - Debug Logging Not Working:**
-- Removed `WP_DEBUG` requirement for debug logging
-- Debug logs now work automatically without any configuration
-- Logs are always written to `/wp-content/debug.log`
-
-**ENHANCED - Debug Output:**
-- Logs AJAX call with user_id and date range
-- Logs total orders found in database
-- Logs detailed info for order #8036 (agent_id, commission data, attributed value)
-- Logs final order count and sample order data
-- Shows complete data flow from database to response
-
-**HOW TO USE:**
-1. Install v1.6.7
-2. Load Orders tab for user_id=1
-3. Check `/wp-content/debug.log` file
-4. Look for "=== WC_TP: get_employee_orders called ===" and "=== Order 8036 Debug ==="
-
-**FILES MODIFIED:**
-- `includes/class-ajax-handlers.php` - Always-active debug logging
-
----
-
-## [1.6.6] - 2026-04-19
-
-### 🔍 Debug - Attributed Total Investigation
-
-**ADDED - Enhanced Debug Logging:**
-- Added detailed debug logging for order #8036 attributed total calculation
-- Logs commission data type (array vs string)
-- Logs if `agent_order_value` exists in commission data
-- Logs calculated attributed value
-- Added `maybe_unserialize()` to ensure commission data is properly unserialized
-
-**DEBUG INFO:**
-- Enable `WP_DEBUG` and `WP_DEBUG_LOG` in wp-config.php
-- Load Orders tab for user_id=1
-- Check `/wp-content/debug.log` for detailed output
-- Will show why attributed total is not displaying
-
-**FILES MODIFIED:**
-- `includes/class-ajax-handlers.php` - Enhanced debug logging
-
----
-
-## [1.6.5] - 2026-04-19
-
-### 🐛 Bug Fixes - Admin Employee Details Orders Tab
-
-**FIXED - Orders Not Loading:**
-- Fixed orders tab not loading any data on page load
-- Issue: `currentStartDate` and `currentEndDate` were empty, preventing AJAX call
-- Solution: Set default date range (2020-01-01 to today) and auto-load on page load
-
-**FIXED - Attributed Total Column Showing Blank:**
-- Fixed attributed total showing "—" even when commission data exists
-- Now shows proper attributed values from `agent_order_value` or `processor_order_value`
-- Falls back to full order total if commission data not yet calculated
-
-**ENHANCED - Admin Orders Table:**
-- Updated to match My Account orders table style
-- Clean WordPress admin table design
-- Better filter controls layout
-- Improved user experience
-
-**FILES MODIFIED:**
-- `includes/class-ajax-handlers.php` - Fixed attributed total calculation logic
-- `includes/class-employee-detail.php` - Updated table HTML and auto-load functionality
-
----
-
-## [1.6.4] - 2026-04-19
-
-### 🚀 First Manual Installation Release
-
-**RELEASE NOTES:**
-- First official release for manual installation
-- Includes fully functional GitHub auto-updater
-- Ready for production use
-
-**INSTALLATION:**
-- Download ZIP from GitHub release
-- Extract and rename folder to `woocommerce-team-payroll`
-- Upload to `/wp-content/plugins/`
-- Activate in WordPress admin
-
-**AUTO-UPDATER:**
-- Checks for updates every 12 hours
-- Shows in WordPress Updates page
-- One-click update installation
-- Automatic folder name fixing
-
-**REPOSITORY:**
-- https://github.com/imranduzzlo/woocommerce-team-payroll
-- All future updates via GitHub releases
-
----
-
 ## [1.6.3] - 2026-04-19
+### 🐛 Critical Fix - Admin Attributed Total Showing Blank
 
-### ✅ PERFECT GITHUB UPDATER - Final Repository
+#### FIXED - Serialized Commission Data Not Being Unserialized
+**BUG FIX:**
+- Fixed Admin Employee Details "Attributed Total" column showing "—" instead of actual values
+- Root cause: `_commission_data` order meta was sometimes stored as serialized string
+- The `is_array($commission_data)` check failed, preventing calculation entirely
+- Added explicit `maybe_unserialize()` to handle both array and serialized string formats
 
-**MAJOR CHANGES:**
-- ✅ Complete rewrite of GitHub updater with professional structure
-- ✅ Fixed folder name issue during installation (critical fix!)
-- ✅ Repository changed to FINAL: https://github.com/imranduzzlo/woocommerce-team-payroll
-- ✅ No more nested folders or wrong folder names
-- ✅ Automatic folder renaming during update/install
+**ISSUE:**
+```php
+// Commission data from database (serialized string):
+a:11:{s:8:"order_id";i:8038;s:17:"agent_order_value";d:549.5;...}
 
-**UPDATER FEATURES:**
-- Checks for updates every 12 hours automatically
-- Shows updates in WordPress admin (whether active or inactive)
-- Fixes GitHub's folder naming (woocommerce-team-payroll-1.6.3 → woocommerce-team-payroll)
-- Proper version comparison
-- Caches API responses (6 hours)
-- Debug logging when WP_DEBUG enabled
-- Works with GitHub zipball URLs
+// OLD CODE - Failed for serialized strings:
+$commission_data = $order->get_meta( '_commission_data' );
+if ( is_array( $commission_data ) ) { // ❌ Returns false for serialized strings
+    // Calculate attributed total
+}
+```
 
-**REPOSITORY:**
-- Final Repository: https://github.com/imranduzzlo/woocommerce-team-payroll
-- No other repositories used
-- Clean, professional structure
+**SOLUTION:**
+```php
+// NEW CODE - Handles both formats:
+$commission_data = $order->get_meta( '_commission_data' );
 
-**HOW IT WORKS:**
-1. WordPress checks for updates
-2. Updater queries GitHub API
-3. Compares versions (1.6.3 vs latest)
-4. Downloads ZIP from GitHub
-5. Automatically renames folder to correct name
-6. Installs/updates plugin
-7. Works perfectly!
+// Ensure commission_data is properly unserialized
+if ( is_string( $commission_data ) && ! empty( $commission_data ) ) {
+    $commission_data = maybe_unserialize( $commission_data );
+}
+
+// Now safely check if it's an array
+$has_commission = is_array( $commission_data ) && ! empty( $commission_data );
+```
+
+**BENEFITS:**
+- Attributed Total now displays correctly in Admin Employee Details
+- Handles both array and serialized string formats
+- Consistent with My Account view (which already worked)
+- No data loss or calculation errors
+
+**FILES MODIFIED:**
+- `includes/class-ajax-handlers.php` - Added explicit unserialization before array check
+
+---
 
 ## [1.6.2] - 2026-04-19
 ### ✨ Enhanced - Unified Attributed Total Logic & Employee Role Display

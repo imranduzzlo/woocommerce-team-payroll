@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: WooCommerce Team Payroll & Commission System
- * Plugin URI: https://github.com/imranduzzlo/woocommerce-team-payroll
+ * Plugin URI: https://github.com/imranduzzlo/pv-team-payroll
  * Description: Manage team-based commission and payroll system with agents and processors
- * Version: 1.7.5
+ * Version: 1.6.3
  * Author: Imran
  * Author URI: https://imranhossain.me/
  * License: GPL v2 or later
@@ -12,16 +12,15 @@
  * WC tested up to: 8.0
  * Text Domain: wc-team-payroll
  * Domain Path: /languages
- * GitHub Plugin URI: https://github.com/imranduzzlo/woocommerce-team-payroll
+ * GitHub Plugin URI: imranduzzlo/pv-team-payroll
  * GitHub Branch: main
- * Primary Branch: main
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_TEAM_PAYROLL_VERSION', '1.7.5' );
+define( 'WC_TEAM_PAYROLL_VERSION', '1.6.3' );
 define( 'WC_TEAM_PAYROLL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_TEAM_PAYROLL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -183,7 +182,6 @@ add_action( 'plugins_loaded', function() {
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-checkout-integration.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-employee-management.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-employee-detail.php';
-	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-ajax-handlers.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-custom-fields.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-myaccount.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-github-updater.php';
@@ -1511,7 +1509,155 @@ add_action( 'plugins_loaded', function() {
 		) );
 	} );
 
-	// AJAX handler for employee orders moved to includes/class-ajax-handlers.php
+	add_action( 'wp_ajax_wc_tp_get_employee_orders', function() {
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Unauthorized', 'wc-team-payroll' ) );
+		}
+
+		$user_id = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : 0;
+		$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( $_POST['start_date'] ) : date( 'Y-m-01' );
+		$end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( $_POST['end_date'] ) : date( 'Y-m-t' );
+		$status_filter = isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : '';
+		$flag_filter = isset( $_POST['flag'] ) ? sanitize_text_field( $_POST['flag'] ) : '';
+		$search_query = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
+
+		if ( ! $user_id ) {
+			wp_send_json_error( __( 'Invalid user ID', 'wc-team-payroll' ) );
+		}
+
+		// Get core engine for commission recalculation
+		$core_engine = new WC_Team_Payroll_Core_Engine();
+		
+		// Get commission calculation statuses from settings
+		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+
+		// Get ALL orders (not just specific statuses)
+		$args = array(
+			'limit'  => -1,
+			'status' => 'any', // Get all orders regardless of status
+		);
+
+		$orders = wc_get_orders( $args );
+		$orders_data = array();
+
+		foreach ( $orders as $order ) {
+			$agent_id = $order->get_meta( '_primary_agent_id' );
+			$processor_id = $order->get_meta( '_processor_user_id' );
+			$commission_data = $order->get_meta( '_commission_data' );
+
+			// Check if user is involved in this order
+			$user_role = null;
+			if ( intval( $agent_id ) === intval( $user_id ) ) {
+				$user_role = 'agent';
+			} elseif ( intval( $processor_id ) === intval( $user_id ) ) {
+				$user_role = 'processor';
+			}
+
+			if ( ! $user_role ) {
+				continue; // User not involved in this order
+			}
+
+			// Apply status filter
+			if ( ! empty( $status_filter ) && $order->get_status() !== $status_filter ) {
+				continue;
+			}
+
+			// Check if order status is in commission calculation statuses
+			$order_status = $order->get_status();
+			$has_commission = in_array( $order_status, $commission_statuses );
+
+			// Recalculate commission ONLY if order status is in commission calculation statuses
+			if ( $has_commission && $commission_data ) {
+				$recalculated_commission = $core_engine->calculate_commission( $order, $agent_id, $processor_id );
+				$commission_data = $recalculated_commission;
+			} elseif ( ! $has_commission ) {
+				// No commission for orders not in commission calculation statuses
+				$commission_data = null;
+			}
+
+			// Determine flag
+			$flag = 'owner';
+			$flag_label = __( 'Owner', 'wc-team-payroll' );
+
+			if ( $agent_id && $processor_id && intval( $agent_id ) !== intval( $processor_id ) ) {
+				if ( $user_role === 'agent' ) {
+					$flag = 'affiliate_to';
+					$flag_label = __( 'Affiliate To', 'wc-team-payroll' );
+				} else {
+					$flag = 'affiliate_from';
+					$flag_label = __( 'Affiliate From', 'wc-team-payroll' );
+				}
+			}
+
+			// Apply flag filter
+			if ( ! empty( $flag_filter ) && $flag !== $flag_filter ) {
+				continue;
+			}
+
+			// Calculate user earnings from recalculated commission (only if has commission)
+			$user_earnings = 0;
+			if ( $commission_data ) {
+				if ( $user_role === 'agent' ) {
+					$user_earnings = $commission_data['agent_earnings'];
+				} else {
+					$user_earnings = $commission_data['processor_earnings'];
+				}
+			}
+
+			// Get customer info
+			$customer_name = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+			$customer_email = $order->get_billing_email();
+			$customer_phone = $order->get_billing_phone();
+
+			// Apply search filter
+			if ( ! empty( $search_query ) ) {
+				$matches = false;
+				if ( stripos( $order->get_order_number(), $search_query ) !== false ) {
+					$matches = true;
+				} elseif ( stripos( $customer_name, $search_query ) !== false ) {
+					$matches = true;
+				} elseif ( stripos( $customer_email, $search_query ) !== false ) {
+					$matches = true;
+				} elseif ( stripos( $customer_phone, $search_query ) !== false ) {
+					$matches = true;
+				}
+
+				if ( ! $matches ) {
+					continue;
+				}
+			}
+
+			// Apply date range filter
+			$order_date = $order->get_date_created();
+			if ( $order_date ) {
+				$order_date_str = $order_date->format( 'Y-m-d' );
+				if ( $order_date_str < $start_date || $order_date_str > $end_date ) {
+					continue;
+				}
+			}
+
+			$orders_data[] = array(
+				'order_id'        => $order->get_id(),
+				'customer_name'   => $customer_name,
+				'customer_email'  => $customer_email,
+				'customer_phone'  => $customer_phone,
+				'total'           => $order->get_total(),
+				'status'          => ucfirst( $order->get_status() ),
+				'commission'      => $commission_data ? $commission_data['total_commission'] : 0,
+				'user_earnings'   => $user_earnings,
+				'flag'            => $flag,
+				'flag_label'      => $flag_label,
+				'date'            => $order->get_date_created()->format( 'Y-m-d' ),
+				'has_commission'  => $has_commission,
+			);
+		}
+
+		wp_send_json_success( array(
+			'orders' => $orders_data,
+		) );
+	} );
 
 	// AJAX handler for getting all payments
 	add_action( 'wp_ajax_wc_tp_get_all_payments', function() {
