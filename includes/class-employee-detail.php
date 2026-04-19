@@ -1951,9 +1951,6 @@ class WC_Team_Payroll_Employee_Detail {
 						html += '<th class="wc-tp-sortable-header" data-column="user_earnings">';
 						html += '<span class="th-content">Your&nbsp;Earnings</span>' + getSortIcon('user_earnings');
 						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="role">';
-						html += '<span class="th-content">Employee&nbsp;Role</span>' + getSortIcon('role');
-						html += '</th>';
 						html += '<th class="wc-tp-sortable-header" data-column="date">';
 						html += '<span class="th-content">Date</span>' + getSortIcon('date');
 						html += '</th>';
@@ -1973,7 +1970,6 @@ class WC_Team_Payroll_Employee_Detail {
 							html += '<td><span class="wc-tp-badge ' + statusClass + '">' + order.status + '</span></td>';
 							html += '<td>' + formatCurrency(order.commission) + '</td>';
 							html += '<td><strong>' + formatCurrency(order.user_earnings) + '</strong></td>';
-							html += '<td><span class="wc-tp-badge ' + roleClass + '">' + order.role_label + '</span></td>';
 							html += '<td>' + order.date + '</td>';
 							html += '<td><div class="wc-tp-action-icons">';
 							html += '<a href="' + viewUrl + '" class="wc-tp-action-icon" title="View Order"><span class="dashicons dashicons-visibility"></span></a>';
