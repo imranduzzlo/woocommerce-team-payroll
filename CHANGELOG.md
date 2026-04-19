@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.6.11] - 2026-04-19
+### 🔧 Critical Fix - Nonce Field Selection
+**FIXED:**
+- ✅ Fixed nonce field selection from `$('#wc_team_payroll_nonce')` to `$('input[name="wc_team_payroll_nonce"]')`
+- ✅ Added console logging to show initial values (userId, nonce, ajaxurl)
+
+**ISSUE:**
+- `wp_nonce_field()` creates input with `name` attribute, not `id`
+- JavaScript was trying to select by ID which returned undefined
+- This caused nonce verification to fail in AJAX handler
+
+**FILES MODIFIED:**
+- `includes/class-employee-detail.php` - Fixed nonce field selector
+
+**RESULT:**
+- Nonce is now correctly retrieved
+- AJAX calls pass nonce verification
+- Orders table loads successfully
+
+---
+
 ## [1.6.10] - 2026-04-19
 ### 🔧 Critical Fix - Missing ajaxurl Variable
 **FIXED:**

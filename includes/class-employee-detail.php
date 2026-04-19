@@ -1658,8 +1658,10 @@ class WC_Team_Payroll_Employee_Detail {
 		<script>
 			jQuery(document).ready(function($) {
 				const userId = $('#wc-tp-current-user-id').val();
-				const nonce = $('#wc_team_payroll_nonce').val();
+				const nonce = $('input[name="wc_team_payroll_nonce"]').val();
 				const ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
+				
+				console.log('Initial values:', {userId: userId, nonce: nonce, ajaxurl: ajaxurl});
 
 				// Employee Status Change Handler
 				$('#wc-tp-employee-status').on('change', function() {
