@@ -91,7 +91,7 @@ class WC_Team_Payroll_AJAX_Handlers {
 
 			// Calculate attributed total
 			$attributed_value = 0;
-			if ( $has_commission && is_array( $commission_data ) ) {
+			if ( is_array( $commission_data ) ) {
 				// If user is both agent and processor (owner), show full order total
 				if ( $is_agent && $is_processor ) {
 					$attributed_value = floatval( $order->get_total() );
@@ -100,6 +100,9 @@ class WC_Team_Payroll_AJAX_Handlers {
 				} elseif ( $user_role === 'processor' && isset( $commission_data['processor_order_value'] ) ) {
 					$attributed_value = floatval( $commission_data['processor_order_value'] );
 				}
+			} else {
+				// No commission data yet - show full order total as fallback
+				$attributed_value = floatval( $order->get_total() );
 			}
 
 			// Calculate user earnings
