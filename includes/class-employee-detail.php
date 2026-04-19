@@ -1942,9 +1942,6 @@ class WC_Team_Payroll_Employee_Detail {
 						html += '<th class="wc-tp-sortable-header" data-column="total">';
 						html += '<span class="th-content">Total</span>' + getSortIcon('total');
 						html += '</th>';
-						html += '<th class="wc-tp-sortable-header" data-column="attributed_total">';
-						html += '<span class="th-content">Attributed&nbsp;Total</span>' + getSortIcon('attributed_total');
-						html += '</th>';
 						html += '<th class="wc-tp-sortable-header" data-column="status">';
 						html += '<span class="th-content">Status</span>' + getSortIcon('status');
 						html += '</th>';
@@ -1973,7 +1970,6 @@ class WC_Team_Payroll_Employee_Detail {
 							html += '<td><strong>#' + order.order_id + '</strong></td>';
 							html += '<td>' + order.customer_name + '</td>';
 							html += '<td>' + formatCurrency(order.total) + '</td>';
-							html += '<td>' + formatCurrency(order.attributed_total) + '</td>';
 							html += '<td><span class="wc-tp-badge ' + statusClass + '">' + order.status + '</span></td>';
 							html += '<td>' + formatCurrency(order.commission) + '</td>';
 							html += '<td><strong>' + formatCurrency(order.user_earnings) + '</strong></td>';
