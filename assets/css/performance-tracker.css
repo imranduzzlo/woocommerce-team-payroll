@@ -88,16 +88,7 @@
 }
 
 .performance-tab.active {
-	background: #0073aa;
-	border-color: #0073aa;
-	color: #ffffff;
 	font-weight: 600;
-}
-
-.performance-tab.active:hover {
-	background: #005a87;
-	border-color: #005a87;
-	color: #ffffff;
 }
 
 /* ============================================================================

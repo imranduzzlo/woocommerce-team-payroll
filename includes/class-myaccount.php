@@ -2394,6 +2394,16 @@ class WC_Team_Payroll_MyAccount {
 					border-color: {$button_hover_background} !important;
 				}
 				
+				.performance-tab.active:hover {
+					background: {$button_hover_background} !important;
+					border-color: {$button_hover_background} !important;
+					color: {$button_text_color} !important;
+				}
+				
+				.performance-tab.active .ph {
+					color: {$button_text_color} !important;
+				}
+				
 				.pv-table-controls .btn-clear-filters:focus {
 					outline: none !important;
 					box-shadow: none !important;
