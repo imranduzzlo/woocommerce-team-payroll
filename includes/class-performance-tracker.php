@@ -1394,6 +1394,254 @@ class WC_Team_Payroll_Performance_Tracker {
 	}
 
 	// ============================================================================
+	// PERIOD-BASED ACHIEVEMENT FINALIZATION
+	// ============================================================================
+
+	/**
+	 * Check and finalize period-based achievements for all employees
+	 * Handles daily, weekly, quarterly, half-yearly, and yearly periods
+	 *
+	 * @param string $period_type Period type (daily, weekly, monthly, quarterly, half_yearly, yearly)
+	 */
+	public function check_and_finalize_period_achievements( $period_type = 'monthly' ) {
+		// Get all employees
+		$employees = $this->get_all_employees();
+
+		foreach ( $employees as $employee ) {
+			$user_id = $employee->ID;
+
+			// Get current period ID
+			$current_period_id = $this->get_current_period_id( $period_type );
+			$last_period_id = get_user_meta( $user_id, '_wc_tp_last_achievement_period_' . $period_type, true );
+
+			// Check if period has changed
+			if ( $current_period_id !== $last_period_id && ! empty( $last_period_id ) ) {
+				// Period changed! Get previous period data
+				$previous_period_data = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $last_period_id, true );
+
+				if ( $previous_period_data ) {
+					// Send period summary email
+					$this->send_period_achievement_email( $user_id, $previous_period_data, $period_type );
+
+					// Finalize previous period (already archived by reset_period_achievements)
+					$this->finalize_period_achievements( $user_id, $last_period_id, $previous_period_data );
+				}
+			}
+
+			// Update current period achievements
+			$this->update_period_achievements( $user_id );
+		}
+	}
+
+	/**
+	 * Finalize period achievements and add to history
+	 *
+	 * @param int $user_id User ID
+	 * @param string $period_id Period ID
+	 * @param array $period_data Period achievement data
+	 */
+	private function finalize_period_achievements( $user_id, $period_id, $period_data ) {
+		// Get period history
+		$history = get_user_meta( $user_id, '_wc_tp_period_achievements_history', true );
+		if ( ! is_array( $history ) ) {
+			$history = array();
+		}
+
+		// Add finalized timestamp
+		$period_data['finalized_at'] = current_time( 'Y-m-d H:i:s' );
+
+		// Add to history
+		$history[ $period_id ] = $period_data;
+
+		// Keep only last 365 records
+		if ( count( $history ) > 365 ) {
+			// Remove oldest entries
+			$history = array_slice( $history, -365, 365, true );
+		}
+
+		// Save history
+		update_user_meta( $user_id, '_wc_tp_period_achievements_history', $history );
+	}
+
+	/**
+	 * Send period achievement summary email
+	 *
+	 * @param int $user_id User ID
+	 * @param array $period_data Period achievement data
+	 * @param string $period_type Period type
+	 */
+	private function send_period_achievement_email( $user_id, $period_data, $period_type ) {
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) {
+			return;
+		}
+
+		// Check if already sent for this period
+		$last_email_period = get_user_meta( $user_id, '_wc_tp_last_period_email_' . $period_type, true );
+		if ( $last_email_period === $period_data['period'] ) {
+			return; // Already sent
+		}
+
+		$highest_tier = isset( $period_data['highest_tier'] ) ? $period_data['highest_tier'] : '';
+		
+		if ( empty( $highest_tier ) ) {
+			return; // No achievements, no email
+		}
+
+		// Prepare email
+		$to = $user->user_email;
+		$period_label = $this->get_period_label( $period_data['period'], $period_type );
+		
+		$subject = sprintf( 
+			__( '🎉 Your %s Achievement for %s!', 'wc-team-payroll' ),
+			ucfirst( $highest_tier ),
+			$period_label
+		);
+
+		$currency_symbol = get_woocommerce_currency_symbol();
+		
+		$message = $this->get_period_achievement_email_template( 
+			$user->display_name,
+			$period_data,
+			$period_type,
+			$currency_symbol
+		);
+
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+		// Send email
+		wp_mail( $to, $subject, $message, $headers );
+
+		// Mark as sent
+		update_user_meta( $user_id, '_wc_tp_last_period_email_' . $period_type, $period_data['period'] );
+	}
+
+	/**
+	 * Get human-readable period label
+	 *
+	 * @param string $period_id Period ID
+	 * @param string $period_type Period type
+	 * @return string Period label
+	 */
+	private function get_period_label( $period_id, $period_type ) {
+		switch ( $period_type ) {
+			case 'daily':
+				return date( 'F j, Y', strtotime( $period_id ) );
+			
+			case 'weekly':
+				// Period ID format: 2026-W16
+				$parts = explode( '-W', $period_id );
+				if ( count( $parts ) === 2 ) {
+					$year = $parts[0];
+					$week = $parts[1];
+					return sprintf( __( 'Week %d of %s', 'wc-team-payroll' ), $week, $year );
+				}
+				return $period_id;
+			
+			case 'monthly':
+				return date( 'F Y', strtotime( $period_id . '-01' ) );
+			
+			case 'quarterly':
+				// Period ID format: 2026-Q2
+				$parts = explode( '-Q', $period_id );
+				if ( count( $parts ) === 2 ) {
+					$year = $parts[0];
+					$quarter = $parts[1];
+					return sprintf( __( 'Q%d %s', 'wc-team-payroll' ), $quarter, $year );
+				}
+				return $period_id;
+			
+			case 'half_yearly':
+				// Period ID format: 2026-H1
+				$parts = explode( '-H', $period_id );
+				if ( count( $parts ) === 2 ) {
+					$year = $parts[0];
+					$half = $parts[1];
+					$half_label = $half === '1' ? __( 'First Half', 'wc-team-payroll' ) : __( 'Second Half', 'wc-team-payroll' );
+					return sprintf( '%s %s', $half_label, $year );
+				}
+				return $period_id;
+			
+			case 'yearly':
+				return $period_id;
+			
+			default:
+				return $period_id;
+		}
+	}
+
+	/**
+	 * Get period achievement email template
+	 *
+	 * @param string $name User name
+	 * @param array $period_data Period achievement data
+	 * @param string $period_type Period type
+	 * @param string $currency_symbol Currency symbol
+	 * @return string HTML email content
+	 */
+	private function get_period_achievement_email_template( $name, $period_data, $period_type, $currency_symbol ) {
+		$highest_tier = $period_data['highest_tier'];
+		$period_label = $this->get_period_label( $period_data['period'], $period_type );
+
+		$tier_colors = array(
+			'gold' => '#FFD700',
+			'silver' => '#C0C0C0',
+			'bronze' => '#CD7F32',
+		);
+
+		$tier_emojis = array(
+			'gold' => '🥇',
+			'silver' => '🥈',
+			'bronze' => '🥉',
+		);
+
+		$color = $tier_colors[ $highest_tier ] ?? '#0073aa';
+		$emoji = $tier_emojis[ $highest_tier ] ?? '🏆';
+
+		$earnings = isset( $period_data['earnings'] ) ? $period_data['earnings'] : 0;
+		$orders = isset( $period_data['orders'] ) ? $period_data['orders'] : 0;
+		$aov = isset( $period_data['aov'] ) ? $period_data['aov'] : 0;
+
+		$html = sprintf(
+			'<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+				<div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+					<h2 style="text-align: center; color: %s;">%s %s Achievement!</h2>
+					<p>Hi %s,</p>
+					<p>Congratulations! You\'ve earned a <strong>%s</strong> achievement for <strong>%s</strong>!</p>
+					
+					<div style="background: %s20; padding: 15px; border-radius: 5px; margin: 20px 0;">
+						<h3 style="color: %s; margin-top: 0;">%s Period Performance</h3>
+						<ul style="list-style: none; padding: 0;">
+							<li><strong>Total Earnings:</strong> %s%s</li>
+							<li><strong>Orders Completed:</strong> %d</li>
+							<li><strong>Average Order Value:</strong> %s%s</li>
+						</ul>
+					</div>
+					
+					<p>Keep up the excellent work! Your dedication and performance are greatly appreciated.</p>
+					<p>Best regards,<br>The Team</p>
+				</div>
+			</body></html>',
+			$color,
+			$emoji,
+			ucfirst( $highest_tier ),
+			esc_html( $name ),
+			ucfirst( $highest_tier ),
+			esc_html( $period_label ),
+			$color,
+			$color,
+			ucfirst( $period_type ),
+			$currency_symbol,
+			number_format( $earnings, 2 ),
+			$orders,
+			$currency_symbol,
+			number_format( $aov, 2 )
+		);
+
+		return $html;
+	}
+
+	// ============================================================================
 	// BADGE STREAK SYSTEM (Phase 2)
 	// ============================================================================
 
@@ -2758,8 +3006,18 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * Cron: Check and update achievements for all employees
 	 */
 	public function cron_check_achievements() {
-		// Use new monthly achievement system
-		$this->check_and_finalize_monthly_achievements();
+		// Get achievements configuration to determine period type
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+
+		// Check if we need to handle period-based achievements
+		if ( $period_type === 'monthly' ) {
+			// Use existing monthly achievement system for backward compatibility
+			$this->check_and_finalize_monthly_achievements();
+		} else {
+			// Use new period-based achievement system
+			$this->check_and_finalize_period_achievements( $period_type );
+		}
 		
 		// Also update old system for backward compatibility
 		$employees = $this->get_all_employees();
