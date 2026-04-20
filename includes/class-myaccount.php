@@ -2862,82 +2862,26 @@ class WC_Team_Payroll_MyAccount {
 						
 						<?php if ( ! empty( $highest_tier ) ) : ?>
 							<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
-								<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-									<defs>
-										<!-- Gold Gradients -->
-										<radialGradient id="goldGradient" cx="50%" cy="50%">
-											<stop offset="0%" style="stop-color:#FFF9E6"/>
-											<stop offset="40%" style="stop-color:#FFD700"/>
-											<stop offset="100%" style="stop-color:#DAA520"/>
-										</radialGradient>
-										
-										<!-- Silver Gradients -->
-										<radialGradient id="silverGradient" cx="50%" cy="50%">
-											<stop offset="0%" style="stop-color:#FFFFFF"/>
-											<stop offset="40%" style="stop-color:#E0E0E0"/>
-											<stop offset="100%" style="stop-color:#B0B0B0"/>
-										</radialGradient>
-										
-										<!-- Bronze Gradients -->
-										<radialGradient id="bronzeGradient" cx="50%" cy="50%">
-											<stop offset="0%" style="stop-color:#FFE4C4"/>
-											<stop offset="40%" style="stop-color:#CD7F32"/>
-											<stop offset="100%" style="stop-color:#8B4513"/>
-										</radialGradient>
-									</defs>
-									
-									<!-- Main Circle with Gradient -->
-									<circle cx="50" cy="50" r="45" class="badge-circle"/>
-									
-									<!-- Inner Ring for Depth -->
-									<circle cx="50" cy="50" r="35" class="badge-inner-ring"/>
-									
-									<!-- Crown Icon (Outline Only) -->
-									<g class="badge-icon-outline">
+								<div class="badge-coin-container">
+									<div class="badge-coin"></div>
+									<div class="badge-letter">
 										<?php if ( $highest_tier === 'gold' ) : ?>
-											<!-- King Crown (Outline) -->
-											<path d="M 30 55 L 33 42 L 40 48 L 50 38 L 60 48 L 67 42 L 70 55 Z" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-											<rect x="30" y="55" width="40" height="8" rx="2" fill="none" stroke-width="3"/>
-											<circle cx="40" cy="42" r="3" fill="none" stroke-width="2"/>
-											<circle cx="50" cy="38" r="3" fill="none" stroke-width="2"/>
-											<circle cx="60" cy="42" r="3" fill="none" stroke-width="2"/>
+											<span class="letter-g">G</span>
 										<?php elseif ( $highest_tier === 'silver' ) : ?>
-											<!-- Medal Star (Outline) -->
-											<path d="M 50 35 L 53 45 L 63 46 L 56 53 L 58 63 L 50 58 L 42 63 L 44 53 L 37 46 L 47 45 Z" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-											<circle cx="50" cy="50" r="4" fill="none" stroke-width="2"/>
+											<span class="letter-s">S</span>
 										<?php else : ?>
-											<!-- Trophy (Outline) -->
-											<path d="M 40 42 L 40 52 L 44 58 L 56 58 L 60 52 L 60 42 Z" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-											<path d="M 35 42 L 35 47 C 35 50 37 52 40 52" fill="none" stroke-width="2.5" stroke-linecap="round"/>
-											<path d="M 65 42 L 65 47 C 65 50 63 52 60 52" fill="none" stroke-width="2.5" stroke-linecap="round"/>
-											<rect x="45" y="58" width="10" height="5" fill="none" stroke-width="2.5"/>
-											<rect x="40" y="63" width="20" height="4" rx="2" fill="none" stroke-width="2.5"/>
+											<span class="letter-b">B</span>
 										<?php endif; ?>
-									</g>
-								</svg>
+									</div>
+								</div>
 							</div>
 						<?php else : ?>
 							<!-- Locked Badge -->
 							<div class="profile-achievement-badge profile-achievement-badge-locked">
-								<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-									<defs>
-										<radialGradient id="lockedGradient" cx="50%" cy="50%">
-											<stop offset="0%" style="stop-color:#F0F0F0"/>
-											<stop offset="40%" style="stop-color:#D0D0D0"/>
-											<stop offset="100%" style="stop-color:#A0A0A0"/>
-										</radialGradient>
-									</defs>
-									
-									<circle cx="50" cy="50" r="45" class="badge-circle"/>
-									<circle cx="50" cy="50" r="35" class="badge-inner-ring"/>
-									
-									<!-- Lock Icon (Outline) -->
-									<g class="badge-icon-outline">
-										<rect x="42" y="50" width="16" height="14" rx="2" fill="none" stroke-width="3"/>
-										<path d="M 44 50 L 44 44 C 44 40 46.7 37 50 37 C 53.3 37 56 40 56 44 L 56 50" fill="none" stroke-width="3" stroke-linecap="round"/>
-										<circle cx="50" cy="57" r="2.5" fill="none" stroke-width="2"/>
-									</g>
-								</svg>
+								<div class="locked-badge-container">
+									<div class="locked-badge-coin"></div>
+									<i class="ph ph-lock-key locked-badge-icon"></i>
+								</div>
 							</div>
 						<?php endif; ?>
 						

@@ -820,7 +820,6 @@ class WC_Team_Payroll_Employee_Detail {
 				height: 100%;
 				border-radius: 50%;
 				background: radial-gradient(circle at 35% 35%, #F5F5F5 0%, #D3D3D3 30%, #A9A9A9 70%, #696969 100%);
-				border: 1px solid #000000;
 				box-shadow: 
 					inset -2px -2px 4px rgba(0, 0, 0, 0.3),
 					inset 2px 2px 4px rgba(255, 255, 255, 0.4),

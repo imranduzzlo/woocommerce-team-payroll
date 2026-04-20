@@ -196,84 +196,266 @@ input[type="reset"]:focus {
 	height: 100%;
 }
 
-/* ===== GOLD BADGE - Smooth Gold with Outline Crown ===== */
-.profile-achievement-badge-gold .badge-circle {
-	fill: url(#goldGradient);
-	stroke: #B8860B;
-	stroke-width: 2;
-}
-
-.profile-achievement-badge-gold .badge-inner-ring {
-	fill: none;
-	stroke: #DAA520;
-	stroke-width: 1.5;
-	opacity: 0.5;
-}
-
-.profile-achievement-badge-gold .badge-icon-outline {
-	stroke: #8B6914;
-	fill: none;
-}
-
-/* ===== SILVER BADGE - Smooth Silver with Outline Medal ===== */
-.profile-achievement-badge-silver .badge-circle {
-	fill: url(#silverGradient);
-	stroke: #909090;
-	stroke-width: 2;
-}
-
-.profile-achievement-badge-silver .badge-inner-ring {
-	fill: none;
-	stroke: #B0B0B0;
-	stroke-width: 1.5;
-	opacity: 0.5;
-}
-
-.profile-achievement-badge-silver .badge-icon-outline {
-	stroke: #606060;
-	fill: none;
-}
-
-/* ===== BRONZE BADGE - Smooth Bronze with Outline Trophy ===== */
-.profile-achievement-badge-bronze .badge-circle {
-	fill: url(#bronzeGradient);
-	stroke: #8B4513;
-	stroke-width: 2;
-}
-
-.profile-achievement-badge-bronze .badge-inner-ring {
-	fill: none;
-	stroke: #CD7F32;
-	stroke-width: 1.5;
-	opacity: 0.5;
-}
-
-.profile-achievement-badge-bronze .badge-icon-outline {
-	stroke: #6B3410;
-	fill: none;
-}
-
 /* ===== LOCKED BADGE - Smooth Gray with Outline Lock ===== */
 .profile-achievement-badge-locked {
-	opacity: 0.65;
+	opacity: 1;
 }
 
-.profile-achievement-badge-locked .badge-circle {
-	fill: url(#lockedGradient);
-	stroke: #909090;
-	stroke-width: 2;
+.locked-badge-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.profile-achievement-badge-locked .badge-inner-ring {
-	fill: none;
-	stroke: #B0B0B0;
-	stroke-width: 1.5;
-	opacity: 0.5;
+.locked-badge-coin {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, #F5F5F5 0%, #D3D3D3 30%, #A9A9A9 70%, #696969 100%);
+	box-shadow: 
+		inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+		inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+		0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.profile-achievement-badge-locked .badge-icon-outline {
-	stroke: #707070;
-	fill: none;
+.locked-badge-coin::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+.locked-badge-coin::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	pointer-events: none;
+}
+
+.locked-badge-icon {
+	position: relative;
+	z-index: 2;
+	font-size: 24px;
+	color: #505050;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== GOLD BADGE - 3D Coin with Letter ===== */
+.profile-achievement-badge-gold {
+	opacity: 1;
+}
+
+.profile-achievement-badge-gold .badge-coin-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.profile-achievement-badge-gold .badge-coin {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, #FFFACD 0%, #FFD700 30%, #FFA500 70%, #8B6914 100%);
+	box-shadow: 
+		inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+		inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+		0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.profile-achievement-badge-gold .badge-coin::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+.profile-achievement-badge-gold .badge-coin::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	pointer-events: none;
+}
+
+.profile-achievement-badge-gold .badge-letter {
+	position: relative;
+	z-index: 2;
+	font-size: 28px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.profile-achievement-badge-gold .letter-g {
+	color: #8B6914;
+	font-family: Arial, sans-serif;
+	letter-spacing: 2px;
+}
+
+/* ===== SILVER BADGE - 3D Coin with Letter ===== */
+.profile-achievement-badge-silver {
+	opacity: 1;
+}
+
+.profile-achievement-badge-silver .badge-coin-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.profile-achievement-badge-silver .badge-coin {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E8E8E8 30%, #C0C0C0 70%, #808080 100%);
+	box-shadow: 
+		inset -2px -2px 4px rgba(0, 0, 0, 0.2),
+		inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+		0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.profile-achievement-badge-silver .badge-coin::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+.profile-achievement-badge-silver .badge-coin::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	pointer-events: none;
+}
+
+.profile-achievement-badge-silver .badge-letter {
+	position: relative;
+	z-index: 2;
+	font-size: 28px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.profile-achievement-badge-silver .letter-s {
+	color: #606060;
+	font-family: Arial, sans-serif;
+	letter-spacing: 2px;
+}
+
+/* ===== BRONZE BADGE - 3D Coin with Letter ===== */
+.profile-achievement-badge-bronze {
+	opacity: 1;
+}
+
+.profile-achievement-badge-bronze .badge-coin-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.profile-achievement-badge-bronze .badge-coin {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, #FFE4B5 0%, #CD7F32 30%, #B8860B 70%, #654321 100%);
+	box-shadow: 
+		inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+		inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+		0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.profile-achievement-badge-bronze .badge-coin::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.5) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+.profile-achievement-badge-bronze .badge-coin::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	pointer-events: none;
+}
+
+.profile-achievement-badge-bronze .badge-letter {
+	position: relative;
+	z-index: 2;
+	font-size: 28px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.profile-achievement-badge-bronze .letter-b {
+	color: #6B3410;
+	font-family: Arial, sans-serif;
+	letter-spacing: 2px;
 }
 
 /* Profile Goal Counter - Bottom Center */
