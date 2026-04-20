@@ -1,3 +1,12 @@
+## [1.6.28] - 2026-04-20
+### 🔄 Maintenance Release
+
+#### UPDATES
+- Version bump to 1.6.28
+- Stable release of role-based achievement settings compliance
+
+---
+
 ## [1.6.27] - 2026-04-20
 ### 🎯 Role-Based Achievement Settings Compliance
 
