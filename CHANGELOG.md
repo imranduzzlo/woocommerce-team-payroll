@@ -3942,3 +3942,41 @@ Employees can now see:
 
 ---
 
+## [1.6.42] - 2026-04-20
+### 🐛 Bug Fix - Fix Export Errors and Improve Print Functionality
+
+#### FIXED
+- Fixed "Export failed: Unknown error" for CSV and PDF exports
+- Fixed AJAX handler not returning proper responses
+- Fixed print functionality to include full report (not just table)
+- Improved error handling and user feedback
+
+#### ROOT CAUSE
+- Export functions were calling `exit;` before AJAX response could be sent
+- Print function was only capturing table content, not full report
+- Missing blob response type in AJAX request
+
+#### CHANGES
+- Refactored export functions to generate content instead of directly outputting
+- Created `generate_csv_content()` function for CSV generation
+- Created `generate_pdf_html()` function for PDF HTML generation
+- Updated AJAX handler to properly handle file downloads
+- Enhanced print functionality to use PDF export and open in new window
+- Improved error handling with better error messages
+- Added loading indicators for all export operations
+
+#### IMPROVEMENTS
+- ✅ CSV export now works without errors
+- ✅ PDF export now works without errors
+- ✅ Print opens full formatted report in new window
+- ✅ Better error messages for debugging
+- ✅ Proper blob handling for file downloads
+- ✅ Loading states for better UX
+- ✅ Consistent formatting across all export types
+
+#### FILES CHANGED
+- `includes/class-myaccount.php` - Refactored export functions
+- `assets/js/reports.js` - Fixed AJAX handling and print functionality
+
+---
+

@@ -5730,6 +5730,11 @@ class WC_Team_Payroll_MyAccount {
 		$filters = isset( $_POST['filters'] ) ? $_POST['filters'] : array();
 		$format = isset( $_POST['format'] ) ? sanitize_text_field( $_POST['format'] ) : 'csv';
 
+		// Validate format
+		if ( ! in_array( $format, array( 'csv', 'pdf' ) ) ) {
+			wp_send_json_error( __( 'Invalid export format', 'wc-team-payroll' ) );
+		}
+
 		// Get date range
 		$date_range = self::get_date_range_from_filter( $filters );
 		$start_date = $date_range['start'];
@@ -5782,16 +5787,372 @@ class WC_Team_Payroll_MyAccount {
 		$user = get_userdata( $user_id );
 		$user_name = $user->display_name;
 
-		// Generate export based on format
-		if ( $format === 'csv' ) {
-			self::export_to_csv( $filtered_orders, $user_name, $start_date, $end_date );
-		} elseif ( $format === 'pdf' ) {
-			self::export_to_pdf( $filtered_orders, $user_name, $start_date, $end_date, $earnings_data );
-		} elseif ( $format === 'excel' ) {
-			self::export_to_excel( $filtered_orders, $user_name, $start_date, $end_date, $earnings_data );
+		try {
+			// Generate export based on format
+			if ( $format === 'csv' ) {
+				$content = self::generate_csv_content( $filtered_orders, $user_name, $start_date, $end_date );
+				$filename = 'reports_' . sanitize_file_name( $user_name ) . '_' . date( 'Y-m-d' ) . '.csv';
+				
+				// Send CSV download
+				header( 'Content-Type: text/csv; charset=utf-8' );
+				header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+				header( 'Pragma: no-cache' );
+				header( 'Expires: 0' );
+				echo $content;
+				exit;
+				
+			} elseif ( $format === 'pdf' ) {
+				$html_content = self::generate_pdf_html( $filtered_orders, $user_name, $start_date, $end_date, $earnings_data );
+				$filename = 'reports_' . sanitize_file_name( $user_name ) . '_' . date( 'Y-m-d' ) . '.html';
+				
+				// Send HTML for PDF conversion
+				header( 'Content-Type: text/html; charset=utf-8' );
+				header( 'Content-Disposition: inline; filename="' . $filename . '"' );
+				echo $html_content;
+				exit;
+			}
+		} catch ( Exception $e ) {
+			wp_send_json_error( $e->getMessage() );
 		}
 
-		wp_send_json_error( __( 'Invalid export format', 'wc-team-payroll' ) );
+		wp_send_json_error( __( 'Export failed', 'wc-team-payroll' ) );
+	}
+
+	/**
+	 * Generate CSV content
+	 */
+	private static function generate_csv_content( $orders, $user_name, $start_date, $end_date ) {
+		// Create output stream
+		$output = fopen( 'php://memory', 'w' );
+
+		// Add BOM for UTF-8
+		fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
+
+		// Write header section
+		fputcsv( $output, array( 'PERFORMANCE REPORT' ) );
+		fputcsv( $output, array( '' ) );
+		fputcsv( $output, array( 'Employee', $user_name ) );
+		fputcsv( $output, array( 'Report Period', date( 'M d, Y', strtotime( $start_date ) ) . ' - ' . date( 'M d, Y', strtotime( $end_date ) ) ) );
+		fputcsv( $output, array( 'Generated', date( 'M d, Y H:i:s' ) ) );
+		fputcsv( $output, array( '' ) );
+
+		// Calculate totals
+		$total_earnings = 0;
+		$total_commission = 0;
+		$total_orders = count( $orders );
+
+		foreach ( $orders as $order ) {
+			$total_earnings += floatval( $order['total'] );
+			$total_commission += floatval( $order['earnings'] );
+		}
+
+		// Write summary section
+		fputcsv( $output, array( 'SUMMARY' ) );
+		fputcsv( $output, array( 'Total Orders', $total_orders ) );
+		fputcsv( $output, array( 'Total Order Value', wc_format_decimal( $total_earnings, 2 ) ) );
+		fputcsv( $output, array( 'Total Commission', wc_format_decimal( $total_commission, 2 ) ) );
+		fputcsv( $output, array( '' ) );
+
+		// Write data header row
+		fputcsv( $output, array(
+			'Date',
+			'Order ID',
+			'Order Value',
+			'Commission',
+			'Role',
+			'Status'
+		) );
+
+		// Write data rows
+		foreach ( $orders as $order ) {
+			$status = isset( $order['status'] ) ? $order['status'] : 'completed';
+			$status_label = wc_get_order_status_name( 'wc-' . $status );
+
+			fputcsv( $output, array(
+				date( 'Y-m-d', strtotime( $order['date'] ) ),
+				$order['order_id'],
+				wc_format_decimal( $order['total'], 2 ),
+				wc_format_decimal( $order['earnings'], 2 ),
+				ucfirst( $order['role'] ),
+				$status_label
+			) );
+		}
+
+		// Get content
+		rewind( $output );
+		$content = stream_get_contents( $output );
+		fclose( $output );
+
+		return $content;
+	}
+
+	/**
+	 * Generate PDF HTML content
+	 */
+	private static function generate_pdf_html( $orders, $user_name, $start_date, $end_date, $earnings_data ) {
+		// Calculate totals
+		$total_earnings = 0;
+		$total_commission = 0;
+		$total_orders = count( $orders );
+
+		foreach ( $orders as $order ) {
+			$total_earnings += floatval( $order['total'] );
+			$total_commission += floatval( $order['earnings'] );
+		}
+
+		// Generate PDF content as HTML
+		$pdf_content = '
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<title>Performance Report</title>
+			<style>
+				* { margin: 0; padding: 0; box-sizing: border-box; }
+				body { 
+					font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+					color: #333; 
+					line-height: 1.6;
+				}
+				.pdf-container { 
+					max-width: 900px; 
+					margin: 0 auto; 
+					padding: 40px;
+					background: white;
+				}
+				.pdf-header {
+					text-align: center;
+					margin-bottom: 30px;
+					border-bottom: 3px solid #0073aa;
+					padding-bottom: 20px;
+				}
+				.pdf-header h1 {
+					color: #0073aa;
+					font-size: 28px;
+					margin-bottom: 10px;
+				}
+				.pdf-header p {
+					color: #6c757d;
+					font-size: 14px;
+					margin: 5px 0;
+				}
+				.pdf-info {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 20px;
+					margin-bottom: 30px;
+					background: #f8f9fa;
+					padding: 20px;
+					border-radius: 8px;
+				}
+				.info-item {
+					display: flex;
+					flex-direction: column;
+				}
+				.info-label {
+					font-weight: 600;
+					color: #6c757d;
+					font-size: 12px;
+					text-transform: uppercase;
+					letter-spacing: 0.5px;
+					margin-bottom: 5px;
+				}
+				.info-value {
+					font-size: 16px;
+					color: #212529;
+					font-weight: 500;
+				}
+				.pdf-summary {
+					display: grid;
+					grid-template-columns: repeat(3, 1fr);
+					gap: 20px;
+					margin-bottom: 30px;
+				}
+				.summary-card {
+					background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+					color: white;
+					padding: 20px;
+					border-radius: 8px;
+					text-align: center;
+					box-shadow: 0 2px 8px rgba(0, 115, 170, 0.2);
+				}
+				.summary-card-label {
+					font-size: 12px;
+					text-transform: uppercase;
+					letter-spacing: 0.5px;
+					opacity: 0.9;
+					margin-bottom: 8px;
+				}
+				.summary-card-value {
+					font-size: 24px;
+					font-weight: 700;
+				}
+				.pdf-section-title {
+					font-size: 18px;
+					font-weight: 700;
+					color: #0073aa;
+					margin: 30px 0 15px 0;
+					padding-bottom: 10px;
+					border-bottom: 2px solid #0073aa;
+				}
+				.pdf-table {
+					width: 100%;
+					border-collapse: collapse;
+					margin-bottom: 30px;
+					font-size: 13px;
+				}
+				.pdf-table thead {
+					background: #f8f9fa;
+				}
+				.pdf-table th {
+					padding: 12px;
+					text-align: left;
+					font-weight: 600;
+					color: #495057;
+					border: 1px solid #dee2e6;
+					text-transform: uppercase;
+					font-size: 11px;
+					letter-spacing: 0.5px;
+				}
+				.pdf-table td {
+					padding: 12px;
+					border: 1px solid #dee2e6;
+					color: #495057;
+				}
+				.pdf-table tbody tr:nth-child(even) {
+					background: #f8f9fa;
+				}
+				.pdf-table tbody tr:hover {
+					background: #e9ecef;
+				}
+				.text-right {
+					text-align: right;
+				}
+				.text-center {
+					text-align: center;
+				}
+				.pdf-footer {
+					margin-top: 40px;
+					padding-top: 20px;
+					border-top: 1px solid #dee2e6;
+					font-size: 12px;
+					color: #6c757d;
+					text-align: center;
+				}
+				.pdf-footer p {
+					margin: 5px 0;
+				}
+				@media print {
+					body { background: white; }
+					.pdf-container { padding: 20px; }
+					.pdf-table { page-break-inside: avoid; }
+				}
+			</style>
+		</head>
+		<body>
+			<div class="pdf-container">
+				<!-- Header -->
+				<div class="pdf-header">
+					<h1>📊 Performance Report</h1>
+					<p>WooCommerce Team Payroll System</p>
+				</div>
+
+				<!-- Employee Info -->
+				<div class="pdf-info">
+					<div class="info-item">
+						<span class="info-label">Employee Name</span>
+						<span class="info-value">' . esc_html( $user_name ) . '</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Report Period</span>
+						<span class="info-value">' . esc_html( date( 'M d, Y', strtotime( $start_date ) ) ) . ' - ' . esc_html( date( 'M d, Y', strtotime( $end_date ) ) ) . '</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Generated Date</span>
+						<span class="info-value">' . esc_html( date( 'M d, Y' ) ) . '</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Generated Time</span>
+						<span class="info-value">' . esc_html( date( 'H:i:s' ) ) . '</span>
+					</div>
+				</div>
+
+				<!-- Summary Cards -->
+				<div class="pdf-summary">
+					<div class="summary-card">
+						<div class="summary-card-label">Total Orders</div>
+						<div class="summary-card-value">' . esc_html( $total_orders ) . '</div>
+					</div>
+					<div class="summary-card">
+						<div class="summary-card-label">Total Order Value</div>
+						<div class="summary-card-value">' . wc_price( $total_earnings ) . '</div>
+					</div>
+					<div class="summary-card">
+						<div class="summary-card-label">Total Commission</div>
+						<div class="summary-card-value">' . wc_price( $total_commission ) . '</div>
+					</div>
+				</div>
+
+				<!-- Commission History Table -->
+				<h2 class="pdf-section-title">Commission History</h2>
+				<table class="pdf-table">
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Order ID</th>
+							<th class="text-right">Order Value</th>
+							<th class="text-right">Commission</th>
+							<th>Role</th>
+							<th class="text-center">Status</th>
+						</tr>
+					</thead>
+					<tbody>';
+
+		foreach ( $orders as $order ) {
+			$status = isset( $order['status'] ) ? $order['status'] : 'completed';
+			$status_label = wc_get_order_status_name( 'wc-' . $status );
+
+			$pdf_content .= '
+						<tr>
+							<td>' . esc_html( date( 'M d, Y', strtotime( $order['date'] ) ) ) . '</td>
+							<td>#' . esc_html( $order['order_id'] ) . '</td>
+							<td class="text-right">' . wc_price( $order['total'] ) . '</td>
+							<td class="text-right">' . wc_price( $order['earnings'] ) . '</td>
+							<td>' . esc_html( ucfirst( $order['role'] ) ) . '</td>
+							<td class="text-center">' . esc_html( $status_label ) . '</td>
+						</tr>';
+		}
+
+		$pdf_content .= '
+					</tbody>
+				</table>
+
+				<!-- Footer -->
+				<div class="pdf-footer">
+					<p>This report was automatically generated by WooCommerce Team Payroll System.</p>
+					<p>For questions or discrepancies, please contact your administrator.</p>
+					<p style="margin-top: 10px; font-size: 11px;">© ' . esc_html( date( 'Y' ) ) . ' - All Rights Reserved</p>
+				</div>
+			</div>
+
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+			<script>
+				document.addEventListener("DOMContentLoaded", function() {
+					const element = document.querySelector(".pdf-container");
+					const opt = {
+						margin: 10,
+						filename: "reports_' . sanitize_file_name( $user_name ) . '_' . date( 'Y-m-d' ) . '.pdf",
+						image: { type: "jpeg", quality: 0.98 },
+						html2canvas: { scale: 2 },
+						jsPDF: { orientation: "portrait", unit: "mm", format: "a4" }
+					};
+					html2pdf().set(opt).from(element).save();
+				});
+			</script>
+		</body>
+		</html>';
+
+		return $pdf_content;
 	}
 
 	/**
