@@ -1211,20 +1211,28 @@
 	.reports-modal-overlay,
 	.reports-auto-refresh-indicator,
 	.wc-tp-employee-header-new,
-	.woocommerce-MyAccount-navigation {
+	.woocommerce-MyAccount-navigation,
+	.wc-tp-perf-nav-tabs,
+	button,
+	.btn,
+	input[type="button"],
+	input[type="submit"] {
 		display: none !important;
 	}
 
 	/* Page setup */
 	body {
 		margin: 0;
-		padding: 0;
+		padding: 20px;
 		background: white;
+		font-size: 12px;
+		line-height: 1.4;
 	}
 
 	.pv-page-wrapper {
 		padding: 0 !important;
 		background: white !important;
+		max-width: 100% !important;
 	}
 
 	/* Report title */
@@ -1247,6 +1255,82 @@
 		page-break-inside: avoid;
 		margin-bottom: 30px;
 	}
+
+	.reports-kpi-card {
+		page-break-inside: avoid;
+		border: 1px solid #dee2e6;
+		padding: 15px;
+		background: #f8f9fa;
+	}
+
+	/* Table styling for print */
+	.pv-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 11px;
+		page-break-inside: avoid;
+	}
+
+	.pv-table thead {
+		background: #f8f9fa;
+		display: table-header-group;
+	}
+
+	.pv-table th {
+		padding: 8px;
+		text-align: left;
+		border: 1px solid #dee2e6;
+		font-weight: 600;
+		background: #f8f9fa;
+	}
+
+	.pv-table td {
+		padding: 8px;
+		border: 1px solid #dee2e6;
+	}
+
+	.pv-table tbody tr {
+		page-break-inside: avoid;
+	}
+
+	.pv-table tbody tr:nth-child(even) {
+		background: #f8f9fa;
+	}
+
+	/* Section breaks */
+	.reports-section-wrapper {
+		page-break-inside: avoid;
+		margin-bottom: 30px;
+	}
+
+	h2, h3 {
+		page-break-after: avoid;
+		margin-top: 20px;
+		margin-bottom: 10px;
+	}
+
+	/* Print footer */
+	.print-footer {
+		margin-top: 40px;
+		padding-top: 20px;
+		border-top: 1px solid #dee2e6;
+		font-size: 10px;
+		color: #6c757d;
+		text-align: center;
+		page-break-inside: avoid;
+	}
+
+	/* Ensure proper spacing */
+	p {
+		margin: 5px 0;
+	}
+
+	/* Color adjustments for print */
+	.text-success { color: #28a745 !important; }
+	.text-danger { color: #dc3545 !important; }
+	.text-warning { color: #ffc107 !important; }
+	.text-info { color: #17a2b8 !important; }
+}
 
 	.reports-kpi-card {
 		page-break-inside: avoid;

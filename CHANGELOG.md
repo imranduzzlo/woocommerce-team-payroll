@@ -3894,3 +3894,51 @@ Employees can now see:
 
 ---
 
+## [1.6.41] - 2026-04-20
+### ✨ Feature - CSV, PDF, and Print Export for Reports
+
+#### ADDED
+- **CSV Export**: Download filtered report data as CSV with proper formatting
+  - Includes summary section (employee, period, generated date)
+  - Summary statistics (total orders, order value, commission)
+  - Detailed commission history with all columns
+  - UTF-8 BOM for Excel compatibility
+  
+- **PDF Export**: Generate professional PDF reports
+  - Beautiful HTML-based PDF with modern styling
+  - Summary cards with key metrics
+  - Formatted commission history table
+  - Employee info and report period
+  - Uses html2pdf.js library for client-side conversion
+  - Automatic download with proper filename
+  
+- **Print Functionality**: Print-friendly report view
+  - Custom print stylesheet with optimized layout
+  - Hides filters and export buttons
+  - Proper page breaks for multi-page reports
+  - Professional header and footer
+  - Optimized for both color and B&W printing
+
+#### IMPROVEMENTS
+- ✅ Enhanced CSV export with summary section
+- ✅ Professional PDF styling with gradient cards
+- ✅ Loading indicator during export
+- ✅ Error handling for export failures
+- ✅ Responsive print layout
+- ✅ Proper currency formatting in all exports
+- ✅ Date formatting consistency across all formats
+
+#### TECHNICAL
+- Updated `export_to_csv()` with enhanced formatting
+- Rewrote `export_to_pdf()` to use html2pdf.js library
+- Enhanced JavaScript export handler with loading states
+- Added comprehensive print media queries
+- Improved error handling and user feedback
+
+#### FILES CHANGED
+- `includes/class-myaccount.php` - Export functions
+- `assets/js/reports.js` - Export button handlers
+- `assets/css/reports.css` - Print media queries
+
+---
+
