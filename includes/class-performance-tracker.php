@@ -582,9 +582,11 @@ class WC_Team_Payroll_Performance_Tracker {
 			$goals_achieved = $order_value_achieved && $orders_achieved && $aov_achieved;
 		}
 
-		// Check if achievements are unlocked
-		$achievement_stats = get_user_meta( $user_id, '_wc_tp_achievement_stats', true );
-		$achievements_unlocked = isset( $achievement_stats['total_unlocked'] ) && $achievement_stats['total_unlocked'] > 0;
+		// Check if achievements are unlocked in current period
+		$period_type = isset( $current_progress['period_type'] ) ? $current_progress['period_type'] : 'monthly';
+		$current_period_id = $this->get_current_period_id( $period_type );
+		$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+		$achievements_unlocked = ! empty( $period_achievements ) && isset( $period_achievements['achievements_unlocked'] ) && count( $period_achievements['achievements_unlocked'] ) > 0;
 
 		// Check if baselines have sufficient data
 		$baselines = get_user_meta( $user_id, '_wc_tp_current_baselines', true );
@@ -593,7 +595,7 @@ class WC_Team_Payroll_Performance_Tracker {
 		// All three must be achieved
 		if ( $goals_achieved && $achievements_unlocked && $baselines_sufficient ) {
 			// Send congratulations email
-			$this->send_congratulations_email( $user_id, $current_progress, $achievement_stats, $baselines );
+			$this->send_congratulations_email( $user_id, $current_progress, $period_achievements, $baselines );
 			
 			// Mark email as sent for this period
 			update_user_meta( $user_id, '_wc_tp_last_congratulations_email', $current_period );
@@ -609,11 +611,11 @@ class WC_Team_Payroll_Performance_Tracker {
 	 *
 	 * @param int $user_id User ID
 	 * @param array $goal_progress Goal progress data
-	 * @param array $achievement_stats Achievement statistics
+	 * @param array $period_achievements Period achievement data
 	 * @param array $baselines Baseline data
 	 * @return bool Success
 	 */
-	private function send_congratulations_email( $user_id, $goal_progress, $achievement_stats, $baselines ) {
+	private function send_congratulations_email( $user_id, $goal_progress, $period_achievements, $baselines ) {
 		$user = get_user_by( 'id', $user_id );
 		if ( ! $user ) {
 			return false;
@@ -637,7 +639,7 @@ class WC_Team_Payroll_Performance_Tracker {
 			$period_start, 
 			$period_end,
 			$goal_progress,
-			$achievement_stats,
+			$period_achievements,
 			$baselines,
 			$currency_symbol
 		);
@@ -662,12 +664,18 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $period_start Period start date
 	 * @param string $period_end Period end date
 	 * @param array $goal_progress Goal progress data
-	 * @param array $achievement_stats Achievement statistics
+	 * @param array $period_achievements Period achievement data
 	 * @param array $baselines Baseline data
 	 * @param string $currency_symbol Currency symbol
 	 * @return string HTML email content
 	 */
-	private function get_congratulations_email_template( $name, $period_type, $period_start, $period_end, $goal_progress, $achievement_stats, $baselines, $currency_symbol ) {
+	private function get_congratulations_email_template( $name, $period_type, $period_start, $period_end, $goal_progress, $period_achievements, $baselines, $currency_symbol ) {
+		// Extract achievement counts from period achievements
+		$bronze_count = isset( $period_achievements['bronze_count'] ) ? intval( $period_achievements['bronze_count'] ) : 0;
+		$silver_count = isset( $period_achievements['silver_count'] ) ? intval( $period_achievements['silver_count'] ) : 0;
+		$gold_count = isset( $period_achievements['gold_count'] ) ? intval( $period_achievements['gold_count'] ) : 0;
+		$total_unlocked = $bronze_count + $silver_count + $gold_count;
+		
 		ob_start();
 		?>
 		<!DOCTYPE html>
@@ -760,11 +768,11 @@ class WC_Team_Payroll_Performance_Tracker {
 														🏆 Achievements Unlocked
 													</h3>
 													<p style="margin: 0; font-size: 14px; color: #637381;">
-														<strong style="color: #28a745;"><?php echo esc_html( $achievement_stats['total_unlocked'] ); ?></strong> Total Achievements
+														<strong style="color: #28a745;"><?php echo esc_html( $total_unlocked ); ?></strong> Total Achievements
 														<span style="margin-left: 10px;">
-															🥉 <?php echo esc_html( $achievement_stats['bronze_count'] ); ?>
-															🥈 <?php echo esc_html( $achievement_stats['silver_count'] ); ?>
-															🥇 <?php echo esc_html( $achievement_stats['gold_count'] ); ?>
+															🥉 <?php echo esc_html( $bronze_count ); ?>
+															🥈 <?php echo esc_html( $silver_count ); ?>
+															🥇 <?php echo esc_html( $gold_count ); ?>
 														</span>
 													</p>
 												</div>
@@ -875,106 +883,9 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @return array Updated achievements data
 	 */
 	public function update_achievements( $user_id ) {
-		// Get user role
-		$user = get_user_by( 'id', $user_id );
-		if ( ! $user ) {
-			return array();
-		}
-
-		$user_roles = $user->roles;
-		$employee_role = '';
-
-		// Find employee role
-		$all_roles = $this->get_employee_roles();
-		foreach ( $user_roles as $role ) {
-			if ( isset( $all_roles[ $role ] ) ) {
-				$employee_role = $role;
-				break;
-			}
-		}
-
-		if ( empty( $employee_role ) ) {
-			return array();
-		}
-
-		// Get achievements configuration
-		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
-		
-		$role_achievements = isset( $achievements_config['roles'][ $employee_role ] ) ? $achievements_config['roles'][ $employee_role ] : array();
-
-		if ( empty( $role_achievements ) ) {
-			return array();
-		}
-
-		// Get current unlocked achievements
-		$unlocked_achievements = get_user_meta( $user_id, '_wc_tp_unlocked_achievements', true );
-		if ( ! is_array( $unlocked_achievements ) ) {
-			$unlocked_achievements = array();
-		}
-
-		// Calculate all-time totals
-		$all_time_order_value = $this->get_attributed_order_total( $user_id, '2000-01-01', date( 'Y-m-d' ) );
-		$all_time_orders = $this->get_order_count( $user_id, '2000-01-01', date( 'Y-m-d' ) );
-		$all_time_aov = $this->get_average_order_value( $user_id, '2000-01-01', date( 'Y-m-d' ) );
-
-		$newly_unlocked = array();
-
-		// Check each achievement
-		foreach ( $role_achievements as $achievement_key => $achievement_data ) {
-			$threshold = isset( $achievement_data['threshold'] ) ? floatval( $achievement_data['threshold'] ) : 0;
-			$tier = isset( $achievement_data['tier'] ) ? $achievement_data['tier'] : 'bronze';
-
-			// Determine which metric to check
-			$current_value = 0;
-			if ( strpos( $achievement_key, 'earnings' ) !== false || strpos( $achievement_key, 'order_value' ) !== false ) {
-				$current_value = $all_time_order_value;
-			} elseif ( strpos( $achievement_key, 'orders' ) !== false ) {
-				$current_value = $all_time_orders;
-			} elseif ( strpos( $achievement_key, 'aov' ) !== false ) {
-				$current_value = $all_time_aov;
-			}
-
-			// Check if already unlocked
-			$is_unlocked = isset( $unlocked_achievements[ $achievement_key ] ) && $unlocked_achievements[ $achievement_key ]['unlocked'] === true;
-
-			if ( ! $is_unlocked && $current_value >= $threshold ) {
-				// Achievement unlocked!
-				$unlocked_achievements[ $achievement_key ] = array(
-					'unlocked' => true,
-					'unlocked_date' => current_time( 'Y-m-d H:i:s' ),
-					'value_at_unlock' => $current_value,
-					'threshold' => $threshold,
-					'tier' => $tier,
-				);
-
-				$newly_unlocked[] = $achievement_key;
-			} elseif ( ! $is_unlocked ) {
-				// Not yet unlocked, track progress
-				$unlocked_achievements[ $achievement_key ] = array(
-					'unlocked' => false,
-					'current_progress' => $current_value,
-					'threshold' => $threshold,
-					'percentage' => $threshold > 0 ? round( ( $current_value / $threshold ) * 100, 2 ) : 0,
-					'tier' => $tier,
-				);
-			}
-		}
-
-		// Save updated achievements
-		update_user_meta( $user_id, '_wc_tp_unlocked_achievements', $unlocked_achievements );
-
-		// Update achievement statistics
-		$this->update_achievement_stats( $user_id, $unlocked_achievements );
-
-		// Send notifications for newly unlocked achievements
-		if ( ! empty( $newly_unlocked ) && isset( $achievements_config['notification'] ) && $achievements_config['notification'] ) {
-			$this->send_achievement_notifications( $user_id, $newly_unlocked, $role_achievements );
-		}
-
-		// Also update period-based achievements
-		$this->update_period_achievements( $user_id );
-
-		return $unlocked_achievements;
+		// Period-based achievement system only
+		// All achievements are now tracked by period, not all-time
+		return $this->update_period_achievements( $user_id );
 	}
 
 	/**
@@ -1139,259 +1050,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param int $user_id User ID
 	 * @param array $unlocked_achievements Unlocked achievements data
 	 */
-	private function update_achievement_stats( $user_id, $unlocked_achievements ) {
-		$bronze_count = 0;
-		$silver_count = 0;
-		$gold_count = 0;
-		$last_unlocked = null;
-		$next_achievement = null;
-		$min_percentage = 100;
 
-		foreach ( $unlocked_achievements as $key => $data ) {
-			if ( isset( $data['unlocked'] ) && $data['unlocked'] === true ) {
-				// Count by tier
-				if ( isset( $data['tier'] ) ) {
-					switch ( $data['tier'] ) {
-						case 'bronze':
-							$bronze_count++;
-							break;
-						case 'silver':
-							$silver_count++;
-							break;
-						case 'gold':
-							$gold_count++;
-							break;
-					}
-				}
-
-				// Track last unlocked
-				if ( ! $last_unlocked || ( isset( $data['unlocked_date'] ) && $data['unlocked_date'] > $last_unlocked['date'] ) ) {
-					$last_unlocked = array(
-						'achievement' => $key,
-						'date' => $data['unlocked_date'] ?? '',
-						'value' => $data['value_at_unlock'] ?? 0,
-					);
-				}
-			} else {
-				// Track next achievement (closest to completion)
-				$percentage = isset( $data['percentage'] ) ? $data['percentage'] : 0;
-				if ( $percentage < 100 && $percentage > 0 && ( ! $next_achievement || $percentage > $min_percentage ) ) {
-					$next_achievement = array(
-						'achievement' => $key,
-						'threshold' => $data['threshold'] ?? 0,
-						'current' => $data['current_progress'] ?? 0,
-						'remaining' => ( $data['threshold'] ?? 0 ) - ( $data['current_progress'] ?? 0 ),
-						'percentage' => $percentage,
-					);
-					$min_percentage = $percentage;
-				}
-			}
-		}
-
-		$stats = array(
-			'total_unlocked' => $bronze_count + $silver_count + $gold_count,
-			'bronze_count' => $bronze_count,
-			'silver_count' => $silver_count,
-			'gold_count' => $gold_count,
-			'last_unlocked' => $last_unlocked,
-			'next_achievement' => $next_achievement,
-		);
-
-		update_user_meta( $user_id, '_wc_tp_achievement_stats', $stats );
-	}
-
-	// ============================================================================
-	// MONTHLY ACHIEVEMENT SYSTEM (Phase 1)
-	// ============================================================================
-
-	/**
-	 * Update monthly achievements for a user
-	 * This calculates achievements based on CURRENT MONTH performance only
-	 *
-	 * @param int $user_id User ID
-	 * @return array Monthly achievement data
-	 */
-	public function update_monthly_achievements( $user_id ) {
-		// Get user role
-		$user = get_user_by( 'id', $user_id );
-		if ( ! $user ) {
-			return array();
-		}
-
-		$user_roles = $user->roles;
-		$employee_role = '';
-
-		// Find employee role
-		$all_roles = $this->get_employee_roles();
-		foreach ( $user_roles as $role ) {
-			if ( isset( $all_roles[ $role ] ) ) {
-				$employee_role = $role;
-				break;
-			}
-		}
-
-		if ( empty( $employee_role ) ) {
-			return array();
-		}
-
-		// Get achievements configuration
-		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
-		$role_achievements = isset( $achievements_config['roles'][ $employee_role ] ) ? $achievements_config['roles'][ $employee_role ] : array();
-
-		if ( empty( $role_achievements ) ) {
-			return array();
-		}
-
-		// Get current month date range
-		$timezone = wp_timezone();
-		$now = new DateTime( 'now', $timezone );
-		$month_start = $now->format( 'Y-m-01' );
-		$month_end = $now->format( 'Y-m-t' );
-		$period_id = $now->format( 'Y-m' );
-
-		// Calculate current month totals
-		$month_order_value = $this->get_attributed_order_total( $user_id, $month_start, $month_end );
-		$month_orders = $this->get_order_count( $user_id, $month_start, $month_end );
-		$month_aov = $this->get_average_order_value( $user_id, $month_start, $month_end );
-
-		// Determine achievements for each category
-		$earnings_tier = $this->determine_achievement_tier( $month_order_value, $role_achievements, 'earnings' );
-		$orders_tier = $this->determine_achievement_tier( $month_orders, $role_achievements, 'orders' );
-		$aov_tier = $this->determine_achievement_tier( $month_aov, $role_achievements, 'aov' );
-
-		// Count achievements by tier
-		$tier_counts = array( 'bronze' => 0, 'silver' => 0, 'gold' => 0 );
-		foreach ( array( $earnings_tier, $orders_tier, $aov_tier ) as $tier ) {
-			if ( ! empty( $tier ) ) {
-				$tier_counts[ $tier ]++;
-			}
-		}
-
-		// Determine highest tier achieved this month
-		$highest_tier = '';
-		if ( $tier_counts['gold'] > 0 ) {
-			$highest_tier = 'gold';
-		} elseif ( $tier_counts['silver'] > 0 ) {
-			$highest_tier = 'silver';
-		} elseif ( $tier_counts['bronze'] > 0 ) {
-			$highest_tier = 'bronze';
-		}
-
-		// Build monthly achievement data
-		$monthly_data = array(
-			'period' => $period_id,
-			'month_start' => $month_start,
-			'month_end' => $month_end,
-			'earnings' => $month_order_value,
-			'orders' => $month_orders,
-			'aov' => $month_aov,
-			'earnings_tier' => $earnings_tier,
-			'orders_tier' => $orders_tier,
-			'aov_tier' => $aov_tier,
-			'bronze_count' => $tier_counts['bronze'],
-			'silver_count' => $tier_counts['silver'],
-			'gold_count' => $tier_counts['gold'],
-			'highest_tier' => $highest_tier,
-			'updated_at' => current_time( 'Y-m-d H:i:s' ),
-		);
-
-		// Save current month data
-		update_user_meta( $user_id, '_wc_tp_monthly_achievements', $monthly_data );
-
-		// Update achievement stats for compatibility with existing code
-		$stats = array(
-			'total_unlocked' => $tier_counts['bronze'] + $tier_counts['silver'] + $tier_counts['gold'],
-			'bronze_count' => $tier_counts['bronze'],
-			'silver_count' => $tier_counts['silver'],
-			'gold_count' => $tier_counts['gold'],
-			'last_unlocked' => null,
-			'next_achievement' => null,
-		);
-		update_user_meta( $user_id, '_wc_tp_achievement_stats', $stats );
-
-		// Phase 2: Update badge streaks
-		$this->update_badge_streaks( $user_id, $highest_tier, $employee_role );
-
-		return $monthly_data;
-	}
-
-	/**
-	 * Determine achievement tier for a metric
-	 *
-	 * @param float $value Current value
-	 * @param array $role_achievements Role achievements configuration
-	 * @param string $category Category (earnings, orders, aov)
-	 * @return string Tier (bronze, silver, gold) or empty string
-	 */
-	private function determine_achievement_tier( $value, $role_achievements, $category ) {
-		$tiers = array( 'gold', 'silver', 'bronze' ); // Check from highest to lowest
-		
-		foreach ( $tiers as $tier ) {
-			$key = $category . '_' . $tier;
-			if ( isset( $role_achievements[ $key ] ) ) {
-				$threshold = floatval( $role_achievements[ $key ]['threshold'] ?? 0 );
-				if ( $value >= $threshold ) {
-					return $tier;
-				}
-			}
-		}
-		
-		return ''; // No achievement
-	}
-
-	/**
-	 * Finalize monthly achievements and save to history
-	 * Called at the end of each month
-	 *
-	 * @param int $user_id User ID
-	 * @return bool Success
-	 */
-	public function finalize_monthly_achievements( $user_id ) {
-		// Get current month data
-		$monthly_data = get_user_meta( $user_id, '_wc_tp_monthly_achievements', true );
-		
-		if ( empty( $monthly_data ) ) {
-			return false;
-		}
-
-		// Get achievement history
-		$history = get_user_meta( $user_id, '_wc_tp_achievement_history', true );
-		if ( ! is_array( $history ) ) {
-			$history = array();
-		}
-
-		// Add finalized date
-		$monthly_data['finalized_at'] = current_time( 'Y-m-d H:i:s' );
-
-		// Add to history (most recent first)
-		array_unshift( $history, $monthly_data );
-
-		// Keep only last 24 months
-		$history = array_slice( $history, 0, 24 );
-
-		// Save history
-		update_user_meta( $user_id, '_wc_tp_achievement_history', $history );
-
-		return true;
-	}
-
-	/**
-	 * Get monthly achievement history for a user
-	 *
-	 * @param int $user_id User ID
-	 * @param int $months Number of months to retrieve (default: 12)
-	 * @return array Achievement history
-	 */
-	public function get_monthly_achievement_history( $user_id, $months = 12 ) {
-		$history = get_user_meta( $user_id, '_wc_tp_achievement_history', true );
-		
-		if ( ! is_array( $history ) ) {
-			return array();
-		}
-
-		// Return requested number of months
-		return array_slice( $history, 0, $months );
-	}
 
 	// ============================================================================
 	// PERIOD-BASED ACHIEVEMENT FINALIZATION
@@ -2346,251 +2005,6 @@ class WC_Team_Payroll_Performance_Tracker {
 		return ob_get_clean();
 	}
 
-	/**
-	 * Check if it's a new month and finalize previous month
-	 * Called by daily cron
-	 */
-	public function check_and_finalize_monthly_achievements() {
-		// Get all employees
-		$employees = $this->get_all_employees();
-
-		foreach ( $employees as $employee ) {
-			$user_id = $employee->ID;
-
-			// Get current month data
-			$monthly_data = get_user_meta( $user_id, '_wc_tp_monthly_achievements', true );
-
-			if ( empty( $monthly_data ) ) {
-				// First time, just update current month
-				$this->update_monthly_achievements( $user_id );
-				continue;
-			}
-
-			// Check if we're in a new month
-			$current_period = date( 'Y-m' );
-			$saved_period = isset( $monthly_data['period'] ) ? $monthly_data['period'] : '';
-
-			if ( $current_period !== $saved_period && ! empty( $saved_period ) ) {
-				// New month! Finalize previous month
-				$this->finalize_monthly_achievements( $user_id );
-
-				// Send monthly summary email
-				$this->send_monthly_achievement_email( $user_id, $monthly_data );
-
-				// Start tracking new month
-				$this->update_monthly_achievements( $user_id );
-			} else {
-				// Same month, just update progress
-				$this->update_monthly_achievements( $user_id );
-			}
-		}
-	}
-
-	/**
-	 * Send monthly achievement summary email
-	 *
-	 * @param int $user_id User ID
-	 * @param array $monthly_data Monthly achievement data
-	 */
-	private function send_monthly_achievement_email( $user_id, $monthly_data ) {
-		$user = get_user_by( 'id', $user_id );
-		if ( ! $user ) {
-			return;
-		}
-
-		// Check if already sent for this period
-		$last_email_period = get_user_meta( $user_id, '_wc_tp_last_monthly_email', true );
-		if ( $last_email_period === $monthly_data['period'] ) {
-			return; // Already sent
-		}
-
-		$highest_tier = isset( $monthly_data['highest_tier'] ) ? $monthly_data['highest_tier'] : '';
-		
-		if ( empty( $highest_tier ) ) {
-			return; // No achievements, no email
-		}
-
-		// Prepare email
-		$to = $user->user_email;
-		$subject = sprintf( 
-			__( '🎉 Your %s Achievement for %s!', 'wc-team-payroll' ),
-			ucfirst( $highest_tier ),
-			date( 'F Y', strtotime( $monthly_data['period'] . '-01' ) )
-		);
-
-		$currency_symbol = get_woocommerce_currency_symbol();
-		
-		$message = $this->get_monthly_achievement_email_template( 
-			$user->display_name,
-			$monthly_data,
-			$currency_symbol
-		);
-
-		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-
-		// Send email
-		wp_mail( $to, $subject, $message, $headers );
-
-		// Mark as sent
-		update_user_meta( $user_id, '_wc_tp_last_monthly_email', $monthly_data['period'] );
-	}
-
-	/**
-	 * Get monthly achievement email template
-	 *
-	 * @param string $name User name
-	 * @param array $monthly_data Monthly achievement data
-	 * @param string $currency_symbol Currency symbol
-	 * @return string HTML email content
-	 */
-	private function get_monthly_achievement_email_template( $name, $monthly_data, $currency_symbol ) {
-		$highest_tier = $monthly_data['highest_tier'];
-		$period = date( 'F Y', strtotime( $monthly_data['period'] . '-01' ) );
-		
-		// Tier colors and emojis
-		$tier_config = array(
-			'gold' => array( 'color' => '#FFD700', 'emoji' => '🥇', 'label' => 'Gold' ),
-			'silver' => array( 'color' => '#C0C0C0', 'emoji' => '🥈', 'label' => 'Silver' ),
-			'bronze' => array( 'color' => '#CD7F32', 'emoji' => '🥉', 'label' => 'Bronze' ),
-		);
-		
-		$config = $tier_config[ $highest_tier ];
-		
-		ob_start();
-		?>
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		</head>
-		<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-			<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
-				<tr>
-					<td align="center">
-						<table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-							<!-- Header -->
-							<tr>
-								<td style="background: linear-gradient(135deg, <?php echo esc_attr( $config['color'] ); ?> 0%, <?php echo esc_attr( $config['color'] ); ?>CC 100%); padding: 40px 20px; text-align: center;">
-									<h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">
-										<?php echo esc_html( $config['emoji'] ); ?> Congratulations!
-									</h1>
-									<p style="margin: 10px 0 0 0; color: #ffffff; font-size: 18px;">
-										<?php echo esc_html( $config['label'] ); ?> Achievement Unlocked
-									</p>
-								</td>
-							</tr>
-							
-							<!-- Content -->
-							<tr>
-								<td style="padding: 40px 30px;">
-									<p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-										Dear <strong><?php echo esc_html( $name ); ?></strong>,
-									</p>
-									<p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-										Congratulations on achieving <strong><?php echo esc_html( $config['label'] ); ?></strong> status for <strong><?php echo esc_html( $period ); ?></strong>!
-									</p>
-									
-									<!-- Performance Summary -->
-									<table width="100%" cellpadding="15" cellspacing="0" style="background-color: #f8f9fa; border-radius: 8px; margin: 20px 0;">
-										<tr>
-											<td style="border-bottom: 1px solid #dee2e6;">
-												<strong style="color: #495057;">Total Earnings:</strong>
-											</td>
-											<td align="right" style="border-bottom: 1px solid #dee2e6;">
-												<strong style="color: #28a745; font-size: 18px;">
-													<?php echo esc_html( $currency_symbol . number_format( $monthly_data['earnings'], 2 ) ); ?>
-												</strong>
-												<?php if ( ! empty( $monthly_data['earnings_tier'] ) ) : ?>
-													<span style="margin-left: 10px;"><?php echo esc_html( $tier_config[ $monthly_data['earnings_tier'] ]['emoji'] ); ?></span>
-												<?php endif; ?>
-											</td>
-										</tr>
-										<tr>
-											<td style="border-bottom: 1px solid #dee2e6;">
-												<strong style="color: #495057;">Orders Processed:</strong>
-											</td>
-											<td align="right" style="border-bottom: 1px solid #dee2e6;">
-												<strong style="color: #007bff; font-size: 18px;">
-													<?php echo esc_html( number_format( $monthly_data['orders'] ) ); ?>
-												</strong>
-												<?php if ( ! empty( $monthly_data['orders_tier'] ) ) : ?>
-													<span style="margin-left: 10px;"><?php echo esc_html( $tier_config[ $monthly_data['orders_tier'] ]['emoji'] ); ?></span>
-												<?php endif; ?>
-											</td>
-										</tr>
-										<tr>
-											<td>
-												<strong style="color: #495057;">Average Order Value:</strong>
-											</td>
-											<td align="right">
-												<strong style="color: #6f42c1; font-size: 18px;">
-													<?php echo esc_html( $currency_symbol . number_format( $monthly_data['aov'], 2 ) ); ?>
-												</strong>
-												<?php if ( ! empty( $monthly_data['aov_tier'] ) ) : ?>
-													<span style="margin-left: 10px;"><?php echo esc_html( $tier_config[ $monthly_data['aov_tier'] ]['emoji'] ); ?></span>
-												<?php endif; ?>
-											</td>
-										</tr>
-									</table>
-									
-									<p style="margin: 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-										Keep up the excellent work! Your dedication and performance are truly appreciated.
-									</p>
-									
-									<p style="margin: 20px 0 0 0; font-size: 14px; color: #6c757d; line-height: 1.6;">
-										Best regards,<br>
-										<strong>Povaly Group Team</strong>
-									</p>
-								</td>
-							</tr>
-							
-							<!-- Footer -->
-							<tr>
-								<td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
-									<p style="margin: 0; font-size: 12px; color: #6c757d;">
-										This is an automated message from your performance tracking system.
-									</p>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>
-		</body>
-		</html>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Send achievement unlock notifications
-	 *
-	 * @param int $user_id User ID
-	 * @param array $newly_unlocked Newly unlocked achievement keys
-	 * @param array $role_achievements Role achievements configuration
-	 * @param bool $is_period_based Whether this is for period-based achievements
-	 */
-	private function send_achievement_notifications( $user_id, $newly_unlocked, $role_achievements, $is_period_based = false ) {
-		// This is a placeholder for notification system
-		// Can be extended to send emails, push notifications, etc.
-		
-		// For now, just save a transient that frontend can check
-		foreach ( $newly_unlocked as $achievement_key ) {
-			$achievement_data = isset( $role_achievements[ $achievement_key ] ) ? $role_achievements[ $achievement_key ] : array();
-			$notification_data = array(
-				'user_id' => $user_id,
-				'achievement_key' => $achievement_key,
-				'achievement_name' => $achievement_data['name'] ?? '',
-				'achievement_description' => $achievement_data['description'] ?? '',
-				'tier' => $achievement_data['tier'] ?? 'bronze',
-				'is_period_based' => $is_period_based,
-				'timestamp' => current_time( 'timestamp' ),
-			);
-
-			set_transient( 'wc_tp_achievement_notification_' . $user_id . '_' . $achievement_key, $notification_data, DAY_IN_SECONDS );
-		}
-	}
 
 
 	// ============================================================================
@@ -3010,16 +2424,10 @@ class WC_Team_Payroll_Performance_Tracker {
 		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
 		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 
-		// Check if we need to handle period-based achievements
-		if ( $period_type === 'monthly' ) {
-			// Use existing monthly achievement system for backward compatibility
-			$this->check_and_finalize_monthly_achievements();
-		} else {
-			// Use new period-based achievement system
-			$this->check_and_finalize_period_achievements( $period_type );
-		}
+		// Use period-based achievement system only
+		$this->check_and_finalize_period_achievements( $period_type );
 		
-		// Also update old system for backward compatibility
+		// Update period achievements for all employees
 		$employees = $this->get_all_employees();
 		foreach ( $employees as $employee_id ) {
 			$this->update_achievements( $employee_id );

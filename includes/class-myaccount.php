@@ -2807,28 +2807,20 @@ class WC_Team_Payroll_MyAccount {
 		$current_url = home_url( add_query_arg( array() ) );
 		$is_salary_details_page = strpos( $current_url, 'salary-details' ) !== false;
 
-		// Get monthly achievement for badge (Phase 1: Monthly System)
-		$monthly_achievements = get_user_meta( $user_id, '_wc_tp_monthly_achievements', true );
+		// Get period achievement for badge (Period-Based System)
 		$highest_tier = '';
 		
-		if ( ! empty( $monthly_achievements ) && isset( $monthly_achievements['highest_tier'] ) ) {
-			$highest_tier = $monthly_achievements['highest_tier'];
-		} else {
-			// Fallback to old system if monthly not available yet
-			$achievement_stats = get_user_meta( $user_id, '_wc_tp_achievement_stats', true );
-			if ( ! empty( $achievement_stats ) ) {
-				$gold_count = isset( $achievement_stats['gold_count'] ) ? intval( $achievement_stats['gold_count'] ) : 0;
-				$silver_count = isset( $achievement_stats['silver_count'] ) ? intval( $achievement_stats['silver_count'] ) : 0;
-				$bronze_count = isset( $achievement_stats['bronze_count'] ) ? intval( $achievement_stats['bronze_count'] ) : 0;
-				
-				if ( $gold_count > 0 ) {
-					$highest_tier = 'gold';
-				} elseif ( $silver_count > 0 ) {
-					$highest_tier = 'silver';
-				} elseif ( $bronze_count > 0 ) {
-					$highest_tier = 'bronze';
-				}
-			}
+		// Get current period ID
+		$performance_tracker = WC_Team_Payroll_Performance_Tracker::init();
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+		$current_period_id = $performance_tracker->get_current_period_id( $period_type );
+		
+		// Get current period achievements
+		$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+		
+		if ( ! empty( $period_achievements ) && isset( $period_achievements['highest_tier'] ) ) {
+			$highest_tier = $period_achievements['highest_tier'];
 		}
 
 		// Get goal achievement count for current period
