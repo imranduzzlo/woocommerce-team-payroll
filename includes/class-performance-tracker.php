@@ -851,7 +851,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 *
 	 * @return array Employee roles (role_key => role_name)
 	 */
-	private function get_employee_roles() {
+	public function get_employee_roles() {
 		// Get employee roles from settings (simple array of role keys)
 		$employee_role_keys = get_option( 'wc_tp_employee_roles', array( 'shop_employee' ) );
 		

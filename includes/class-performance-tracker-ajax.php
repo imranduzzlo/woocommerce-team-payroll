@@ -65,11 +65,13 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$employee_role = '';
 				
 				// Find employee role
-				$all_roles = $tracker->get_employee_roles();
-				foreach ( $user_roles as $role ) {
-					if ( isset( $all_roles[ $role ] ) ) {
-						$employee_role = $role;
-						break;
+				if ( ! empty( $user_roles ) ) {
+					$all_roles = $tracker->get_employee_roles();
+					foreach ( $user_roles as $role ) {
+						if ( isset( $all_roles[ $role ] ) ) {
+							$employee_role = $role;
+							break;
+						}
 					}
 				}
 				
@@ -80,10 +82,10 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				}
 				
 				$data['period_type'] = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
-				$data['achievements_enabled'] = isset( $achievements_config['enabled'] ) ? $achievements_config['enabled'] : 1;
+				$data['achievements_enabled'] = isset( $achievements_config['enabled'] ) ? intval( $achievements_config['enabled'] ) : 1;
 				$data['achievements_display_style'] = isset( $achievements_config['display_style'] ) ? $achievements_config['display_style'] : 'badges';
-				$data['achievements_show_locked'] = isset( $achievements_config['show_locked'] ) ? $achievements_config['show_locked'] : 1;
-				$data['achievements_notification'] = isset( $achievements_config['notification'] ) ? $achievements_config['notification'] : 1;
+				$data['achievements_show_locked'] = isset( $achievements_config['show_locked'] ) ? intval( $achievements_config['show_locked'] ) : 1;
+				$data['achievements_notification'] = isset( $achievements_config['notification'] ) ? intval( $achievements_config['notification'] ) : 1;
 				$data['achievements_period'] = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 				$data['user_role'] = $employee_role;
 				$data['role_achievements'] = $role_achievements;
@@ -175,11 +177,13 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$employee_role = '';
 				
 				// Find employee role
-				$all_roles = $tracker->get_employee_roles();
-				foreach ( $user_roles as $role ) {
-					if ( isset( $all_roles[ $role ] ) ) {
-						$employee_role = $role;
-						break;
+				if ( ! empty( $user_roles ) ) {
+					$all_roles = $tracker->get_employee_roles();
+					foreach ( $user_roles as $role ) {
+						if ( isset( $all_roles[ $role ] ) ) {
+							$employee_role = $role;
+							break;
+						}
 					}
 				}
 				

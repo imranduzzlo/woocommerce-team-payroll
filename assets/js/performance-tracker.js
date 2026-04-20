@@ -16,6 +16,13 @@
 		currentTab: 'overview',
 		currencySymbol: '$',
 		currencyPosition: 'left',
+		achievementsEnabled: 1,
+		achievementsDisplayStyle: 'badges',
+		achievementsShowLocked: 1,
+		achievementsNotification: 1,
+		achievementsPeriod: 'monthly',
+		userRole: '',
+		roleAchievements: {},
 
 		/**
 		 * Initialize the Performance Tracker
@@ -129,7 +136,7 @@
 		 */
 		switchTab(tab) {
 			// Check if achievements are enabled before switching to achievements tab
-			if ((tab === 'achievements' || tab === 'period_achievements') && !this.achievementsEnabled) {
+			if ((tab === 'achievements' || tab === 'period_achievements') && this.achievementsEnabled === 0) {
 				this.showError('Achievements are disabled in settings');
 				return;
 			}
@@ -280,11 +287,17 @@
 					if (response.success) {
 						callback(response.data);
 					} else {
+						console.error('AJAX Error for section:', section, response.data);
 						this.showError(response.data?.message || 'Failed to load data');
 					}
 				},
 				error: (xhr, status, error) => {
-					console.error('Performance Tracker Error:', error);
+					console.error('Performance Tracker AJAX Error:', {
+						section: section,
+						status: status,
+						error: error,
+						response: xhr.responseText
+					});
 					this.showError('Network error. Please try again.');
 				}
 			});
