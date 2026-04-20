@@ -1,3 +1,25 @@
+## [1.6.33] - 2026-04-20
+### 🔧 Fix - Overview Achievements Summary Display
+
+#### FIXED
+- Fixed overview showing "Achievements 0 Total Unlocked 0 0 0" even when achievements were unlocked
+- Overview now correctly retrieves stats from `_wc_tp_period_achievements_stats_{period_id}`
+- Added calculation of next achievement for quick stats display
+- Overview achievements summary now displays correctly with proper counts
+
+#### TECHNICAL DETAILS
+- Updated overview case to fetch both achievements and stats separately
+- `render_achievements_summary()` now receives stats object with correct counts
+- `update_period_achievement_stats()` now calculates `next_achievement` for progress display
+- Stats properly include: `total_unlocked`, `bronze_count`, `silver_count`, `gold_count`, `next_achievement`
+
+#### WHAT'S DISPLAYED
+- Total unlocked achievements count
+- Bronze, Silver, Gold badge counts (🥉 🥈 🥇)
+- Next achievement progress percentage
+
+---
+
 ## [1.6.32] - 2026-04-20
 ### ✨ Refactor - Period Achievements Using v1.6.23 All-Time Approach
 
