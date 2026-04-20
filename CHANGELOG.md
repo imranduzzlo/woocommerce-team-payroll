@@ -1,3 +1,58 @@
+## [1.6.43] - 2026-04-20
+### ✨ Add - Complete Settings Export/Import System
+
+#### ADDED
+- **Export Settings** - Download all performance settings as JSON file
+  - Exports all 7 settings option keys:
+    1. Performance scoring configuration
+    2. Goals configuration
+    3. Achievements configuration
+    4. Bonus configuration
+    5. Baselines configuration
+    6. Calculation configuration
+    7. System configuration
+  - Includes metadata (export version, date, plugin version)
+  - Automatic filename with timestamp
+
+- **Import Settings** - Upload previously exported settings file
+  - Validates JSON file format and structure
+  - Creates automatic backup before import
+  - Sanitizes all imported data
+  - Supports all 7 settings option keys
+  - Displays import summary and status
+
+- **UI Components**
+  - Export/Import section in System Configuration tab
+  - Export button with download icon
+  - Import button with file picker
+  - Status messages for success/error
+  - Loading indicators during operations
+
+#### FEATURES
+- ✅ Full settings backup and restore
+- ✅ Automatic backup creation before import
+- ✅ Data validation and sanitization
+- ✅ Nonce verification for security
+- ✅ Admin-only access (capability checks)
+- ✅ Error handling and user feedback
+- ✅ Timestamp-based filenames for organization
+
+#### SECURITY
+- Nonce verification on all AJAX requests
+- Capability checks (admin only)
+- File type validation (JSON only)
+- Data sanitization on import
+- Automatic backup creation
+
+#### BENEFITS
+- ✅ Easy settings backup and restore
+- ✅ Transfer settings between sites
+- ✅ Disaster recovery capability
+- ✅ Configuration management
+- ✅ Team collaboration support
+
+---
+
 ## [1.6.36] - 2026-04-20
 ### 🧹 Cleanup - Remove Role Display from Achievement Cards
 

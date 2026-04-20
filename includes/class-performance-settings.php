@@ -54,6 +54,10 @@ class WC_Team_Payroll_Performance_Settings {
 		// AJAX handlers - Bonus Configuration (Phase 2 Part 2)
 		add_action( 'wp_ajax_wc_tp_save_bonus_config', array( $this, 'ajax_save_bonus_config' ) );
 		add_action( 'wp_ajax_wc_tp_get_bonus_config', array( $this, 'ajax_get_bonus_config' ) );
+		
+		// AJAX handlers - Export/Import Settings
+		add_action( 'wp_ajax_wc_tp_export_settings', array( $this, 'ajax_export_settings' ) );
+		add_action( 'wp_ajax_wc_tp_import_settings', array( $this, 'ajax_import_settings' ) );
 	}
 
 	/**
@@ -99,7 +103,7 @@ class WC_Team_Payroll_Performance_Settings {
 		// Localize script
 		wp_localize_script(
 			'wc-tp-performance-settings',
-			'wcTpPerformance',
+			'wcTPPerformanceSettings',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'wc_tp_performance_nonce' ),
@@ -109,6 +113,12 @@ class WC_Team_Payroll_Performance_Settings {
 					'save_error'   => __( 'Error saving configuration.', 'wc-team-payroll' ),
 					'confirm_reset' => __( 'Are you sure you want to reset all configurations? This cannot be undone.', 'wc-team-payroll' ),
 				),
+				'exporting' => __( 'Exporting settings...', 'wc-team-payroll' ),
+				'exportButton' => __( 'Export Settings', 'wc-team-payroll' ),
+				'exportSuccess' => __( 'Settings exported successfully! File download started.', 'wc-team-payroll' ),
+				'exportError' => __( 'Error exporting settings. Please try again.', 'wc-team-payroll' ),
+				'importing' => __( 'Importing settings...', 'wc-team-payroll' ),
+				'importError' => __( 'Error importing settings. Please check the file and try again.', 'wc-team-payroll' ),
 			)
 		);
 	}
@@ -1546,6 +1556,35 @@ class WC_Team_Payroll_Performance_Settings {
 						<span class="wc-tp-status-value"><?php echo esc_html( date( 'Y-m-d H:i:s' ) ); ?></span>
 					</div>
 				</div>
+			</div>
+
+			<!-- Export/Import Settings -->
+			<div class="wc-tp-perf-card">
+				<h4><?php esc_html_e( 'Export & Import Settings', 'wc-team-payroll' ); ?></h4>
+				<p class="description"><?php esc_html_e( 'Backup and restore all performance settings including scoring, goals, achievements, bonuses, baselines, calculations, and system preferences.', 'wc-team-payroll' ); ?></p>
+				
+				<div style="display: flex; gap: 15px; margin-top: 15px;">
+					<!-- Export Button -->
+					<div>
+						<button type="button" class="button button-primary" id="wc-tp-export-settings">
+							<span class="dashicons dashicons-download"></span>
+							<?php esc_html_e( 'Export Settings', 'wc-team-payroll' ); ?>
+						</button>
+						<p class="description"><?php esc_html_e( 'Download all settings as a JSON file for backup or transfer', 'wc-team-payroll' ); ?></p>
+					</div>
+					
+					<!-- Import Button -->
+					<div>
+						<button type="button" class="button button-primary" id="wc-tp-import-settings">
+							<span class="dashicons dashicons-upload"></span>
+							<?php esc_html_e( 'Import Settings', 'wc-team-payroll' ); ?>
+						</button>
+						<input type="file" id="wc-tp-import-file" accept=".json" style="display: none;" />
+						<p class="description"><?php esc_html_e( 'Upload a previously exported settings file to restore', 'wc-team-payroll' ); ?></p>
+					</div>
+				</div>
+
+				<div id="wc-tp-export-import-status" style="margin-top: 15px; display: none;"></div>
 			</div>
 		</div>
 		<?php
@@ -3371,6 +3410,321 @@ class WC_Team_Payroll_Performance_Settings {
 		wp_send_json_success( array( 
 			'config' => $bonus_config
 		) );
+	}
+
+	/**
+	 * AJAX: Export all performance settings
+	 */
+	public function ajax_export_settings() {
+		check_ajax_referer( 'wc_tp_performance_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		// Collect all settings
+		$settings = array(
+			'wc_tp_performance_config'     => get_option( 'wc_tp_performance_config', array() ),
+			'wc_tp_goals_config'           => get_option( 'wc_tp_goals_config', array() ),
+			'wc_tp_achievements_config'    => get_option( 'wc_tp_achievements_config', array() ),
+			'wc_tp_achievement_bonuses'    => get_option( 'wc_tp_achievement_bonuses', array() ),
+			'wc_tp_baselines_config'       => get_option( 'wc_tp_baselines_config', array() ),
+			'wc_tp_calculation_config'     => get_option( 'wc_tp_calculation_config', array() ),
+			'wc_tp_system_config'          => get_option( 'wc_tp_system_config', array() ),
+		);
+
+		// Create export data with metadata
+		$export_data = array(
+			'export_version' => '1.0',
+			'export_date'    => current_time( 'mysql' ),
+			'plugin_version' => WC_TEAM_PAYROLL_VERSION,
+			'settings'       => $settings,
+		);
+
+		wp_send_json_success( array(
+			'data' => $export_data,
+			'filename' => 'wc-team-payroll-settings-' . current_time( 'Y-m-d-His' ) . '.json',
+		) );
+	}
+
+	/**
+	 * AJAX: Import performance settings
+	 */
+	public function ajax_import_settings() {
+		check_ajax_referer( 'wc_tp_performance_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		// Check if file was uploaded
+		if ( ! isset( $_FILES['settings_file'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'No file uploaded', 'wc-team-payroll' ) ) );
+		}
+
+		$file = $_FILES['settings_file'];
+
+		// Validate file
+		if ( $file['error'] !== UPLOAD_ERR_OK ) {
+			wp_send_json_error( array( 'message' => __( 'File upload error', 'wc-team-payroll' ) ) );
+		}
+
+		// Check file type
+		if ( $file['type'] !== 'application/json' && pathinfo( $file['name'], PATHINFO_EXTENSION ) !== 'json' ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid file type. Please upload a JSON file.', 'wc-team-payroll' ) ) );
+		}
+
+		// Read file content
+		$file_content = file_get_contents( $file['tmp_name'] );
+		$import_data = json_decode( $file_content, true );
+
+		// Validate JSON
+		if ( ! is_array( $import_data ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid JSON file', 'wc-team-payroll' ) ) );
+		}
+
+		// Validate structure
+		if ( ! isset( $import_data['export_version'] ) || ! isset( $import_data['settings'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid export file format', 'wc-team-payroll' ) ) );
+		}
+
+		// Create backup of current settings
+		$backup_data = array(
+			'backup_date'    => current_time( 'mysql' ),
+			'plugin_version' => WC_TEAM_PAYROLL_VERSION,
+			'settings'       => array(
+				'wc_tp_performance_config'     => get_option( 'wc_tp_performance_config', array() ),
+				'wc_tp_goals_config'           => get_option( 'wc_tp_goals_config', array() ),
+				'wc_tp_achievements_config'    => get_option( 'wc_tp_achievements_config', array() ),
+				'wc_tp_achievement_bonuses'    => get_option( 'wc_tp_achievement_bonuses', array() ),
+				'wc_tp_baselines_config'       => get_option( 'wc_tp_baselines_config', array() ),
+				'wc_tp_calculation_config'     => get_option( 'wc_tp_calculation_config', array() ),
+				'wc_tp_system_config'          => get_option( 'wc_tp_system_config', array() ),
+			),
+		);
+
+		// Store backup
+		$backups = get_option( 'wc_tp_settings_backups', array() );
+		if ( ! is_array( $backups ) ) {
+			$backups = array();
+		}
+		$backups[] = $backup_data;
+		update_option( 'wc_tp_settings_backups', $backups );
+
+		// Import settings
+		$imported_count = 0;
+		$errors = array();
+
+		$settings_keys = array(
+			'wc_tp_performance_config',
+			'wc_tp_goals_config',
+			'wc_tp_achievements_config',
+			'wc_tp_achievement_bonuses',
+			'wc_tp_baselines_config',
+			'wc_tp_calculation_config',
+			'wc_tp_system_config',
+		);
+
+		foreach ( $settings_keys as $key ) {
+			if ( isset( $import_data['settings'][ $key ] ) ) {
+				$value = $import_data['settings'][ $key ];
+
+				// Sanitize based on key type
+				if ( $key === 'wc_tp_performance_config' ) {
+					$value = $this->sanitize_performance_config_for_import( $value );
+				} elseif ( $key === 'wc_tp_goals_config' ) {
+					$value = $this->sanitize_goals_config_for_import( $value );
+				} elseif ( $key === 'wc_tp_achievements_config' ) {
+					$value = $this->sanitize_achievements_config_for_import( $value );
+				} elseif ( $key === 'wc_tp_achievement_bonuses' ) {
+					$value = $this->sanitize_bonuses_config_for_import( $value );
+				} elseif ( $key === 'wc_tp_baselines_config' ) {
+					$value = $this->sanitize_baselines_config_for_import( $value );
+				} elseif ( $key === 'wc_tp_calculation_config' ) {
+					$value = $this->sanitize_calculation_config_for_import( $value );
+				} elseif ( $key === 'wc_tp_system_config' ) {
+					$value = $this->sanitize_system_config_for_import( $value );
+				}
+
+				update_option( $key, $value );
+				$imported_count++;
+			}
+		}
+
+		// Clear any caches
+		wp_cache_flush();
+
+		wp_send_json_success( array(
+			'message' => sprintf( __( 'Successfully imported %d settings', 'wc-team-payroll' ), $imported_count ),
+			'imported_count' => $imported_count,
+			'backup_created' => true,
+		) );
+	}
+
+	/**
+	 * Sanitize performance config for import
+	 */
+	private function sanitize_performance_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		if ( isset( $config['roles'] ) && is_array( $config['roles'] ) ) {
+			foreach ( $config['roles'] as $role => $role_config ) {
+				$sanitized['roles'][ sanitize_text_field( $role ) ] = $this->sanitize_role_config( $role_config );
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize goals config for import
+	 */
+	private function sanitize_goals_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		if ( isset( $config['roles'] ) && is_array( $config['roles'] ) ) {
+			foreach ( $config['roles'] as $role => $role_goals ) {
+				$sanitized['roles'][ sanitize_text_field( $role ) ] = $this->sanitize_role_goals( $role_goals );
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize achievements config for import
+	 */
+	private function sanitize_achievements_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		$sanitized = array(
+			'enabled'       => isset( $config['enabled'] ) ? (bool) $config['enabled'] : true,
+			'display_style' => isset( $config['display_style'] ) ? sanitize_text_field( $config['display_style'] ) : 'badges',
+			'show_locked'   => isset( $config['show_locked'] ) ? (bool) $config['show_locked'] : true,
+			'notification'  => isset( $config['notification'] ) ? (bool) $config['notification'] : true,
+		);
+
+		if ( isset( $config['roles'] ) && is_array( $config['roles'] ) ) {
+			foreach ( $config['roles'] as $role => $role_achievements ) {
+				$sanitized['roles'][ sanitize_text_field( $role ) ] = $this->sanitize_role_achievements( $role_achievements );
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize bonuses config for import
+	 */
+	private function sanitize_bonuses_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		$sanitized = array(
+			'enabled'      => isset( $config['enabled'] ) ? (bool) $config['enabled'] : true,
+			'notification' => isset( $config['notification'] ) ? (bool) $config['notification'] : true,
+		);
+
+		// Process role-based bonus rules
+		foreach ( $config as $key => $value ) {
+			if ( $key !== 'enabled' && $key !== 'notification' && is_array( $value ) ) {
+				$role = sanitize_text_field( $key );
+				$sanitized[ $role ] = array();
+
+				foreach ( $value as $rule ) {
+					if ( is_array( $rule ) ) {
+						$sanitized[ $role ][] = array(
+							'rule_id'             => isset( $rule['rule_id'] ) ? intval( $rule['rule_id'] ) : 0,
+							'tier'                => isset( $rule['tier'] ) ? sanitize_text_field( $rule['tier'] ) : 'bronze',
+							'months'              => isset( $rule['months'] ) ? intval( $rule['months'] ) : 1,
+							'bonus_type'          => isset( $rule['bonus_type'] ) ? sanitize_text_field( $rule['bonus_type'] ) : 'money',
+							'bonus_amount'        => isset( $rule['bonus_amount'] ) ? floatval( $rule['bonus_amount'] ) : 0,
+							'bonus_description'   => isset( $rule['bonus_description'] ) ? sanitize_text_field( $rule['bonus_description'] ) : '',
+							'repeatable'          => isset( $rule['repeatable'] ) ? (bool) $rule['repeatable'] : false,
+						);
+					}
+				}
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize baselines config for import
+	 */
+	private function sanitize_baselines_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		if ( isset( $config['roles'] ) && is_array( $config['roles'] ) ) {
+			foreach ( $config['roles'] as $role => $role_baselines ) {
+				$sanitized['roles'][ sanitize_text_field( $role ) ] = array(
+					'method'             => isset( $role_baselines['method'] ) ? sanitize_text_field( $role_baselines['method'] ) : 'average',
+					'periods'            => isset( $role_baselines['periods'] ) ? intval( $role_baselines['periods'] ) : 3,
+					'percentile'         => isset( $role_baselines['percentile'] ) ? intval( $role_baselines['percentile'] ) : 50,
+					'baseline_earnings'  => isset( $role_baselines['baseline_earnings'] ) ? floatval( $role_baselines['baseline_earnings'] ) : 0,
+					'baseline_orders'    => isset( $role_baselines['baseline_orders'] ) ? intval( $role_baselines['baseline_orders'] ) : 0,
+					'baseline_aov'       => isset( $role_baselines['baseline_aov'] ) ? floatval( $role_baselines['baseline_aov'] ) : 0,
+				);
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize calculation config for import
+	 */
+	private function sanitize_calculation_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		if ( isset( $config['roles'] ) && is_array( $config['roles'] ) ) {
+			foreach ( $config['roles'] as $role => $role_calc ) {
+				$sanitized['roles'][ sanitize_text_field( $role ) ] = array(
+					'formula'             => isset( $role_calc['formula'] ) ? sanitize_text_field( $role_calc['formula'] ) : '',
+					'attribution_method'  => isset( $role_calc['attribution_method'] ) ? sanitize_text_field( $role_calc['attribution_method'] ) : 'full_value',
+					'split_percentage'    => isset( $role_calc['split_percentage'] ) ? floatval( $role_calc['split_percentage'] ) : 50,
+				);
+			}
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize system config for import
+	 */
+	private function sanitize_system_config_for_import( $config ) {
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+
+		return array(
+			'auto_calculate'        => isset( $config['auto_calculate'] ) ? (bool) $config['auto_calculate'] : true,
+			'calculation_frequency' => isset( $config['calculation_frequency'] ) ? sanitize_text_field( $config['calculation_frequency'] ) : 'daily',
+			'enable_notifications'  => isset( $config['enable_notifications'] ) ? (bool) $config['enable_notifications'] : true,
+			'enable_reports'        => isset( $config['enable_reports'] ) ? (bool) $config['enable_reports'] : true,
+			'data_retention_days'   => isset( $config['data_retention_days'] ) ? intval( $config['data_retention_days'] ) : 365,
+		);
 	}
 
 }
