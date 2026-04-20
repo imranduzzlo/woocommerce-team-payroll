@@ -1,3 +1,22 @@
+## [1.6.29] - 2026-04-20
+### 🐛 Bug Fixes - Achievement Tab Network Errors
+
+#### FIXED
+- Fixed "Network error. Please try again." when reloading achievement tab
+- Fixed "Achievements are disabled in settings" false positive error
+- Made `get_employee_roles()` method public to fix AJAX access issues
+- Added null checks for user roles in AJAX handlers
+- Improved error handling and logging in fetchData function
+- Added default values for achievement settings in JavaScript
+- Fixed achievementsEnabled check to use strict comparison (=== 0)
+
+#### IMPROVEMENTS
+- Better error logging for AJAX failures
+- More robust role detection in AJAX endpoints
+- Improved error messages with detailed logging
+
+---
+
 ## [1.6.28] - 2026-04-20
 ### 🔄 Maintenance Release
 
