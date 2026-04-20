@@ -3825,3 +3825,44 @@ Employees can now see:
 
 ---
 
+## [1.6.39] - 2026-04-20
+### 🧹 Cleanup - Remove Old SVG Badge Styles
+
+#### REMOVED
+- Removed all old SVG-based badge CSS styles (`.badge-circle`, `.badge-inner-ring`, `.badge-icon-outline`)
+- Removed old gradient definitions (`#goldGradient`, `#silverGradient`, `#bronzeGradient`)
+- Removed old `.achievement-badge-*` seal styles
+- Cleaned up unused SVG-related CSS from both employee-detail.php and myaccount-shared.css
+
+#### IMPROVEMENTS
+- ✅ Cleaner CSS with no unused SVG styles
+- ✅ Reduced CSS file size
+- ✅ All badges now use modern 3D coin design with HTML/CSS
+- ✅ Consistent badge styling across all pages
+
+---
+
+## [1.6.38] - 2026-04-20
+### 🎨 UI Improvement - Update My Account Badges with Modern 3D Coin Design
+
+#### CHANGED
+- Updated gold, silver, and bronze badges in My Account page to use modern 3D coin design
+- Replaced SVG-based badges with HTML/CSS + letter badges (G, S, B)
+- Enhanced visual consistency with employee details page
+- Improved badge styling with realistic 3D effects
+
+#### IMPROVEMENTS
+- ✅ Modern 3D coin design with radial gradients
+- ✅ Letter badges (G for Gold, S for Silver, B for Bronze) in center
+- ✅ Improved visual hierarchy and contrast
+- ✅ Consistent design language across all pages
+- ✅ Better performance with CSS-only rendering
+
+#### TECHNICAL
+- Replaced SVG badges with HTML structure: `badge-coin-container` + `badge-coin` + `badge-letter`
+- Used radial gradients for 3D coin effect
+- Added inset shadows for depth perception
+- Maintained hover effects (scale 1.08x, enhanced shadow)
+
+---
+
