@@ -72,6 +72,7 @@ class WC_Team_Payroll_Employee_Detail {
 							<?php
 							// Get period achievement for badge (Period-Based System)
 							$highest_tier = '';
+							$tier_star_count = 0;
 							
 							// Get current period ID
 							$performance_tracker = WC_Team_Payroll_Performance_Tracker::init();
@@ -84,6 +85,11 @@ class WC_Team_Payroll_Employee_Detail {
 							
 							if ( ! empty( $period_stats ) && isset( $period_stats['highest_tier'] ) ) {
 								$highest_tier = $period_stats['highest_tier'];
+								
+								// Get star count for the highest tier
+								if ( isset( $period_stats['tier_categories'][ $highest_tier ] ) ) {
+									$tier_star_count = count( $period_stats['tier_categories'][ $highest_tier ] );
+								}
 							}
 							
 							// Get goal achievement count
@@ -105,180 +111,89 @@ class WC_Team_Payroll_Employee_Detail {
 							}
 							?>
 							
-							<?php
-							// Count how many categories achieved at the highest tier
-							$tier_count = 0;
-							if ( ! empty( $period_stats ) && isset( $period_stats['achievements'] ) ) {
-								$achievements = $period_stats['achievements'];
-								foreach ( array( 'order_value', 'orders', 'aov' ) as $metric ) {
-									if ( isset( $achievements[ $metric ] ) && $achievements[ $metric ] === $highest_tier ) {
-										$tier_count++;
-									}
-								}
-							}
-							
-							// Calculate leaderboard ranking based on badges and goals
-							$leaderboard_rank = 0;
-							$all_employees = get_users( array( 'role__in' => array( 'shop_employee', 'administrator', 'shop_manager' ) ) );
-							$employee_rankings = array();
-							
-							foreach ( $all_employees as $emp ) {
-								$emp_period_stats = get_user_meta( $emp->ID, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
-								$emp_highest_tier = '';
-								$emp_tier_count = 0;
-								$emp_goals_achieved = 0;
-								
-								if ( ! empty( $emp_period_stats ) && isset( $emp_period_stats['highest_tier'] ) ) {
-									$emp_highest_tier = $emp_period_stats['highest_tier'];
-									
-									// Count achievements at highest tier
-									if ( isset( $emp_period_stats['achievements'] ) ) {
-										foreach ( array( 'order_value', 'orders', 'aov' ) as $metric ) {
-											if ( isset( $emp_period_stats['achievements'][ $metric ] ) && $emp_period_stats['achievements'][ $metric ] === $emp_highest_tier ) {
-												$emp_tier_count++;
-											}
-										}
-									}
-								}
-								
-								// Count goals achieved
-								$emp_goal_progress = get_user_meta( $emp->ID, '_wc_tp_current_goal_progress', true );
-								if ( ! empty( $emp_goal_progress ) ) {
-									foreach ( array( 'order_value', 'orders', 'aov' ) as $metric ) {
-										if ( isset( $emp_goal_progress[ $metric ]['status'] ) && in_array( $emp_goal_progress[ $metric ]['status'], array( 'achieved', 'stretch_achieved' ) ) ) {
-											$emp_goals_achieved++;
-										}
-									}
-								}
-								
-								// Tier priority: gold=3, silver=2, bronze=1, none=0
-								$tier_priority = $emp_highest_tier === 'gold' ? 3 : ( $emp_highest_tier === 'silver' ? 2 : ( $emp_highest_tier === 'bronze' ? 1 : 0 ) );
-								
-								$employee_rankings[ $emp->ID ] = array(
-									'tier_priority' => $tier_priority,
-									'tier_count' => $emp_tier_count,
-									'goals_achieved' => $emp_goals_achieved,
-								);
-							}
-							
-							// Sort by tier priority (desc), then tier count (desc), then goals achieved (desc)
-							uasort( $employee_rankings, function( $a, $b ) {
-								if ( $a['tier_priority'] !== $b['tier_priority'] ) {
-									return $b['tier_priority'] - $a['tier_priority'];
-								}
-								if ( $a['tier_count'] !== $b['tier_count'] ) {
-									return $b['tier_count'] - $a['tier_count'];
-								}
-								return $b['goals_achieved'] - $a['goals_achieved'];
-							});
-							
-							$rank_position = 1;
-							foreach ( $employee_rankings as $emp_id => $ranking ) {
-								if ( $emp_id == $user_id ) {
-									$leaderboard_rank = $rank_position;
-									break;
-								}
-								$rank_position++;
-							}
-							?>
-							
 							<?php if ( ! empty( $highest_tier ) ) : ?>
 								<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
 									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 										<defs>
 											<!-- Gold 3D Coin Gradients -->
-											<radialGradient id="goldGradientEmp" cx="35%" cy="35%">
+											<radialGradient id="goldGradient" cx="35%" cy="35%">
 												<stop offset="0%" style="stop-color:#FFFACD;stop-opacity:1"/>
 												<stop offset="30%" style="stop-color:#FFD700;stop-opacity:1"/>
 												<stop offset="70%" style="stop-color:#FFA500;stop-opacity:1"/>
 												<stop offset="100%" style="stop-color:#8B6914;stop-opacity:1"/>
 											</radialGradient>
 											
-											<linearGradient id="goldShineEmp" x1="0%" y1="0%" x2="100%" y2="100%">
+											<linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
 												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
 												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
 												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
 											</linearGradient>
 											
 											<!-- Silver 3D Coin Gradients -->
-											<radialGradient id="silverGradientEmp" cx="35%" cy="35%">
+											<radialGradient id="silverGradient" cx="35%" cy="35%">
 												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
 												<stop offset="30%" style="stop-color:#E8E8E8;stop-opacity:1"/>
 												<stop offset="70%" style="stop-color:#C0C0C0;stop-opacity:1"/>
 												<stop offset="100%" style="stop-color:#808080;stop-opacity:1"/>
 											</radialGradient>
 											
-											<linearGradient id="silverShineEmp" x1="0%" y1="0%" x2="100%" y2="100%">
+											<linearGradient id="silverShine" x1="0%" y1="0%" x2="100%" y2="100%">
 												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8"/>
 												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
 												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.2"/>
 											</linearGradient>
 											
 											<!-- Bronze 3D Coin Gradients -->
-											<radialGradient id="bronzeGradientEmp" cx="35%" cy="35%">
+											<radialGradient id="bronzeGradient" cx="35%" cy="35%">
 												<stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1"/>
 												<stop offset="30%" style="stop-color:#CD7F32;stop-opacity:1"/>
 												<stop offset="70%" style="stop-color:#B8860B;stop-opacity:1"/>
 												<stop offset="100%" style="stop-color:#654321;stop-opacity:1"/>
 											</radialGradient>
 											
-											<linearGradient id="bronzeShineEmp" x1="0%" y1="0%" x2="100%" y2="100%">
+											<linearGradient id="bronzeShine" x1="0%" y1="0%" x2="100%" y2="100%">
 												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.5"/>
 												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
 												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
 											</linearGradient>
 											
 											<!-- Shadow Filter for 3D Effect -->
-											<filter id="coinShadowEmp" x="-50%" y="-50%" width="200%" height="200%">
+											<filter id="coinShadow" x="-50%" y="-50%" width="200%" height="200%">
 												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.4"/>
 											</filter>
 										</defs>
 										
 										<!-- Outer Ring (3D Edge) -->
-										<circle cx="50" cy="50" r="46" fill="url(#<?php echo esc_attr( $highest_tier ); ?>GradientEmp)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
+										<circle cx="50" cy="50" r="46" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
 										
 										<!-- Main Coin Circle with 3D Gradient -->
-										<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>GradientEmp)" stroke="#000000" stroke-width="1" filter="url(#coinShadowEmp)"/>
+										<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="1" filter="url(#coinShadow)"/>
 										
 										<!-- Shine/Highlight for 3D Effect -->
-										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#<?php echo esc_attr( $highest_tier ); ?>ShineEmp)" opacity="0.7"/>
+										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Shine)" opacity="0.7"/>
 										
 										<!-- Inner Ring for Depth -->
 										<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
 										
-										<!-- Letter Badge (G, S, or B) -->
+										<!-- Letter Badge (G, S, or B) with Stars -->
 										<g class="badge-letter">
-											<?php 
-											$letter_color = $highest_tier === 'gold' ? '#8B6914' : ( $highest_tier === 'silver' ? '#606060' : '#6B3410' );
-											$letter = $highest_tier === 'gold' ? 'G' : ( $highest_tier === 'silver' ? 'S' : 'B' );
-											?>
-											<text x="50" y="45" font-size="32" font-weight="bold" text-anchor="middle" fill="<?php echo esc_attr( $letter_color ); ?>" font-family="Arial, sans-serif"><?php echo esc_html( $letter ); ?></text>
+											<?php if ( $highest_tier === 'gold' ) : ?>
+												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#8B6914" font-family="Arial, sans-serif" letter-spacing="2">G</text>
+											<?php elseif ( $highest_tier === 'silver' ) : ?>
+												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#606060" font-family="Arial, sans-serif" letter-spacing="2">S</text>
+											<?php else : ?>
+												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#6B3410" font-family="Arial, sans-serif" letter-spacing="2">B</text>
+											<?php endif; ?>
 										</g>
 										
-										<!-- Stars below letter (based on tier achievements, max 3) -->
-										<?php if ( $tier_count > 0 ) : ?>
-											<g class="badge-stars">
-												<?php
-												$star_y = 60;
-												$star_size = 5;
-												$stars_to_show = min( $tier_count, 3 );
-												$star_spacing = 8;
-												$start_x = 50 - ( ( $stars_to_show - 1 ) * $star_spacing / 2 );
-												
-												for ( $i = 0; $i < $stars_to_show; $i++ ) :
-													$star_x = $start_x + ( $i * $star_spacing );
-												?>
-													<path d="M<?php echo $star_x; ?>,<?php echo $star_y - $star_size; ?> L<?php echo $star_x + $star_size * 0.3; ?>,<?php echo $star_y - $star_size * 0.3; ?> L<?php echo $star_x + $star_size; ?>,<?php echo $star_y; ?> L<?php echo $star_x + $star_size * 0.3; ?>,<?php echo $star_y + $star_size * 0.3; ?> L<?php echo $star_x; ?>,<?php echo $star_y + $star_size * 0.5; ?> L<?php echo $star_x - $star_size * 0.3; ?>,<?php echo $star_y + $star_size * 0.3; ?> L<?php echo $star_x - $star_size; ?>,<?php echo $star_y; ?> L<?php echo $star_x - $star_size * 0.3; ?>,<?php echo $star_y - $star_size * 0.3; ?> Z" fill="<?php echo esc_attr( $letter_color ); ?>" opacity="0.9"/>
-												<?php endfor; ?>
-											</g>
+										<!-- Stars for Category Count -->
+										<?php if ( $tier_star_count > 0 ) : ?>
+											<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
+												<g class="badge-star" transform="translate(<?php echo esc_attr( 50 + ( $i - ( $tier_star_count - 1 ) / 2 ) * 18 ); ?>, 78)">
+													<polygon points="0,-6 1.5,-2 6,-2 2.5,1 4,5 0,2 -4,5 -2.5,1 -6,-2 -1.5,-2" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#FFD700' : ( $highest_tier === 'silver' ? '#C0C0C0' : '#CD7F32' ) ); ?>" stroke="#000000" stroke-width="0.3"/>
+												</g>
+											<?php endfor; ?>
 										<?php endif; ?>
-										
-										<!-- Ranking Circle (Bottom Right) -->
-										<?php
-										$rank_circle_color = $highest_tier === 'gold' ? '#FFD700' : ( $highest_tier === 'silver' ? '#C0C0C0' : '#CD7F32' );
-										?>
-										<circle cx="82" cy="82" r="14" fill="<?php echo esc_attr( $rank_circle_color ); ?>" stroke="#FFFFFF" stroke-width="2" filter="url(#coinShadowEmp)"/>
-										<text x="82" y="87" font-size="12" font-weight="bold" text-anchor="middle" fill="#FFFFFF"><?php echo esc_html( $leaderboard_rank ); ?></text>
 										
 										<!-- Subtle Border Highlight -->
 										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
@@ -287,36 +202,10 @@ class WC_Team_Payroll_Employee_Detail {
 							<?php else : ?>
 								<!-- Locked Badge -->
 								<div class="profile-achievement-badge profile-achievement-badge-locked">
-									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-										<defs>
-											<!-- Muted Gray Gradient -->
-											<radialGradient id="lockedGradientEmp" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#E0E0E0;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#BDBDBD;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#9E9E9E;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#757575;stop-opacity:1"/>
-											</radialGradient>
-											
-											<filter id="lockedShadowEmp" x="-50%" y="-50%" width="200%" height="200%">
-												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.3"/>
-											</filter>
-										</defs>
-										
-										<!-- Main Coin Circle -->
-										<circle cx="50" cy="50" r="45" fill="url(#lockedGradientEmp)" stroke="#000000" stroke-width="1" opacity="0.5" filter="url(#lockedShadowEmp)"/>
-										
-										<!-- Lock Icon (using path) -->
-										<g transform="translate(50, 45)">
-											<path d="M-8,-10 L-8,-15 Q-8,-20 -3,-20 Q2,-20 2,-15 L2,-10" fill="none" stroke="#757575" stroke-width="2.5" stroke-linecap="round"/>
-											<rect x="-10" y="-10" width="20" height="15" rx="2" fill="#757575"/>
-											<circle cx="0" cy="-3" r="2.5" fill="#E0E0E0"/>
-											<rect x="-1" y="-3" width="2" height="5" fill="#E0E0E0"/>
-										</g>
-										
-										<!-- Ranking Circle (Bottom Right) with 0 -->
-										<circle cx="82" cy="82" r="14" fill="#9E9E9E" stroke="#FFFFFF" stroke-width="2" opacity="0.5" filter="url(#lockedShadowEmp)"/>
-										<text x="82" y="87" font-size="12" font-weight="bold" text-anchor="middle" fill="#FFFFFF" opacity="0.7">0</text>
-									</svg>
+									<div class="locked-badge-container">
+										<div class="locked-badge-coin"></div>
+										<i class="ph ph-lock-key locked-badge-icon"></i>
+									</div>
 								</div>
 							<?php endif; ?>
 							
@@ -1068,6 +957,38 @@ class WC_Team_Payroll_Employee_Detail {
 				color: #6B3410;
 				font-family: Arial, sans-serif;
 				letter-spacing: 2px;
+			}
+
+			/* Badge Stars - Category Count Display */
+			.badge-stars {
+				position: absolute;
+				bottom: -6px;
+				left: 50%;
+				transform: translateX(-50%);
+				display: flex;
+				gap: 2px;
+				z-index: 3;
+			}
+
+			.badge-star {
+				font-size: 10px;
+				line-height: 1;
+				display: inline-block;
+			}
+
+			.profile-achievement-badge-gold .badge-stars .badge-star {
+				color: #FFD700;
+				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+			}
+
+			.profile-achievement-badge-silver .badge-stars .badge-star {
+				color: #C0C0C0;
+				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+			}
+
+			.profile-achievement-badge-bronze .badge-stars .badge-star {
+				color: #CD7F32;
+				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 			}
 
 			/* Locked Badge */
@@ -1834,6 +1755,21 @@ class WC_Team_Payroll_Employee_Detail {
 			@media (max-width: 768px) {
 				.wc-tp-employee-detail {
 					padding: 12px;
+				}
+
+				.profile-achievement-badge {
+					width: 38px;
+					height: 38px;
+					top: -6px;
+					right: -6px;
+				}
+
+				.badge-stars {
+					bottom: -5px;
+				}
+
+				.badge-star {
+					font-size: 8px;
 				}
 
 				.wc-tp-profile-header {

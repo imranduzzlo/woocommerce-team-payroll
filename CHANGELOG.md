@@ -1,118 +1,35 @@
-## [1.6.44] - 2026-04-20
-### ✨ Enhanced Badge System with Achievement-Based Ranking
-
-#### ADDED
-- **Dynamic SVG Badge System** - Complete redesign of profile badges
-  - Letter display (G/S/B) in center based on tier (Gold/Silver/Bronze)
-  - 1-3 stars below letter showing achievement category count
-  - Ranking number in bottom-right circle based on leaderboard position
-  - Tier-specific color schemes (Gold, Silver, Bronze)
-  - Locked state with lock icon and "0" ranking for no achievements
-  - No "PREVIEW" text - clean, professional design
-
-- **Achievement-Based Star System**
-  - Stars represent how many achievement categories earned at highest tier
-  - 1 star = Achieved tier in 1 category (e.g., only Earnings)
-  - 2 stars = Achieved tier in 2 categories (e.g., Earnings + Orders)
-  - 3 stars = Achieved tier in all 3 categories (Earnings + Orders + AOV)
-  - Example: Gold badge with 2 stars = Gold achieved in 2 out of 3 categories
-
-- **Smart Leaderboard Ranking**
-  - Ranking based on achievement performance, not earnings
-  - Primary sort: Badge tier (Gold > Silver > Bronze > None)
-  - Secondary sort: Achievement count at that tier (3 > 2 > 1)
-  - Tertiary sort: Goals achieved (tiebreaker)
-  - Example ranking: Gold-3★ > Gold-2★ > Gold-1★ > Silver-3★
-
-- **Tier-Specific Color Schemes**
-  - **Gold**: Yellow/orange gradient (#FFD700, #FFA500, #8B6914)
-  - **Silver**: White/gray gradient (#FFFFFF, #C0C0C0, #808080)
-  - **Bronze**: Brown/copper gradient (#CD7F32, #B8860B, #654321)
-  - **Locked**: Muted gray (#E0E0E0, #9E9E9E, #757575)
-
-- **3D Coin Effect**
-  - Radial gradients for depth
-  - Shine highlights for realism
-  - Drop shadows for elevation
-  - Border highlights for polish
-  - Scalable SVG for all screen sizes
-
-#### IMPLEMENTED IN
-- ✅ Admin Employee Details Page (`includes/class-employee-detail.php`)
-- ✅ My Account Page (`includes/class-myaccount.php`)
-- ✅ Both pages use identical badge logic
-- ✅ Unique gradient IDs to prevent conflicts
-
-#### TECHNICAL DETAILS
-- Pure SVG implementation (no raster images)
-- Dynamic PHP generation based on user data
-- Calculates ranking across all employees
-- Counts achievements per tier category
-- Responsive and scalable design
-- No external dependencies
-
-#### BENEFITS
-- ✅ Visual representation of achievement performance
-- ✅ Motivates employees to achieve in multiple categories
-- ✅ Clear ranking system based on merit
-- ✅ Professional, polished appearance
-- ✅ No "PREVIEW" watermark or placeholder text
-- ✅ Works on all devices and screen sizes
-
----
-
 ## [1.6.43] - 2026-04-20
-### ✨ Add - Complete Settings Export/Import System
+### ⭐ Enhancement - Badge Stars for Category Achievements & Cache Fix
 
-#### ADDED
-- **Export Settings** - Download all performance settings as JSON file
-  - Exports all 7 settings option keys:
-    1. Performance scoring configuration
-    2. Goals configuration
-    3. Achievements configuration
-    4. Bonus configuration
-    5. Baselines configuration
-    6. Calculation configuration
-    7. System configuration
-  - Includes metadata (export version, date, plugin version)
-  - Automatic filename with timestamp
+#### ADDED - Badge Stars System
+- **Profile Badge Stars**: Display stars on profile badges based on category achievements
+- **Category Tracking**: Track which categories (Earnings, Orders, AOV) achieved each tier
+- **Star Count Display**: Show 1-3 stars based on how many categories achieved the same tier
+  - Example: Gold in Earnings + Gold in Orders + Gold in AOV = G★★★
+  - Example: Bronze in Earnings + Bronze in Orders = B★★
+- **Consistent Styling**: Same badge appearance in both frontend (My Account) and backend (Employee Details)
+- **Responsive Design**: Stars scale properly on mobile devices
 
-- **Import Settings** - Upload previously exported settings file
-  - Validates JSON file format and structure
-  - Creates automatic backup before import
-  - Sanitizes all imported data
-  - Supports all 7 settings option keys
-  - Displays import summary and status
+#### FIXED - Achievement Threshold Cache Issue
+- **Cache Clearing**: When achievement/goal thresholds change in settings, all user caches are now cleared
+- **Immediate Updates**: Frontend now shows updated thresholds immediately after saving
+- **Current Period Only**: Only clears current period data, preserves achievement history
+- **Auto Recalculation**: Achievements/goals recalculate with new thresholds on next page load
 
-- **UI Components**
-  - Export/Import section in System Configuration tab
-  - Export button with download icon
-  - Import button with file picker
-  - Status messages for success/error
-  - Loading indicators during operations
-
-#### FEATURES
-- ✅ Full settings backup and restore
-- ✅ Automatic backup creation before import
-- ✅ Data validation and sanitization
-- ✅ Nonce verification for security
-- ✅ Admin-only access (capability checks)
-- ✅ Error handling and user feedback
-- ✅ Timestamp-based filenames for organization
-
-#### SECURITY
-- Nonce verification on all AJAX requests
-- Capability checks (admin only)
-- File type validation (JSON only)
-- Data sanitization on import
-- Automatic backup creation
+#### TECHNICAL CHANGES
+- Added `tier_categories` tracking in `update_period_achievement_stats()`
+- Added `clear_all_achievement_caches()` function to clear stale achievement data
+- Added `clear_all_goal_caches()` function to clear stale goal data
+- Updated AJAX responses to include `tier_categories` data
+- Added badge star rendering in both SVG (backend) and HTML (frontend)
+- Added responsive CSS for star display on mobile devices
 
 #### BENEFITS
-- ✅ Easy settings backup and restore
-- ✅ Transfer settings between sites
-- ✅ Disaster recovery capability
-- ✅ Configuration management
-- ✅ Team collaboration support
+- ✅ Visual representation of multi-category achievements
+- ✅ Immediate feedback when settings change
+- ✅ No more stale data on frontend
+- ✅ Consistent badge display across admin and frontend
+- ✅ Better achievement tracking granularity
 
 ---
 

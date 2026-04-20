@@ -384,6 +384,38 @@ input[type="reset"]:focus {
 	letter-spacing: 2px;
 }
 
+/* Badge Stars - Category Count Display */
+.badge-stars {
+	position: absolute;
+	bottom: -6px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 2px;
+	z-index: 3;
+}
+
+.badge-star {
+	font-size: 10px;
+	line-height: 1;
+	display: inline-block;
+}
+
+.profile-achievement-badge-gold .badge-stars .badge-star {
+	color: #FFD700;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.profile-achievement-badge-silver .badge-stars .badge-star {
+	color: #C0C0C0;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.profile-achievement-badge-bronze .badge-stars .badge-star {
+	color: #CD7F32;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
 /* Profile Goal Counter - Bottom Center */
 .profile-goal-counter {
 	position: absolute;
@@ -423,6 +455,14 @@ input[type="reset"]:focus {
 		height: 38px;
 		top: -6px;
 		right: -6px;
+	}
+	
+	.badge-stars {
+		bottom: -5px;
+	}
+	
+	.badge-star {
+		font-size: 8px;
 	}
 	
 	.profile-goal-counter {

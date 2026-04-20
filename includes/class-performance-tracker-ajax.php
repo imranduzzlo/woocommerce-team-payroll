@@ -114,6 +114,12 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					$period_achievements = array();
 				}
 				
+				// Get period stats (includes tier_categories)
+				$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
+				if ( ! is_array( $period_stats ) ) {
+					$period_stats = array();
+				}
+				
 				// Get period history
 				$period_history = get_user_meta( $user_id, '_wc_tp_period_achievements_history', true );
 				if ( ! is_array( $period_history ) ) {
@@ -126,9 +132,11 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$data['period_type'] = $period_type;
 				$data['current_period_id'] = $current_period_id;
 				$data['period_achievements'] = $period_achievements;
+				$data['period_stats'] = $period_stats;
 				$data['period_history'] = $period_history;
 				$data['period_range'] = $period_range;
 				$data['highest_tier'] = isset( $period_achievements['highest_tier'] ) ? $period_achievements['highest_tier'] : '';
+				$data['tier_categories'] = isset( $period_stats['tier_categories'] ) ? $period_stats['tier_categories'] : array();
 				break;
 
 			case 'overview':
@@ -180,6 +188,7 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 						$stats = array();
 					}
 					$data['stats'] = $stats;
+					$data['tier_categories'] = isset( $stats['tier_categories'] ) ? $stats['tier_categories'] : array();
 					
 					// Get user's role-specific achievements
 					$user = get_user_by( 'id', $user_id );
