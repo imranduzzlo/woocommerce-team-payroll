@@ -1,3 +1,29 @@
+## [1.6.31] - 2026-04-20
+### 🔧 Fix - Period Achievement Data Structure and Error Handling
+
+#### FIXED
+- Fixed network error by storing individual achievements in period data
+- Added proper error handling with try-catch in AJAX achievements endpoint
+- Ensured all data arrays are properly validated before returning
+- Fixed data structure to include both individual achievements and period summary
+
+#### TECHNICAL DETAILS
+- `update_period_achievements()` now stores individual achievements in `$period_data['achievements']`
+- Period summary data (stats, counts, etc.) also stored in same meta
+- AJAX endpoint validates all data is arrays before returning
+- Better error messages for debugging
+
+#### DATA STRUCTURE
+Period meta now contains:
+- `achievements` - Individual achievement objects (for frontend display)
+- `period`, `period_type`, `start_date`, `end_date` - Period info
+- `earnings`, `orders`, `aov` - Period metrics
+- `bronze_count`, `silver_count`, `gold_count`, `total_unlocked` - Stats
+- `achievements_unlocked` - List of unlocked achievement keys
+- `updated_at` - Last update timestamp
+
+---
+
 ## [1.6.30] - 2026-04-20
 ### 🔧 Critical Fix - Achievement Tab Data Structure
 
