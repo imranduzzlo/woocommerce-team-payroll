@@ -103,19 +103,25 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			case 'overview':
 				// Get overview data with view mode
 				$goals = $tracker->update_goal_progress( $user_id, $view_mode );
-				$achievements_stats = get_user_meta( $user_id, '_wc_tp_achievement_stats', true );
+				
+				// Get current period achievements
+				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+				$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+				$current_period_id = $tracker->get_current_period_id( $period_type );
+				$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+				
 				$baselines = get_user_meta( $user_id, '_wc_tp_current_baselines', true );
 
 				$data['goals_summary'] = array(
 					'html' => self::render_goals_summary( $goals )
 				);
 				$data['achievements_summary'] = array(
-					'html' => self::render_achievements_summary( $achievements_stats )
+					'html' => self::render_achievements_summary( $period_achievements )
 				);
 				$data['baselines_summary'] = array(
 					'html' => self::render_baselines_summary( $baselines )
 				);
-				$data['quick_stats'] = self::get_quick_stats( $goals, $achievements_stats, $baselines );
+				$data['quick_stats'] = self::get_quick_stats( $goals, $period_achievements, $baselines );
 				break;
 
 			case 'goals':
@@ -127,7 +133,12 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			case 'achievements':
 				// Get achievements data
 				$data['achievements'] = $tracker->update_achievements( $user_id );
-				$data['stats'] = get_user_meta( $user_id, '_wc_tp_achievement_stats', true );
+				
+				// Get current period achievements for stats
+				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+				$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+				$current_period_id = $tracker->get_current_period_id( $period_type );
+				$data['stats'] = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
 				
 				// Phase 2 Part 3: Add streak and bonus data
 				$data['streaks'] = get_user_meta( $user_id, '_wc_tp_badge_streaks', true );

@@ -2290,9 +2290,8 @@ class WC_Team_Payroll_Performance_Tracker {
 			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
 		}
 
-		// Update and get achievements
+		// Update and get period achievements
 		$achievements = $this->update_achievements( $user_id );
-		$stats = get_user_meta( $user_id, '_wc_tp_achievement_stats', true );
 
 		if ( empty( $achievements ) ) {
 			wp_send_json_error( array( 'message' => __( 'No achievements configured for this user', 'wc-team-payroll' ) ) );
@@ -2300,7 +2299,6 @@ class WC_Team_Payroll_Performance_Tracker {
 
 		wp_send_json_success( array(
 			'achievements' => $achievements,
-			'stats' => $stats,
 		) );
 	}
 
