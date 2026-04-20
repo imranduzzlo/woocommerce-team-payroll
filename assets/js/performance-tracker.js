@@ -598,7 +598,6 @@
 							<span class="unlock-date">Unlocked: ${achievement.unlocked_date}</span>
 							<span class="unlock-value">Value: ${this.formatValue(achievement.value_at_unlock, key)}</span>
 						</div>
-						${this.userRole ? `<p class="achievement-role">Role: ${this.userRole}</p>` : ''}
 					</div>
 				`;
 			} else {
@@ -619,7 +618,6 @@
 							<span>Current: ${this.formatValue(achievement.current_progress, key)}</span>
 							<span>Remaining: ${this.formatValue(achievement.threshold - achievement.current_progress, key)}</span>
 						</div>
-						${this.userRole ? `<p class="achievement-role">Role: ${this.userRole}</p>` : ''}
 					</div>
 				`;
 			}
