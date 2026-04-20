@@ -3388,6 +3388,9 @@ class WC_Team_Payroll_Employee_Detail {
 					<button class="performance-tab" data-tab="achievements">
 						<i class="ph ph-trophy"></i> <?php esc_html_e( 'Achievements', 'wc-team-payroll' ); ?>
 					</button>
+					<button class="performance-tab" data-tab="period_history">
+						<i class="ph ph-clock-clockwise"></i> <?php esc_html_e( 'Period History', 'wc-team-payroll' ); ?>
+					</button>
 					<button class="performance-tab" data-tab="bonus_achieved">
 						<i class="ph ph-gift"></i> <?php esc_html_e( 'Bonus Achieved', 'wc-team-payroll' ); ?>
 					</button>
