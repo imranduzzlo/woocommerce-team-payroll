@@ -3866,3 +3866,31 @@ Employees can now see:
 
 ---
 
+## [1.6.40] - 2026-04-20
+### 🐛 Bug Fix - Profile Badge Shows Locked When Achievements Exist
+
+#### PROBLEM
+- Profile badge was showing locked even when user had earned achievements in current period
+- Root cause: Profile header was looking for `highest_tier` in wrong meta key
+
+#### ROOT CAUSE
+- Achievement stats (including `highest_tier`) are saved in `_wc_tp_period_achievements_stats_` meta key
+- Profile header was looking in `_wc_tp_period_achievements_` meta key (which stores individual achievements)
+- This caused `highest_tier` to always be empty, showing locked badge instead
+
+#### FIXED
+- Updated `get_employee_header()` in My Account page to retrieve stats from correct meta key
+- Updated employee details page to retrieve stats from correct meta key
+- Both now use `_wc_tp_period_achievements_stats_` to get `highest_tier`
+
+#### CHANGES
+- `includes/class-myaccount.php`: Fixed highest_tier retrieval in `get_employee_header()`
+- `includes/class-employee-detail.php`: Fixed highest_tier retrieval in profile badge section
+
+#### RESULT
+- ✅ Profile badge now correctly shows G/S/B when achievements are earned
+- ✅ Locked badge only shows when no achievements in current period
+- ✅ Works for both My Account and Employee Details pages
+
+---
+

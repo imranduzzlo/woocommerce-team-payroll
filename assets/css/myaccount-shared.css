@@ -176,7 +176,7 @@ input[type="reset"]:focus {
 	position: relative;
 	z-index: 2;
 	font-size: 24px;
-	color: #505050;
+	color: #505050 !important;
 	display: flex;
 	align-items: center;
 	justify-content: center;

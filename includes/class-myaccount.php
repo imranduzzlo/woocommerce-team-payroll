@@ -2819,11 +2819,11 @@ class WC_Team_Payroll_MyAccount {
 		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 		$current_period_id = $performance_tracker->get_current_period_id( $period_type );
 		
-		// Get current period achievements
-		$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+		// Get current period achievements stats (where highest_tier is stored)
+		$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
 		
-		if ( ! empty( $period_achievements ) && isset( $period_achievements['highest_tier'] ) ) {
-			$highest_tier = $period_achievements['highest_tier'];
+		if ( ! empty( $period_stats ) && isset( $period_stats['highest_tier'] ) ) {
+			$highest_tier = $period_stats['highest_tier'];
 		}
 
 		// Get goal achievement count for current period
