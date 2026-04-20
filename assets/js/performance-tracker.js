@@ -138,6 +138,9 @@
 				case 'achievements':
 					this.loadAchievements();
 					break;
+				case 'period_achievements':
+					this.loadPeriodAchievements();
+					break;
 				case 'bonus_achieved':
 					this.loadBonusAchieved();
 					break;
@@ -184,6 +187,17 @@
 			
 			this.fetchData('achievements', (data) => {
 				this.renderAchievements(data);
+			});
+		},
+
+		/**
+		 * Load period-based achievements data
+		 */
+		loadPeriodAchievements() {
+			this.showLoading();
+			
+			this.fetchData('period_achievements', (data) => {
+				this.renderPeriodAchievements(data);
 			});
 		},
 
@@ -729,6 +743,196 @@
 					</div>
 				</div>
 			`;
+		},
+
+		/**
+		 * Render period-based achievements section
+		 */
+		renderPeriodAchievements(data) {
+			const periodType = data.period_type || 'monthly';
+			const currentPeriodId = data.current_period_id || '';
+			const periodAchievements = data.period_achievements || {};
+			const periodHistory = data.period_history || {};
+			const periodRange = data.period_range || {};
+			const highestTier = data.highest_tier || '';
+
+			const tierData = {
+				gold: { emoji: '🥇', color: '#FFD700', label: 'Gold' },
+				silver: { emoji: '🥈', color: '#C0C0C0', label: 'Silver' },
+				bronze: { emoji: '🥉', color: '#CD7F32', label: 'Bronze' }
+			};
+
+			// Get period label
+			const periodLabel = this.getPeriodLabel(currentPeriodId, periodType);
+
+			if (!highestTier) {
+				const html = `
+					<div class="performance-period-achievements">
+						<div class="period-achievements-header">
+							<h3><i class="ph ph-medal"></i> Period Achievements</h3>
+							<span class="period-label">${periodLabel}</span>
+						</div>
+						<div class="period-achievements-empty">
+							<i class="ph ph-smiley-blank"></i>
+							<p>No achievements earned in this period yet. Keep working towards your goals!</p>
+						</div>
+					</div>
+				`;
+				$('#performance-content').html(html);
+				return;
+			}
+
+			const tier = tierData[highestTier];
+			const earningsTier = periodAchievements.earnings_tier || '';
+			const ordersTier = periodAchievements.orders_tier || '';
+			const aovTier = periodAchievements.aov_tier || '';
+
+			const html = `
+				<div class="performance-period-achievements">
+					<div class="period-achievements-header">
+						<h3><i class="ph ph-medal"></i> Period Achievements</h3>
+						<span class="period-label">${periodLabel}</span>
+					</div>
+
+					<!-- Current Period Badge -->
+					<div class="period-badge-container">
+						<div class="period-badge-display">
+							<div class="period-badge-large" style="border-color: ${tier.color};">
+								<svg class="badge-icon-large" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+									<defs>
+										<radialGradient id="periodGradient" cx="35%" cy="35%">
+											${highestTier === 'gold' ? `
+												<stop offset="0%" style="stop-color:#FFFACD;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#FFD700;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#FFA500;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#8B6914;stop-opacity:1"/>
+											` : highestTier === 'silver' ? `
+												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#E8E8E8;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#C0C0C0;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#808080;stop-opacity:1"/>
+											` : `
+												<stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#CD7F32;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#B8860B;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#654321;stop-opacity:1"/>
+											`}
+										</radialGradient>
+										<linearGradient id="periodShine" x1="0%" y1="0%" x2="100%" y2="100%">
+											<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
+											<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+											<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
+										</linearGradient>
+										<filter id="periodShadow" x="-50%" y="-50%" width="200%" height="200%">
+											<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.4"/>
+										</filter>
+									</defs>
+									<circle cx="50" cy="50" r="46" fill="url(#periodGradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
+									<circle cx="50" cy="50" r="45" fill="url(#periodGradient)" stroke="#000000" stroke-width="1" filter="url(#periodShadow)"/>
+									<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#periodShine)" opacity="0.7"/>
+									<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
+									<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="${highestTier === 'gold' ? '#8B6914' : highestTier === 'silver' ? '#606060' : '#6B3410'}" font-family="Arial, sans-serif">${highestTier.charAt(0).toUpperCase()}</text>
+									<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+								</svg>
+							</div>
+							<div class="period-badge-info">
+								<h4>${tier.emoji} ${tier.label} Achievement</h4>
+								<p class="period-dates">${periodRange.start_date} to ${periodRange.end_date}</p>
+								<div class="period-metrics">
+									<div class="metric-item">
+										<span class="metric-label">Earnings:</span>
+										<span class="metric-value">${this.formatValue(periodAchievements.earnings, 'value')}</span>
+										${earningsTier ? `<span class="metric-tier" style="color: ${tierData[earningsTier]?.color || '#999'}">${tierData[earningsTier]?.label || ''}</span>` : ''}
+									</div>
+									<div class="metric-item">
+										<span class="metric-label">Orders:</span>
+										<span class="metric-value">${periodAchievements.orders || 0}</span>
+										${ordersTier ? `<span class="metric-tier" style="color: ${tierData[ordersTier]?.color || '#999'}">${tierData[ordersTier]?.label || ''}</span>` : ''}
+									</div>
+									<div class="metric-item">
+										<span class="metric-label">AOV:</span>
+										<span class="metric-value">${this.formatValue(periodAchievements.aov, 'value')}</span>
+										${aovTier ? `<span class="metric-tier" style="color: ${tierData[aovTier]?.color || '#999'}">${tierData[aovTier]?.label || ''}</span>` : ''}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Period History -->
+					${Object.keys(periodHistory).length > 0 ? `
+						<div class="period-history-container">
+							<h4><i class="ph ph-clock-clockwise"></i> Period History</h4>
+							<div class="period-history-list">
+								${Object.entries(periodHistory).slice(0, 10).map(([periodId, periodData]) => {
+									const historyTier = periodData.highest_tier || '';
+									const historyTierData = tierData[historyTier];
+									return `
+										<div class="period-history-item">
+											<div class="history-badge" style="background: ${historyTierData?.color || '#999'}20; color: ${historyTierData?.color || '#999'};">
+												${historyTierData?.emoji || ''}
+											</div>
+											<div class="history-info">
+												<div class="history-period">${this.getPeriodLabel(periodId, periodType)}</div>
+												<div class="history-tier">${historyTierData?.label || 'No Achievement'}</div>
+											</div>
+										</div>
+									`;
+								}).join('')}
+							</div>
+						</div>
+					` : ''}
+				</div>
+			`;
+
+			$('#performance-content').html(html);
+		},
+
+		/**
+		 * Get human-readable period label
+		 */
+		getPeriodLabel(periodId, periodType) {
+			if (!periodId) return 'Current Period';
+
+			switch (periodType) {
+				case 'daily':
+					return new Date(periodId).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+				
+				case 'weekly':
+					// Period ID format: 2026-W16
+					const weekMatch = periodId.match(/(\d{4})-W(\d+)/);
+					if (weekMatch) {
+						return `Week ${weekMatch[2]} of ${weekMatch[1]}`;
+					}
+					return periodId;
+				
+				case 'monthly':
+					const monthDate = new Date(periodId + '-01');
+					return monthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+				
+				case 'quarterly':
+					// Period ID format: 2026-Q2
+					const quarterMatch = periodId.match(/(\d{4})-Q(\d)/);
+					if (quarterMatch) {
+						return `Q${quarterMatch[2]} ${quarterMatch[1]}`;
+					}
+					return periodId;
+				
+				case 'half_yearly':
+					// Period ID format: 2026-H1
+					const halfMatch = periodId.match(/(\d{4})-H(\d)/);
+					if (halfMatch) {
+						const halfLabel = halfMatch[2] === '1' ? 'First Half' : 'Second Half';
+						return `${halfLabel} ${halfMatch[1]}`;
+					}
+					return periodId;
+				
+				case 'yearly':
+					return periodId;
+				
+				default:
+					return periodId;
+			}
 		},
 
 		/**

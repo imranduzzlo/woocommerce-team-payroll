@@ -69,6 +69,37 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$data['achieved_bonuses'] = $achieved_bonuses;
 				break;
 
+			case 'period_achievements':
+				// Get period-based achievements for current user
+				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+				$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+				
+				// Get current period ID
+				$current_period_id = $tracker->get_current_period_id( $period_type );
+				
+				// Get current period achievements
+				$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+				if ( ! is_array( $period_achievements ) ) {
+					$period_achievements = array();
+				}
+				
+				// Get period history
+				$period_history = get_user_meta( $user_id, '_wc_tp_period_achievements_history', true );
+				if ( ! is_array( $period_history ) ) {
+					$period_history = array();
+				}
+				
+				// Get period date range
+				$period_range = $tracker->get_period_date_range( $period_type );
+				
+				$data['period_type'] = $period_type;
+				$data['current_period_id'] = $current_period_id;
+				$data['period_achievements'] = $period_achievements;
+				$data['period_history'] = $period_history;
+				$data['period_range'] = $period_range;
+				$data['highest_tier'] = isset( $period_achievements['highest_tier'] ) ? $period_achievements['highest_tier'] : '';
+				break;
+
 			case 'overview':
 				// Get overview data with view mode
 				$goals = $tracker->update_goal_progress( $user_id, $view_mode );
