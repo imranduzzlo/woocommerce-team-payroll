@@ -162,44 +162,60 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				break;
 
 			case 'achievements':
-				// Get achievements data
-				$data['achievements'] = $tracker->update_achievements( $user_id );
-				
-				// Get current period achievements for stats
-				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
-				$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
-				$current_period_id = $tracker->get_current_period_id( $period_type );
-				$data['stats'] = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
-				
-				// Get user's role-specific achievements
-				$user = get_user_by( 'id', $user_id );
-				$user_roles = $user ? $user->roles : array();
-				$employee_role = '';
-				
-				// Find employee role
-				if ( ! empty( $user_roles ) ) {
-					$all_roles = $tracker->get_employee_roles();
-					foreach ( $user_roles as $role ) {
-						if ( isset( $all_roles[ $role ] ) ) {
-							$employee_role = $role;
-							break;
+				try {
+					// Get achievements data
+					$achievements = $tracker->update_achievements( $user_id );
+					if ( ! is_array( $achievements ) ) {
+						$achievements = array();
+					}
+					$data['achievements'] = $achievements;
+					
+					// Get current period achievements for stats
+					$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+					$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+					$current_period_id = $tracker->get_current_period_id( $period_type );
+					$stats = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+					if ( ! is_array( $stats ) ) {
+						$stats = array();
+					}
+					$data['stats'] = $stats;
+					
+					// Get user's role-specific achievements
+					$user = get_user_by( 'id', $user_id );
+					$user_roles = $user ? $user->roles : array();
+					$employee_role = '';
+					
+					// Find employee role
+					if ( ! empty( $user_roles ) ) {
+						$all_roles = $tracker->get_employee_roles();
+						foreach ( $user_roles as $role ) {
+							if ( isset( $all_roles[ $role ] ) ) {
+								$employee_role = $role;
+								break;
+							}
 						}
 					}
+					
+					// Get role-specific achievements
+					$role_achievements = array();
+					if ( ! empty( $employee_role ) && isset( $achievements_config['roles'][ $employee_role ] ) ) {
+						$role_achievements = $achievements_config['roles'][ $employee_role ];
+					}
+					
+					// Phase 2 Part 3: Add streak and bonus data
+					$streaks = get_user_meta( $user_id, '_wc_tp_badge_streaks', true );
+					$bonus_history = get_user_meta( $user_id, '_wc_tp_bonus_history', true );
+					$bonus_milestones = self::get_bonus_milestones( $user_id );
+					
+					$data['streaks'] = is_array( $streaks ) ? $streaks : array();
+					$data['bonus_history'] = is_array( $bonus_history ) ? $bonus_history : array();
+					$data['bonus_milestones'] = is_array( $bonus_milestones ) ? $bonus_milestones : array();
+					$data['user_role'] = $employee_role;
+					$data['role_achievements'] = $role_achievements;
+					$data['achievements_config'] = $achievements_config;
+				} catch ( Exception $e ) {
+					wp_send_json_error( array( 'message' => 'Error loading achievements: ' . $e->getMessage() ) );
 				}
-				
-				// Get role-specific achievements
-				$role_achievements = array();
-				if ( ! empty( $employee_role ) && isset( $achievements_config['roles'][ $employee_role ] ) ) {
-					$role_achievements = $achievements_config['roles'][ $employee_role ];
-				}
-				
-				// Phase 2 Part 3: Add streak and bonus data
-				$data['streaks'] = get_user_meta( $user_id, '_wc_tp_badge_streaks', true );
-				$data['bonus_history'] = get_user_meta( $user_id, '_wc_tp_bonus_history', true );
-				$data['bonus_milestones'] = self::get_bonus_milestones( $user_id );
-				$data['user_role'] = $employee_role;
-				$data['role_achievements'] = $role_achievements;
-				$data['achievements_config'] = $achievements_config;
 				break;
 
 			case 'baselines':

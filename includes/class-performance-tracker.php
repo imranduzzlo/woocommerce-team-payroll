@@ -935,11 +935,14 @@ class WC_Team_Payroll_Performance_Tracker {
 		$period_range = $this->get_period_date_range( $period_type );
 		$current_period_id = $period_range['period_id'];
 
-		// Get current period achievements
-		$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
-		if ( ! is_array( $period_achievements ) ) {
-			$period_achievements = array();
+		// Get current period achievements data
+		$period_data = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+		if ( ! is_array( $period_data ) ) {
+			$period_data = array();
 		}
+
+		// Extract individual achievements from period data if they exist
+		$period_achievements = isset( $period_data['achievements'] ) ? $period_data['achievements'] : array();
 
 		// Calculate period totals
 		$period_order_value = $this->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
@@ -1013,7 +1016,7 @@ class WC_Team_Payroll_Performance_Tracker {
 			$highest_tier = 'bronze';
 		}
 
-		// Build period achievement data for storage
+		// Build complete period achievement data for storage
 		$period_data = array(
 			'period' => $current_period_id,
 			'period_type' => $period_type,
@@ -1031,10 +1034,11 @@ class WC_Team_Payroll_Performance_Tracker {
 			'total_unlocked' => $tier_counts['bronze'] + $tier_counts['silver'] + $tier_counts['gold'],
 			'highest_tier' => $highest_tier,
 			'achievements_unlocked' => $achievements_unlocked,
+			'achievements' => $period_achievements, // Store individual achievements
 			'updated_at' => current_time( 'Y-m-d H:i:s' ),
 		);
 
-		// Save period achievements
+		// Save complete period achievements data
 		update_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, $period_data );
 
 		// Send notifications for newly unlocked achievements in this period
