@@ -935,10 +935,17 @@ class WC_Team_Payroll_Performance_Tracker {
 		$period_range = $this->get_period_date_range( $period_type );
 		$current_period_id = $period_range['period_id'];
 
-		// Get current period unlocked achievements
-		$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
-		if ( ! is_array( $period_achievements ) ) {
-			$period_achievements = array();
+		// Get current period unlocked achievements - only get achievement keys, not stats
+		$stored_data = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+		$period_achievements = array();
+		
+		// Extract only achievement data (keys matching pattern)
+		if ( is_array( $stored_data ) ) {
+			foreach ( $stored_data as $key => $value ) {
+				if ( preg_match( '/^(earnings|orders|aov)_(bronze|silver|gold)$/', $key ) && is_array( $value ) ) {
+					$period_achievements[ $key ] = $value;
+				}
+			}
 		}
 
 		// Calculate period totals
@@ -989,10 +996,10 @@ class WC_Team_Payroll_Performance_Tracker {
 			}
 		}
 
-		// Save updated period achievements
+		// Save updated period achievements (ONLY achievements, no stats)
 		update_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, $period_achievements );
 
-		// Update period achievement statistics
+		// Update period achievement statistics (separate meta key)
 		$this->update_period_achievement_stats( $user_id, $period_achievements, $period_type );
 
 		// Send notifications for newly unlocked achievements in this period
