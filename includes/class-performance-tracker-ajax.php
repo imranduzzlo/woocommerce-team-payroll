@@ -166,10 +166,24 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				try {
 					// Get achievements data
 					$achievements = $tracker->update_achievements( $user_id );
+					
+					// Debug: Log what we're getting
+					error_log( 'DEBUG: Achievements returned - ' . print_r( array_keys( $achievements ), true ) );
+					
 					if ( ! is_array( $achievements ) ) {
 						$achievements = array();
 					}
-					$data['achievements'] = $achievements;
+					
+					// Filter out non-achievement keys (stats fields)
+					$filtered_achievements = array();
+					foreach ( $achievements as $key => $value ) {
+						// Only include keys that look like achievement keys (contain tier names or metric names)
+						if ( preg_match( '/^(earnings|orders|aov)_(bronze|silver|gold)$/', $key ) ) {
+							$filtered_achievements[ $key ] = $value;
+						}
+					}
+					
+					$data['achievements'] = ! empty( $filtered_achievements ) ? $filtered_achievements : $achievements;
 					
 					// Get current period achievements stats
 					$achievements_config = get_option( 'wc_tp_achievements_config', array() );
