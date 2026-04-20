@@ -859,26 +859,81 @@
 						</div>
 					</div>
 
-					<!-- Period History -->
+					<!-- Detailed Period History -->
 					${Object.keys(periodHistory).length > 0 ? `
-						<div class="period-history-container">
-							<h4><i class="ph ph-clock-clockwise"></i> Period History</h4>
-							<div class="period-history-list">
-								${Object.entries(periodHistory).slice(0, 10).map(([periodId, periodData]) => {
+						<div class="period-history-detailed-container">
+							<div class="period-history-header">
+								<h4><i class="ph ph-clock-clockwise"></i> Achievement History</h4>
+								<span class="history-count">${Object.keys(periodHistory).length} Period${Object.keys(periodHistory).length !== 1 ? 's' : ''}</span>
+							</div>
+							
+							<!-- Timeline View -->
+							<div class="period-history-timeline">
+								${Object.entries(periodHistory).map(([periodId, periodData], index) => {
 									const historyTier = periodData.highest_tier || '';
 									const historyTierData = tierData[historyTier];
+									const achievementsCount = (periodData.achievements_unlocked || []).length;
+									const isFirst = index === 0;
+									
 									return `
-										<div class="period-history-item">
-											<div class="history-badge" style="background: ${historyTierData?.color || '#999'}20; color: ${historyTierData?.color || '#999'};">
-												${historyTierData?.emoji || ''}
+										<div class="timeline-item ${isFirst ? 'latest' : ''}" data-period-id="${periodId}">
+											<div class="timeline-marker" style="background: ${historyTierData?.color || '#999'};">
+												<span class="marker-emoji">${historyTierData?.emoji || '?'}</span>
 											</div>
-											<div class="history-info">
-												<div class="history-period">${this.getPeriodLabel(periodId, periodType)}</div>
-												<div class="history-tier">${historyTierData?.label || 'No Achievement'}</div>
+											<div class="timeline-content">
+												<div class="timeline-header">
+													<h5 class="timeline-period">${this.getPeriodLabel(periodId, periodType)}</h5>
+													${isFirst ? '<span class="badge-latest">Latest</span>' : ''}
+												</div>
+												<div class="timeline-achievement">
+													<span class="achievement-tier" style="color: ${historyTierData?.color || '#999'}; border-color: ${historyTierData?.color || '#999'};">
+														${historyTierData?.label || 'No Achievement'}
+													</span>
+													<span class="achievement-count">${achievementsCount} Achievement${achievementsCount !== 1 ? 's' : ''}</span>
+												</div>
+												<div class="timeline-details">
+													${periodData.achievements_unlocked && periodData.achievements_unlocked.length > 0 ? `
+														<div class="achievements-list">
+															${periodData.achievements_unlocked.map(achievement => {
+																const tierMatch = achievement.match(/(gold|silver|bronze)/);
+																const metricMatch = achievement.match(/(earnings|orders|aov)/);
+																const achievementTier = tierMatch ? tierMatch[1] : '';
+																const achievementMetric = metricMatch ? metricMatch[1] : '';
+																const achievementTierData = tierData[achievementTier];
+																
+																return `
+																	<span class="achievement-badge" style="background: ${achievementTierData?.color || '#999'}20; color: ${achievementTierData?.color || '#999'}; border-color: ${achievementTierData?.color || '#999'};">
+																		${achievementTierData?.emoji || ''} ${achievementMetric.toUpperCase()}
+																	</span>
+																`;
+															}).join('')}
+														</div>
+													` : ''}
+												</div>
 											</div>
 										</div>
 									`;
 								}).join('')}
+							</div>
+
+							<!-- Summary Stats -->
+							<div class="period-history-summary">
+								<div class="summary-stat">
+									<span class="stat-label">Gold Periods:</span>
+									<span class="stat-value" style="color: #FFD700;">${Object.values(periodHistory).filter(p => p.highest_tier === 'gold').length}</span>
+								</div>
+								<div class="summary-stat">
+									<span class="stat-label">Silver Periods:</span>
+									<span class="stat-value" style="color: #C0C0C0;">${Object.values(periodHistory).filter(p => p.highest_tier === 'silver').length}</span>
+								</div>
+								<div class="summary-stat">
+									<span class="stat-label">Bronze Periods:</span>
+									<span class="stat-value" style="color: #CD7F32;">${Object.values(periodHistory).filter(p => p.highest_tier === 'bronze').length}</span>
+								</div>
+								<div class="summary-stat">
+									<span class="stat-label">Total Achievements:</span>
+									<span class="stat-value">${Object.values(periodHistory).reduce((sum, p) => sum + (p.achievements_unlocked?.length || 0), 0)}</span>
+								</div>
 							</div>
 						</div>
 					` : ''}
@@ -886,6 +941,11 @@
 			`;
 
 			$('#performance-content').html(html);
+
+			// Bind timeline item click events for expansion
+			$(document).on('click', '.timeline-item', function() {
+				$(this).toggleClass('expanded');
+			});
 		},
 
 		/**
