@@ -1013,7 +1013,7 @@ class WC_Team_Payroll_Performance_Tracker {
 			$highest_tier = 'bronze';
 		}
 
-		// Build period achievement data
+		// Build period achievement data for storage
 		$period_data = array(
 			'period' => $current_period_id,
 			'period_type' => $period_type,
@@ -1042,7 +1042,8 @@ class WC_Team_Payroll_Performance_Tracker {
 			$this->send_achievement_notifications( $user_id, $newly_unlocked, $role_achievements, true );
 		}
 
-		return $period_data;
+		// Return individual achievements for frontend display (like old system)
+		return $period_achievements;
 	}
 
 	/**
