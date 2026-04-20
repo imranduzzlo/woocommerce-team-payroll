@@ -1,9 +1,9 @@
 # GitHub Release Creation Script for WooCommerce Team Payroll
-# Version: 1.6.43
+# Version: 1.6.44
 # Uses GitHub API to automatically create releases
 
 param(
-    [string]$Version = "1.6.43"
+    [string]$Version = "1.6.44"
 )
 
 # Configuration
@@ -53,7 +53,7 @@ git add .
 
 Write-Host ""
 Write-Host "Step 3: Creating commit..." -ForegroundColor Yellow
-$commitMessage = "Release v$Version - Badge Stars & Cache Fix"
+$commitMessage = "Release v$Version - Profile Badge Display Fixes"
 git commit -m $commitMessage
 
 if ($LASTEXITCODE -ne 0) {

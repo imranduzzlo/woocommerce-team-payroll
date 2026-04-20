@@ -80,6 +80,9 @@ class WC_Team_Payroll_Employee_Detail {
 							$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 							$current_period_id = $performance_tracker->get_current_period_id( $period_type );
 							
+							// IMPORTANT: Update achievements first to ensure fresh data
+							$performance_tracker->update_achievements( $user_id );
+							
 							// Get current period achievements stats (where highest_tier is stored)
 							$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
 							
@@ -599,6 +602,9 @@ class WC_Team_Payroll_Employee_Detail {
 	 */
 	public function add_styles() {
 		?>
+		<!-- Phosphor Icons CDN -->
+		<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+		
 		<style>
 			:root {
 				--color-primary: #FF9900;

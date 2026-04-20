@@ -1,3 +1,30 @@
+## [1.6.44] - 2026-04-20
+### 🐛 Bug Fix - Profile Badge Display Issues
+
+#### FIXED - Locked Badge Icon Not Visible
+- **Phosphor Icons Loading**: Added Phosphor Icons CDN to employee detail page
+- **Icon Display**: Lock icon now displays properly in locked badge state
+- **Missing Library**: Fixed issue where `.ph` icon classes weren't rendering
+
+#### FIXED - Badge Showing Locked Despite Achievements
+- **Auto Recalculation**: Added `update_achievements()` call before badge display
+- **Fresh Data**: Ensures achievement data is current when page loads
+- **Both Pages Fixed**: Applied fix to both Employee Details (backend) and My Account (frontend)
+- **Cache Issue**: Resolved stale data showing locked badge when achievements exist
+
+#### TECHNICAL CHANGES
+- Added Phosphor Icons CDN link in `add_styles()` function
+- Added `$performance_tracker->update_achievements($user_id)` before badge rendering
+- Ensures achievements recalculate on every page load for accurate badge display
+
+#### BENEFITS
+- ✅ Lock icon now visible in locked badge state
+- ✅ Badges show correct achievement tier immediately
+- ✅ No more locked badge when achievements exist
+- ✅ Consistent badge display across all pages
+
+---
+
 ## [1.6.43] - 2026-04-20
 ### ⭐ Enhancement - Badge Stars for Category Achievements & Cache Fix
 
