@@ -117,56 +117,79 @@ class WC_Team_Payroll_Employee_Detail {
 								<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
 									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 										<defs>
-											<!-- Gold Gradients -->
-											<radialGradient id="goldGradient" cx="50%" cy="50%">
-												<stop offset="0%" style="stop-color:#FFF9E6"/>
-												<stop offset="40%" style="stop-color:#FFD700"/>
-												<stop offset="100%" style="stop-color:#DAA520"/>
+											<!-- Gold 3D Coin Gradients -->
+											<radialGradient id="goldGradient" cx="35%" cy="35%">
+												<stop offset="0%" style="stop-color:#FFFACD;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#FFD700;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#FFA500;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#8B6914;stop-opacity:1"/>
 											</radialGradient>
 											
-											<!-- Silver Gradients -->
-											<radialGradient id="silverGradient" cx="50%" cy="50%">
-												<stop offset="0%" style="stop-color:#FFFFFF"/>
-												<stop offset="40%" style="stop-color:#E0E0E0"/>
-												<stop offset="100%" style="stop-color:#B0B0B0"/>
+											<linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
+												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
+											</linearGradient>
+											
+											<!-- Silver 3D Coin Gradients -->
+											<radialGradient id="silverGradient" cx="35%" cy="35%">
+												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#E8E8E8;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#C0C0C0;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#808080;stop-opacity:1"/>
 											</radialGradient>
 											
-											<!-- Bronze Gradients -->
-											<radialGradient id="bronzeGradient" cx="50%" cy="50%">
-												<stop offset="0%" style="stop-color:#FFE4C4"/>
-												<stop offset="40%" style="stop-color:#CD7F32"/>
-												<stop offset="100%" style="stop-color:#8B4513"/>
+											<linearGradient id="silverShine" x1="0%" y1="0%" x2="100%" y2="100%">
+												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8"/>
+												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.2"/>
+											</linearGradient>
+											
+											<!-- Bronze 3D Coin Gradients -->
+											<radialGradient id="bronzeGradient" cx="35%" cy="35%">
+												<stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#CD7F32;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#B8860B;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#654321;stop-opacity:1"/>
 											</radialGradient>
+											
+											<linearGradient id="bronzeShine" x1="0%" y1="0%" x2="100%" y2="100%">
+												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.5"/>
+												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
+											</linearGradient>
+											
+											<!-- Shadow Filter for 3D Effect -->
+											<filter id="coinShadow" x="-50%" y="-50%" width="200%" height="200%">
+												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.4"/>
+											</filter>
 										</defs>
 										
-										<!-- Main Circle with Gradient -->
-										<circle cx="50" cy="50" r="45" class="badge-circle"/>
+										<!-- Outer Ring (3D Edge) -->
+										<circle cx="50" cy="50" r="46" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
+										
+										<!-- Main Coin Circle with 3D Gradient -->
+										<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="1" filter="url(#coinShadow)"/>
+										
+										<!-- Shine/Highlight for 3D Effect -->
+										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Shine)" opacity="0.7"/>
 										
 										<!-- Inner Ring for Depth -->
-										<circle cx="50" cy="50" r="35" class="badge-inner-ring"/>
+										<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
 										
-										<!-- Crown Icon (Outline Only) -->
-										<g class="badge-icon-outline">
+										<!-- Letter Badge (G, S, or B) -->
+										<g class="badge-letter">
 											<?php if ( $highest_tier === 'gold' ) : ?>
-												<!-- King Crown (Outline) -->
-												<path d="M 30 55 L 33 42 L 40 48 L 50 38 L 60 48 L 67 42 L 70 55 Z" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-												<rect x="30" y="55" width="40" height="8" rx="2" fill="none" stroke-width="3"/>
-												<circle cx="40" cy="42" r="3" fill="none" stroke-width="2"/>
-												<circle cx="50" cy="38" r="3" fill="none" stroke-width="2"/>
-												<circle cx="60" cy="42" r="3" fill="none" stroke-width="2"/>
+												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#8B6914" font-family="Arial, sans-serif" letter-spacing="2">G</text>
 											<?php elseif ( $highest_tier === 'silver' ) : ?>
-												<!-- Medal Star (Outline) -->
-												<path d="M 50 35 L 53 45 L 63 46 L 56 53 L 58 63 L 50 58 L 42 63 L 44 53 L 37 46 L 47 45 Z" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-												<circle cx="50" cy="50" r="4" fill="none" stroke-width="2"/>
+												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#606060" font-family="Arial, sans-serif" letter-spacing="2">S</text>
 											<?php else : ?>
-												<!-- Trophy (Outline) -->
-												<path d="M 40 42 L 40 52 L 44 58 L 56 58 L 60 52 L 60 42 Z" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-												<path d="M 35 42 L 35 47 C 35 50 37 52 40 52" fill="none" stroke-width="2.5" stroke-linecap="round"/>
-												<path d="M 65 42 L 65 47 C 65 50 63 52 60 52" fill="none" stroke-width="2.5" stroke-linecap="round"/>
-												<rect x="45" y="58" width="10" height="5" fill="none" stroke-width="2.5"/>
-												<rect x="40" y="63" width="20" height="4" rx="2" fill="none" stroke-width="2.5"/>
+												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#6B3410" font-family="Arial, sans-serif" letter-spacing="2">B</text>
 											<?php endif; ?>
 										</g>
+										
+										<!-- Subtle Border Highlight -->
+										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
 									</svg>
 								</div>
 							<?php else : ?>
@@ -174,22 +197,45 @@ class WC_Team_Payroll_Employee_Detail {
 								<div class="profile-achievement-badge profile-achievement-badge-locked">
 									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 										<defs>
-											<radialGradient id="lockedGradient" cx="50%" cy="50%">
-												<stop offset="0%" style="stop-color:#F0F0F0"/>
-												<stop offset="40%" style="stop-color:#D0D0D0"/>
-												<stop offset="100%" style="stop-color:#A0A0A0"/>
+											<radialGradient id="lockedGradient" cx="35%" cy="35%">
+												<stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1"/>
+												<stop offset="30%" style="stop-color:#D3D3D3;stop-opacity:1"/>
+												<stop offset="70%" style="stop-color:#A9A9A9;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#696969;stop-opacity:1"/>
 											</radialGradient>
+											
+											<linearGradient id="lockedShine" x1="0%" y1="0%" x2="100%" y2="100%">
+												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.4"/>
+												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.2"/>
+											</linearGradient>
+											
+											<filter id="lockedShadow" x="-50%" y="-50%" width="200%" height="200%">
+												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.3"/>
+											</filter>
 										</defs>
 										
-										<circle cx="50" cy="50" r="45" class="badge-circle"/>
-										<circle cx="50" cy="50" r="35" class="badge-inner-ring"/>
+										<!-- Outer Ring -->
+										<circle cx="50" cy="50" r="46" fill="url(#lockedGradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
 										
-										<!-- Lock Icon (Outline) -->
+										<!-- Main Coin Circle -->
+										<circle cx="50" cy="50" r="45" fill="url(#lockedGradient)" stroke="#000000" stroke-width="1" filter="url(#lockedShadow)"/>
+										
+										<!-- Shine/Highlight -->
+										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#lockedShine)" opacity="0.5"/>
+										
+										<!-- Inner Ring -->
+										<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
+										
+										<!-- Lock Icon -->
 										<g class="badge-icon-outline">
-											<rect x="42" y="50" width="16" height="14" rx="2" fill="none" stroke-width="3"/>
-											<path d="M 44 50 L 44 44 C 44 40 46.7 37 50 37 C 53.3 37 56 40 56 44 L 56 50" fill="none" stroke-width="3" stroke-linecap="round"/>
-											<circle cx="50" cy="57" r="2.5" fill="none" stroke-width="2"/>
+											<rect x="40" y="48" width="20" height="16" rx="2" fill="none" stroke="#707070" stroke-width="2.5"/>
+											<path d="M 42 48 L 42 40 C 42 36 45 33 50 33 C 55 33 58 36 58 40 L 58 48" fill="none" stroke="#707070" stroke-width="2.5" stroke-linecap="round"/>
+											<circle cx="50" cy="56" r="2" fill="#707070"/>
 										</g>
+										
+										<!-- Border Highlight -->
+										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.2"/>
 									</svg>
 								</div>
 							<?php endif; ?>
