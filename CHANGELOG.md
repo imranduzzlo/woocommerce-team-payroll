@@ -3801,3 +3801,27 @@ Employees can now see:
 
 
 
+## [1.6.37] - 2026-04-20
+### 🎨 UI Improvement - Redesign Locked Badge with Phosphor Icons
+
+#### CHANGED
+- Replaced locked badge SVG with modern Phosphor icon design (`ph-lock-key`)
+- Improved locked badge UI with better 3D styling
+- Enhanced visual consistency with gold/silver/bronze coin badges
+- Better icon visibility and modern appearance
+
+#### IMPROVEMENTS
+- ✅ Modern Phosphor icon (`ph-lock-key`) instead of custom SVG
+- ✅ Improved 3D coin effect with radial gradients and inset shadows
+- ✅ Better visual hierarchy and icon contrast
+- ✅ Cleaner, more professional appearance
+- ✅ Consistent with overall badge design language
+
+#### TECHNICAL
+- Replaced SVG-based locked badge with HTML/CSS + Phosphor icon
+- Used radial gradients for 3D coin effect
+- Added inset shadows for depth perception
+- Maintained hover effects (scale 1.08x, enhanced shadow)
+
+---
+

@@ -187,48 +187,10 @@ class WC_Team_Payroll_Employee_Detail {
 							<?php else : ?>
 								<!-- Locked Badge -->
 								<div class="profile-achievement-badge profile-achievement-badge-locked">
-									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-										<defs>
-											<radialGradient id="lockedGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#D3D3D3;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#A9A9A9;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#696969;stop-opacity:1"/>
-											</radialGradient>
-											
-											<linearGradient id="lockedShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.4"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.2"/>
-											</linearGradient>
-											
-											<filter id="lockedShadow" x="-50%" y="-50%" width="200%" height="200%">
-												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.3"/>
-											</filter>
-										</defs>
-										
-										<!-- Outer Ring -->
-										<circle cx="50" cy="50" r="46" fill="url(#lockedGradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
-										
-										<!-- Main Coin Circle -->
-										<circle cx="50" cy="50" r="45" fill="url(#lockedGradient)" stroke="#000000" stroke-width="1" filter="url(#lockedShadow)"/>
-										
-										<!-- Shine/Highlight -->
-										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#lockedShine)" opacity="0.5"/>
-										
-										<!-- Inner Ring -->
-										<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
-										
-										<!-- Lock Icon -->
-										<g class="badge-icon-outline">
-											<rect x="40" y="48" width="20" height="16" rx="2" fill="none" stroke="#707070" stroke-width="2.5"/>
-											<path d="M 42 48 L 42 40 C 42 36 45 33 50 33 C 55 33 58 36 58 40 L 58 48" fill="none" stroke="#707070" stroke-width="2.5" stroke-linecap="round"/>
-											<circle cx="50" cy="56" r="2" fill="#707070"/>
-										</g>
-										
-										<!-- Border Highlight -->
-										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.2"/>
-									</svg>
+									<div class="locked-badge-container">
+										<div class="locked-badge-coin"></div>
+										<i class="ph ph-lock-key locked-badge-icon"></i>
+									</div>
 								</div>
 							<?php endif; ?>
 							
@@ -840,25 +802,64 @@ class WC_Team_Payroll_Employee_Detail {
 
 			/* Locked Badge */
 			.profile-achievement-badge-locked {
-				opacity: 0.65;
+				opacity: 1;
 			}
 
-			.profile-achievement-badge-locked .badge-circle {
-				fill: url(#lockedGradient);
-				stroke: #909090;
-				stroke-width: 2;
+			.locked-badge-container {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
 			}
 
-			.profile-achievement-badge-locked .badge-inner-ring {
-				fill: none;
-				stroke: #B0B0B0;
-				stroke-width: 1.5;
-				opacity: 0.5;
+			.locked-badge-coin {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				border-radius: 50%;
+				background: radial-gradient(circle at 35% 35%, #F5F5F5 0%, #D3D3D3 30%, #A9A9A9 70%, #696969 100%);
+				border: 1px solid #000000;
+				box-shadow: 
+					inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+					inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+					0 4px 8px rgba(0, 0, 0, 0.3);
 			}
 
-			.profile-achievement-badge-locked .badge-icon-outline {
-				stroke: #707070;
-				fill: none;
+			.locked-badge-coin::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				border-radius: 50%;
+				background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+				pointer-events: none;
+			}
+
+			.locked-badge-coin::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				border-radius: 50%;
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				pointer-events: none;
+			}
+
+			.locked-badge-icon {
+				position: relative;
+				z-index: 2;
+				font-size: 24px;
+				color: #505050;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 			}
 
 			/* Profile Goal Counter - Bottom Center */

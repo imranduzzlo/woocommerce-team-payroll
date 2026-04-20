@@ -1663,12 +1663,3 @@
 .reports-table .btn-action.btn-view:hover {
 	background-color: rgba(52, 152, 219, 0.1);
 }
-
-/* Fix icon color to match button color - override global .ph styling */
-.reports-table .btn-action .ph {
-	color: inherit !important;
-}
-
-.reports-table .btn-action.btn-view .ph {
-	color: #3498db !important;
-}
