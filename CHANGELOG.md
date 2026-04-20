@@ -1,3 +1,21 @@
+## [1.6.30] - 2026-04-20
+### 🔧 Critical Fix - Achievement Tab Data Structure
+
+#### FIXED
+- Fixed "Network error" on achievement tab by returning correct data structure
+- Changed `update_period_achievements()` to return individual achievements array (like old system)
+- Achievements now display properly with correct format
+- Stats are still stored and retrieved from period metadata
+- Achievement cards now render with correct data
+
+#### TECHNICAL DETAILS
+- `update_period_achievements()` now returns `$period_achievements` array with individual achievement objects
+- Period summary data is still saved to `_wc_tp_period_achievements_{period_id}` meta
+- Frontend receives achievements in same format as old all-time system
+- Maintains backward compatibility with existing data structures
+
+---
+
 ## [1.6.29] - 2026-04-20
 ### 🐛 Bug Fixes - Achievement Tab Network Errors
 
