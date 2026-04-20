@@ -1,3 +1,37 @@
+## [1.6.36] - 2026-04-20
+### 🧹 Cleanup - Remove Role Display from Achievement Cards
+
+#### REMOVED
+- Removed "Role: administrator" (or other role) display from achievement cards
+- Employees don't need to see their role on achievement cards
+- Role is already indicated by role-based achievement thresholds
+- Cleaner, less cluttered achievement card display
+
+#### BEFORE
+```
+🏆 Earnings Bronze
+Threshold: $3,000
+Unlocked: 2026-04-20 10:30:00
+Value: $3,500
+Role: administrator
+```
+
+#### AFTER
+```
+🏆 Earnings Bronze
+Threshold: $3,000
+Unlocked: 2026-04-20 10:30:00
+Value: $3,500
+```
+
+#### BENEFITS
+- ✅ Cleaner card layout
+- ✅ Less redundant information
+- ✅ Better focus on achievement data
+- ✅ Improved user experience
+
+---
+
 ## [1.6.35] - 2026-04-20
 ### ✨ Add - Period History Tab to Frontend
 
