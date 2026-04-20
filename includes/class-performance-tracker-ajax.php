@@ -135,11 +135,12 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				// Get overview data with view mode
 				$goals = $tracker->update_goal_progress( $user_id, $view_mode );
 				
-				// Get current period achievements
+				// Get current period achievements and stats
 				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
 				$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 				$current_period_id = $tracker->get_current_period_id( $period_type );
 				$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+				$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
 				
 				$baselines = get_user_meta( $user_id, '_wc_tp_current_baselines', true );
 
@@ -147,12 +148,12 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					'html' => self::render_goals_summary( $goals )
 				);
 				$data['achievements_summary'] = array(
-					'html' => self::render_achievements_summary( $period_achievements )
+					'html' => self::render_achievements_summary( $period_stats )
 				);
 				$data['baselines_summary'] = array(
 					'html' => self::render_baselines_summary( $baselines )
 				);
-				$data['quick_stats'] = self::get_quick_stats( $goals, $period_achievements, $baselines );
+				$data['quick_stats'] = self::get_quick_stats( $goals, $period_stats, $baselines );
 				break;
 
 			case 'goals':

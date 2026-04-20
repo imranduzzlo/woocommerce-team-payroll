@@ -1014,12 +1014,26 @@ class WC_Team_Payroll_Performance_Tracker {
 		// Calculate tier counts
 		$tier_counts = array( 'bronze' => 0, 'silver' => 0, 'gold' => 0 );
 		$achievements_unlocked = array();
+		$next_achievement = null;
+		$highest_progress = 0;
 
 		foreach ( $period_achievements as $achievement_key => $achievement ) {
 			if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true ) {
 				$tier = isset( $achievement['tier'] ) ? $achievement['tier'] : 'bronze';
 				$tier_counts[ $tier ]++;
 				$achievements_unlocked[] = $achievement_key;
+			} else {
+				// Track the closest achievement to unlocking
+				$percentage = isset( $achievement['percentage'] ) ? $achievement['percentage'] : 0;
+				if ( $percentage > $highest_progress ) {
+					$highest_progress = $percentage;
+					$next_achievement = array(
+						'key' => $achievement_key,
+						'percentage' => $percentage,
+						'threshold' => isset( $achievement['threshold'] ) ? $achievement['threshold'] : 0,
+						'current_progress' => isset( $achievement['current_progress'] ) ? $achievement['current_progress'] : 0,
+					);
+				}
 			}
 		}
 
@@ -1049,6 +1063,7 @@ class WC_Team_Payroll_Performance_Tracker {
 			'total_unlocked' => $tier_counts['bronze'] + $tier_counts['silver'] + $tier_counts['gold'],
 			'highest_tier' => $highest_tier,
 			'achievements_unlocked' => $achievements_unlocked,
+			'next_achievement' => $next_achievement,
 			'updated_at' => current_time( 'Y-m-d H:i:s' ),
 		);
 
