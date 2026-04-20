@@ -1,3 +1,42 @@
+## [1.6.34] - 2026-04-20
+### 🔧 Fix - Achievement Data Contamination with Stats Fields
+
+#### FIXED
+- Fixed achievement cards showing stats fields (Period, Period Type, Start Date, End Date, etc.)
+- Achievement data now properly filtered to only include achievement keys
+- Stats fields stored separately in `_wc_tp_period_achievements_stats_{period_id}`
+- Individual achievements stored cleanly in `_wc_tp_period_achievements_{period_id}`
+
+#### TECHNICAL DETAILS
+- Updated `update_period_achievements()` to filter stored data on retrieval
+- Only keys matching pattern `(earnings|orders|aov)_(bronze|silver|gold)` are treated as achievements
+- Stats fields (period, period_type, start_date, etc.) are now completely separate
+- Prevents data contamination and ensures clean achievement display
+
+#### DATA SEPARATION
+**Achievements Meta** (`_wc_tp_period_achievements_{period_id}`):
+```php
+[
+    'earnings_bronze' => [...],
+    'earnings_silver' => [...],
+    'orders_bronze' => [...],
+    ...
+]
+```
+
+**Stats Meta** (`_wc_tp_period_achievements_stats_{period_id}`):
+```php
+[
+    'period' => 'monthly_2026_04',
+    'period_type' => 'monthly',
+    'start_date' => '2026-04-01',
+    'bronze_count' => 2,
+    ...
+]
+```
+
+---
+
 ## [1.6.33] - 2026-04-20
 ### 🔧 Fix - Overview Achievements Summary Display
 
