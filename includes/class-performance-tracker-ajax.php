@@ -170,11 +170,11 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					}
 					$data['achievements'] = $achievements;
 					
-					// Get current period achievements for stats
+					// Get current period achievements stats
 					$achievements_config = get_option( 'wc_tp_achievements_config', array() );
 					$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 					$current_period_id = $tracker->get_current_period_id( $period_type );
-					$stats = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
+					$stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
 					if ( ! is_array( $stats ) ) {
 						$stats = array();
 					}
