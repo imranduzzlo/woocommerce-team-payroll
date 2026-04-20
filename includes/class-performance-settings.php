@@ -441,6 +441,28 @@ class WC_Team_Payroll_Performance_Settings {
 						</td>
 					</tr>
 					<tr>
+						<th><label for="achievements_period"><?php esc_html_e( 'Achievement Period', 'wc-team-payroll' ); ?></label></th>
+						<td>
+							<select id="achievements_period" name="achievements_period" class="wc-tp-achievements-setting">
+								<?php
+								$achievement_period = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+								$periods = array(
+									'daily' => __( 'Daily (resets every day at midnight)', 'wc-team-payroll' ),
+									'weekly' => __( 'Weekly (resets on WordPress start of week)', 'wc-team-payroll' ),
+									'monthly' => __( 'Monthly (resets on 1st of month)', 'wc-team-payroll' ),
+									'quarterly' => __( 'Quarterly (resets on 1st of Q1, Q2, Q3, Q4)', 'wc-team-payroll' ),
+									'half_yearly' => __( 'Half-Yearly (resets Jan 1 & Jul 1)', 'wc-team-payroll' ),
+									'yearly' => __( 'Yearly (resets on Jan 1)', 'wc-team-payroll' ),
+								);
+								foreach ( $periods as $value => $label ) {
+									echo '<option value="' . esc_attr( $value ) . '"' . selected( $achievement_period, $value, false ) . '>' . esc_html( $label ) . '</option>';
+								}
+								?>
+							</select>
+							<p class="description"><?php esc_html_e( 'How often achievements reset and can be re-earned. Employees can earn badges multiple times across different periods.', 'wc-team-payroll' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th><label for="achievements_show_locked"><?php esc_html_e( 'Show Locked Achievements', 'wc-team-payroll' ); ?></label></th>
 						<td>
 							<input type="checkbox" id="achievements_show_locked" name="achievements_show_locked" value="1" class="wc-tp-achievements-setting" <?php checked( isset( $achievements_config['show_locked'] ) ? $achievements_config['show_locked'] : 1, 1 ); ?> />
@@ -1818,6 +1840,9 @@ class WC_Team_Payroll_Performance_Settings {
 		}
 		if ( isset( $config['display_style'] ) ) {
 			$existing_config['display_style'] = sanitize_text_field( $config['display_style'] );
+		}
+		if ( isset( $config['period'] ) ) {
+			$existing_config['period'] = sanitize_text_field( $config['period'] );
 		}
 		if ( isset( $config['show_locked'] ) ) {
 			$existing_config['show_locked'] = intval( $config['show_locked'] );

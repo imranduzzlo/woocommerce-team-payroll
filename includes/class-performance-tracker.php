@@ -2664,4 +2664,168 @@ class WC_Team_Payroll_Performance_Tracker {
 
 		return $users;
 	}
+
+	/**
+	 * Get period date range based on period type
+	 * Uses WordPress start of week setting for weekly periods
+	 *
+	 * @param string $period_type Period type (daily, weekly, monthly, quarterly, half_yearly, yearly)
+	 * @return array Array with start_date, end_date, period_id
+	 */
+	public function get_period_date_range( $period_type = 'monthly' ) {
+		$timezone = wp_timezone();
+		$now = new DateTime( 'now', $timezone );
+		$year = $now->format( 'Y' );
+		$month = $now->format( 'm' );
+		$day = $now->format( 'd' );
+		$quarter = ceil( $month / 3 );
+
+		switch ( $period_type ) {
+			case 'daily':
+				$start_date = $now->format( 'Y-m-d' );
+				$end_date = $now->format( 'Y-m-d' );
+				$period_id = $now->format( 'Y-m-d' );
+				break;
+
+			case 'weekly':
+				// Get WordPress start of week setting (0 = Sunday, 1 = Monday, etc.)
+				$start_of_week = intval( get_option( 'start_of_week', 0 ) );
+				
+				// Get current day of week (0 = Sunday, 1 = Monday, etc.)
+				$current_day_of_week = intval( $now->format( 'w' ) );
+				
+				// Calculate days to subtract to get to start of week
+				$days_to_subtract = ( $current_day_of_week - $start_of_week + 7 ) % 7;
+				
+				// Create start of week date
+				$week_start = clone $now;
+				$week_start->modify( "-{$days_to_subtract} days" );
+				$start_date = $week_start->format( 'Y-m-d' );
+				
+				// End of week is 6 days after start
+				$week_end = clone $week_start;
+				$week_end->modify( '+6 days' );
+				$end_date = $week_end->format( 'Y-m-d' );
+				
+				// Period ID: Year-Week (e.g., 2026-W16)
+				$period_id = $week_start->format( 'Y-\WW' );
+				break;
+
+			case 'monthly':
+				$start_date = "{$year}-{$month}-01";
+				$end_date = $now->format( 'Y-m-t' );
+				$period_id = "{$year}-{$month}";
+				break;
+
+			case 'quarterly':
+				$quarter_start_month = ( ( $quarter - 1 ) * 3 ) + 1;
+				$quarter_end_month = $quarter * 3;
+				$start_date = "{$year}-" . str_pad( $quarter_start_month, 2, '0', STR_PAD_LEFT ) . "-01";
+				
+				$end_date_obj = new DateTime( "{$year}-" . str_pad( $quarter_end_month, 2, '0', STR_PAD_LEFT ) . "-01", $timezone );
+				$end_date_obj->modify( 'last day of this month' );
+				$end_date = $end_date_obj->format( 'Y-m-d' );
+				
+				$period_id = "{$year}-Q{$quarter}";
+				break;
+
+			case 'half_yearly':
+				$half = $month <= 6 ? 1 : 2;
+				if ( $half === 1 ) {
+					$start_date = "{$year}-01-01";
+					$end_date = "{$year}-06-30";
+				} else {
+					$start_date = "{$year}-07-01";
+					$end_date = "{$year}-12-31";
+				}
+				$period_id = "{$year}-H{$half}";
+				break;
+
+			case 'yearly':
+				$start_date = "{$year}-01-01";
+				$end_date = "{$year}-12-31";
+				$period_id = "{$year}";
+				break;
+
+			default:
+				// Default to monthly
+				$start_date = "{$year}-{$month}-01";
+				$end_date = $now->format( 'Y-m-t' );
+				$period_id = "{$year}-{$month}";
+		}
+
+		return array(
+			'start_date' => $start_date,
+			'end_date' => $end_date,
+			'period_id' => $period_id,
+			'period_type' => $period_type,
+		);
+	}
+
+	/**
+	 * Get current period ID based on period type
+	 *
+	 * @param string $period_type Period type
+	 * @return string Period ID
+	 */
+	public function get_current_period_id( $period_type = 'monthly' ) {
+		$range = $this->get_period_date_range( $period_type );
+		return $range['period_id'];
+	}
+
+	/**
+	 * Check if period has changed for a user
+	 *
+	 * @param int $user_id User ID
+	 * @param string $period_type Period type
+	 * @return bool True if period has changed
+	 */
+	public function has_period_changed( $user_id, $period_type = 'monthly' ) {
+		$current_period_id = $this->get_current_period_id( $period_type );
+		$last_period_id = get_user_meta( $user_id, '_wc_tp_last_achievement_period_' . $period_type, true );
+		
+		return $current_period_id !== $last_period_id;
+	}
+
+	/**
+	 * Reset period achievements when period changes
+	 *
+	 * @param int $user_id User ID
+	 * @param string $period_type Period type
+	 */
+	public function reset_period_achievements( $user_id, $period_type = 'monthly' ) {
+		$current_period_id = $this->get_current_period_id( $period_type );
+		$last_period_id = get_user_meta( $user_id, '_wc_tp_last_achievement_period_' . $period_type, true );
+		
+		// If period has changed, archive old data and create new
+		if ( $current_period_id !== $last_period_id && ! empty( $last_period_id ) ) {
+			// Get old period data
+			$old_period_data = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $last_period_id, true );
+			
+			if ( $old_period_data ) {
+				// Add to history
+				$history = get_user_meta( $user_id, '_wc_tp_period_achievements_history', true );
+				if ( ! is_array( $history ) ) {
+					$history = array();
+				}
+				
+				// Keep only last 365 records
+				if ( count( $history ) >= 365 ) {
+					array_shift( $history );
+				}
+				
+				$history[ $last_period_id ] = array(
+					'highest_tier' => $old_period_data['highest_tier'] ?? '',
+					'period_type' => $period_type,
+					'achievements_unlocked' => $old_period_data['achievements_unlocked'] ?? array(),
+				);
+				
+				update_user_meta( $user_id, '_wc_tp_period_achievements_history', $history );
+			}
+		}
+		
+		// Update last period ID
+		update_user_meta( $user_id, '_wc_tp_last_achievement_period_' . $period_type, $current_period_id );
+	}
 }
+
