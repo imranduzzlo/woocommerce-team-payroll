@@ -59,11 +59,34 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$goals_config = get_option( 'wc_tp_goals_config', array() );
 				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
 				
+				// Get user's role-specific achievements
+				$user = get_user_by( 'id', $user_id );
+				$user_roles = $user ? $user->roles : array();
+				$employee_role = '';
+				
+				// Find employee role
+				$all_roles = $tracker->get_employee_roles();
+				foreach ( $user_roles as $role ) {
+					if ( isset( $all_roles[ $role ] ) ) {
+						$employee_role = $role;
+						break;
+					}
+				}
+				
+				// Get role-specific achievements
+				$role_achievements = array();
+				if ( ! empty( $employee_role ) && isset( $achievements_config['roles'][ $employee_role ] ) ) {
+					$role_achievements = $achievements_config['roles'][ $employee_role ];
+				}
+				
 				$data['period_type'] = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
 				$data['achievements_enabled'] = isset( $achievements_config['enabled'] ) ? $achievements_config['enabled'] : 1;
 				$data['achievements_display_style'] = isset( $achievements_config['display_style'] ) ? $achievements_config['display_style'] : 'badges';
 				$data['achievements_show_locked'] = isset( $achievements_config['show_locked'] ) ? $achievements_config['show_locked'] : 1;
 				$data['achievements_notification'] = isset( $achievements_config['notification'] ) ? $achievements_config['notification'] : 1;
+				$data['achievements_period'] = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+				$data['user_role'] = $employee_role;
+				$data['role_achievements'] = $role_achievements;
 				break;
 
 			case 'bonus_achieved':
@@ -146,10 +169,33 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$current_period_id = $tracker->get_current_period_id( $period_type );
 				$data['stats'] = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
 				
+				// Get user's role-specific achievements
+				$user = get_user_by( 'id', $user_id );
+				$user_roles = $user ? $user->roles : array();
+				$employee_role = '';
+				
+				// Find employee role
+				$all_roles = $tracker->get_employee_roles();
+				foreach ( $user_roles as $role ) {
+					if ( isset( $all_roles[ $role ] ) ) {
+						$employee_role = $role;
+						break;
+					}
+				}
+				
+				// Get role-specific achievements
+				$role_achievements = array();
+				if ( ! empty( $employee_role ) && isset( $achievements_config['roles'][ $employee_role ] ) ) {
+					$role_achievements = $achievements_config['roles'][ $employee_role ];
+				}
+				
 				// Phase 2 Part 3: Add streak and bonus data
 				$data['streaks'] = get_user_meta( $user_id, '_wc_tp_badge_streaks', true );
 				$data['bonus_history'] = get_user_meta( $user_id, '_wc_tp_bonus_history', true );
 				$data['bonus_milestones'] = self::get_bonus_milestones( $user_id );
+				$data['user_role'] = $employee_role;
+				$data['role_achievements'] = $role_achievements;
+				$data['achievements_config'] = $achievements_config;
 				break;
 
 			case 'baselines':

@@ -38,6 +38,9 @@
 				this.achievementsDisplayStyle = data.achievements_display_style || 'badges';
 				this.achievementsShowLocked = data.achievements_show_locked || 1;
 				this.achievementsNotification = data.achievements_notification || 1;
+				this.achievementsPeriod = data.achievements_period || 'monthly';
+				this.userRole = data.user_role || '';
+				this.roleAchievements = data.role_achievements || {};
 				
 				// Update view options based on period type
 				this.updateViewOptions();
@@ -505,6 +508,21 @@
 			const streaks = data.streaks || {};
 			const bonusHistory = data.bonus_history || [];
 			const bonusMilestones = data.bonus_milestones || [];
+			
+			// Update role-specific achievements if provided
+			if (data.role_achievements) {
+				this.roleAchievements = data.role_achievements;
+			}
+			if (data.user_role) {
+				this.userRole = data.user_role;
+			}
+			if (data.achievements_config) {
+				this.achievementsEnabled = data.achievements_config.enabled || 1;
+				this.achievementsDisplayStyle = data.achievements_config.display_style || 'badges';
+				this.achievementsShowLocked = data.achievements_config.show_locked || 1;
+				this.achievementsNotification = data.achievements_config.notification || 1;
+				this.achievementsPeriod = data.achievements_config.period || 'monthly';
+			}
 
 			// Filter achievements based on show_locked setting
 			let achievementsToDisplay = achievements;
@@ -550,17 +568,24 @@
 			const isUnlocked = achievement.unlocked === true;
 			const tier = achievement.tier || 'bronze';
 			const tierEmoji = { bronze: '🥉', silver: '🥈', gold: '🥇' }[tier];
+			
+			// Get role-specific achievement info if available
+			const roleAchievementInfo = this.roleAchievements[key] || {};
+			const achievementName = roleAchievementInfo.name || this.formatAchievementName(key);
+			const achievementDesc = roleAchievementInfo.description || '';
 
 			if (isUnlocked) {
 				return `
 					<div class="achievement-card unlocked tier-${tier}">
 						<div class="achievement-badge">${tierEmoji}</div>
-						<h4>${this.formatAchievementName(key)}</h4>
-						<p class="achievement-desc">Threshold: ${this.formatValue(achievement.threshold, key)}</p>
+						<h4>${achievementName}</h4>
+						${achievementDesc ? `<p class="achievement-desc">${achievementDesc}</p>` : ''}
+						<p class="achievement-threshold">Threshold: ${this.formatValue(achievement.threshold, key)}</p>
 						<div class="achievement-meta">
 							<span class="unlock-date">Unlocked: ${achievement.unlocked_date}</span>
 							<span class="unlock-value">Value: ${this.formatValue(achievement.value_at_unlock, key)}</span>
 						</div>
+						${this.userRole ? `<p class="achievement-role">Role: ${this.userRole}</p>` : ''}
 					</div>
 				`;
 			} else {
@@ -568,8 +593,9 @@
 				return `
 					<div class="achievement-card locked tier-${tier}">
 						<div class="achievement-badge locked-badge">🔒</div>
-						<h4>${this.formatAchievementName(key)}</h4>
-						<p class="achievement-desc">Threshold: ${this.formatValue(achievement.threshold, key)}</p>
+						<h4>${achievementName}</h4>
+						${achievementDesc ? `<p class="achievement-desc">${achievementDesc}</p>` : ''}
+						<p class="achievement-threshold">Threshold: ${this.formatValue(achievement.threshold, key)}</p>
 						<div class="achievement-progress">
 							<div class="progress-bar-container">
 								<div class="progress-bar" style="width: ${percentage}%;"></div>
@@ -580,6 +606,7 @@
 							<span>Current: ${this.formatValue(achievement.current_progress, key)}</span>
 							<span>Remaining: ${this.formatValue(achievement.threshold - achievement.current_progress, key)}</span>
 						</div>
+						${this.userRole ? `<p class="achievement-role">Role: ${this.userRole}</p>` : ''}
 					</div>
 				`;
 			}
