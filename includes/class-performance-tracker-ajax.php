@@ -55,9 +55,15 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 
 		switch ( $section ) {
 			case 'config':
-				// Get admin-configured period type
+				// Get admin-configured settings
 				$goals_config = get_option( 'wc_tp_goals_config', array() );
+				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+				
 				$data['period_type'] = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
+				$data['achievements_enabled'] = isset( $achievements_config['enabled'] ) ? $achievements_config['enabled'] : 1;
+				$data['achievements_display_style'] = isset( $achievements_config['display_style'] ) ? $achievements_config['display_style'] : 'badges';
+				$data['achievements_show_locked'] = isset( $achievements_config['show_locked'] ) ? $achievements_config['show_locked'] : 1;
+				$data['achievements_notification'] = isset( $achievements_config['notification'] ) ? $achievements_config['notification'] : 1;
 				break;
 
 			case 'bonus_achieved':

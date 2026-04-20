@@ -34,6 +34,10 @@
 		loadConfiguration() {
 			this.fetchData('config', (data) => {
 				this.periodType = data.period_type || 'monthly';
+				this.achievementsEnabled = data.achievements_enabled || 1;
+				this.achievementsDisplayStyle = data.achievements_display_style || 'badges';
+				this.achievementsShowLocked = data.achievements_show_locked || 1;
+				this.achievementsNotification = data.achievements_notification || 1;
 				
 				// Update view options based on period type
 				this.updateViewOptions();
@@ -121,6 +125,12 @@
 		 * Switch between tabs
 		 */
 		switchTab(tab) {
+			// Check if achievements are enabled before switching to achievements tab
+			if ((tab === 'achievements' || tab === 'period_achievements') && !this.achievementsEnabled) {
+				this.showError('Achievements are disabled in settings');
+				return;
+			}
+
 			this.currentTab = tab;
 
 			// Update tab UI
@@ -496,6 +506,14 @@
 			const bonusHistory = data.bonus_history || [];
 			const bonusMilestones = data.bonus_milestones || [];
 
+			// Filter achievements based on show_locked setting
+			let achievementsToDisplay = achievements;
+			if (!this.achievementsShowLocked) {
+				achievementsToDisplay = Object.fromEntries(
+					Object.entries(achievements).filter(([key, achievement]) => achievement.unlocked === true)
+				);
+			}
+
 			const html = `
 				<div class="performance-achievements">
 					<div class="achievements-header">
@@ -512,8 +530,8 @@
 					${this.renderBonusMilestones(bonusMilestones)}
 
 					<h4 style="margin-top: 32px; margin-bottom: 16px;"><i class="ph ph-medal"></i> Achievement Badges</h4>
-					<div class="achievements-grid">
-						${Object.entries(achievements).map(([key, achievement]) => 
+					<div class="achievements-grid achievements-display-${this.achievementsDisplayStyle}">
+						${Object.entries(achievementsToDisplay).map(([key, achievement]) => 
 							this.renderAchievementCard(key, achievement)
 						).join('')}
 					</div>
