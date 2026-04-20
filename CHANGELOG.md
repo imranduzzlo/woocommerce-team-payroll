@@ -1,3 +1,36 @@
+## [1.6.35] - 2026-04-20
+### ✨ Add - Period History Tab to Frontend
+
+#### ADDED
+- Added "Period History" tab to employee account page
+- Displays timeline of all completed periods
+- Shows achievements earned in each period
+- Displays highest tier achieved per period
+- Summary statistics for all periods
+
+#### TAB FEATURES
+- **Period Timeline** - Visual timeline of all completed periods
+- **Period Cards** - Shows period ID, date range, highest tier, achievements
+- **Summary Stats** - Gold periods, Silver periods, Bronze periods, Total achievements
+- **Sorted View** - Newest periods displayed first
+- **Achievement Details** - List of achievements earned in each period
+
+#### FRONTEND TABS NOW INCLUDE
+1. Overview - Quick performance summary
+2. Goals - Goal progress tracking
+3. Achievements - Current period achievements
+4. **Period History** - NEW! Historical achievement data
+5. Bonus Achieved - Claimed bonuses
+6. Baselines - Baseline metrics
+
+#### WHAT EMPLOYEES SEE
+- Complete history of achievement performance
+- Track progress over multiple periods
+- See which periods had gold/silver/bronze achievements
+- Compare performance across different periods
+
+---
+
 ## [1.6.34] - 2026-04-20
 ### 🔧 Fix - Achievement Data Contamination with Stats Fields
 
