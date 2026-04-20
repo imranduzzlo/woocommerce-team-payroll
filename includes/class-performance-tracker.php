@@ -1028,6 +1028,7 @@ class WC_Team_Payroll_Performance_Tracker {
 			'bronze_count' => $tier_counts['bronze'],
 			'silver_count' => $tier_counts['silver'],
 			'gold_count' => $tier_counts['gold'],
+			'total_unlocked' => $tier_counts['bronze'] + $tier_counts['silver'] + $tier_counts['gold'],
 			'highest_tier' => $highest_tier,
 			'achievements_unlocked' => $achievements_unlocked,
 			'updated_at' => current_time( 'Y-m-d H:i:s' ),
