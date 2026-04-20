@@ -1,3 +1,66 @@
+## [1.6.44] - 2026-04-20
+### ✨ Enhanced Badge System with Achievement-Based Ranking
+
+#### ADDED
+- **Dynamic SVG Badge System** - Complete redesign of profile badges
+  - Letter display (G/S/B) in center based on tier (Gold/Silver/Bronze)
+  - 1-3 stars below letter showing achievement category count
+  - Ranking number in bottom-right circle based on leaderboard position
+  - Tier-specific color schemes (Gold, Silver, Bronze)
+  - Locked state with lock icon and "0" ranking for no achievements
+  - No "PREVIEW" text - clean, professional design
+
+- **Achievement-Based Star System**
+  - Stars represent how many achievement categories earned at highest tier
+  - 1 star = Achieved tier in 1 category (e.g., only Earnings)
+  - 2 stars = Achieved tier in 2 categories (e.g., Earnings + Orders)
+  - 3 stars = Achieved tier in all 3 categories (Earnings + Orders + AOV)
+  - Example: Gold badge with 2 stars = Gold achieved in 2 out of 3 categories
+
+- **Smart Leaderboard Ranking**
+  - Ranking based on achievement performance, not earnings
+  - Primary sort: Badge tier (Gold > Silver > Bronze > None)
+  - Secondary sort: Achievement count at that tier (3 > 2 > 1)
+  - Tertiary sort: Goals achieved (tiebreaker)
+  - Example ranking: Gold-3★ > Gold-2★ > Gold-1★ > Silver-3★
+
+- **Tier-Specific Color Schemes**
+  - **Gold**: Yellow/orange gradient (#FFD700, #FFA500, #8B6914)
+  - **Silver**: White/gray gradient (#FFFFFF, #C0C0C0, #808080)
+  - **Bronze**: Brown/copper gradient (#CD7F32, #B8860B, #654321)
+  - **Locked**: Muted gray (#E0E0E0, #9E9E9E, #757575)
+
+- **3D Coin Effect**
+  - Radial gradients for depth
+  - Shine highlights for realism
+  - Drop shadows for elevation
+  - Border highlights for polish
+  - Scalable SVG for all screen sizes
+
+#### IMPLEMENTED IN
+- ✅ Admin Employee Details Page (`includes/class-employee-detail.php`)
+- ✅ My Account Page (`includes/class-myaccount.php`)
+- ✅ Both pages use identical badge logic
+- ✅ Unique gradient IDs to prevent conflicts
+
+#### TECHNICAL DETAILS
+- Pure SVG implementation (no raster images)
+- Dynamic PHP generation based on user data
+- Calculates ranking across all employees
+- Counts achievements per tier category
+- Responsive and scalable design
+- No external dependencies
+
+#### BENEFITS
+- ✅ Visual representation of achievement performance
+- ✅ Motivates employees to achieve in multiple categories
+- ✅ Clear ranking system based on merit
+- ✅ Professional, polished appearance
+- ✅ No "PREVIEW" watermark or placeholder text
+- ✅ Works on all devices and screen sizes
+
+---
+
 ## [1.6.43] - 2026-04-20
 ### ✨ Add - Complete Settings Export/Import System
 
