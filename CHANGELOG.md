@@ -4227,3 +4227,35 @@ Employees can now see:
 - `includes/class-employee-detail.php`
 - `includes/class-myaccount.php`
 - `woocommerce-team-payroll.php`
+
+
+## [1.6.46] - 2026-04-21
+### ✅ Stable Release - Leaderboard Rank Badge Integration & Cron Scheduling
+
+#### FEATURES
+- **Leaderboard Rank Badge**: Small rank badge (bottom-right) showing leaderboard position
+- **Cron Scheduling**: Automatic leaderboard updates based on configured period
+- **Multi-Platform Display**: Rank badges display on both Employee Details and My Account
+- **17 Ranking Criteria**: Single, dual, triple, and complete score metrics
+- **6 Period Options**: Daily, Weekly, Monthly, Quarterly, Yearly, All-Time
+
+#### IMPROVEMENTS
+- Optimized badge rendering with SVG gradients
+- Cleaner CSS styling
+- Better responsive design for mobile devices
+- Proper z-index management for badge layering
+- Cron jobs automatically scheduled when config is saved
+
+#### STABILITY
+- Reverted problematic leaderboard calculation trigger from v1.6.47-v1.6.49
+- Employee Details page now loads without errors
+- My Account page now loads without errors
+- Performance Settings tab switching works correctly
+- All custom pages function properly
+
+#### FILES MODIFIED
+- `includes/class-performance-settings.php`: Cron scheduling functions
+- `includes/class-employee-detail.php`: Stable badge rendering
+- `includes/class-myaccount.php`: Stable badge rendering
+- `assets/css/myaccount-shared.css`: Optimized badge styling
+- `woocommerce-team-payroll.php`: Version 1.6.46
