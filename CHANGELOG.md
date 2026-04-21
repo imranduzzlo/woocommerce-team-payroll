@@ -4207,3 +4207,23 @@ Employees can now see:
 - `includes/class-employee-detail.php`: Premium badge rendering
 - `includes/class-myaccount.php`: Premium badge rendering
 - `assets/css/myaccount-shared.css`: Optimized badge styling
+
+
+## [1.6.49] - 2026-04-21
+### 🔧 Hotfix - Critical Error in Leaderboard Calculation
+
+#### FIXED
+- **Critical Error**: Fixed fatal error when leaderboard calculation was triggered
+- **Method Call**: Changed from `do_action()` to direct method call using global variable
+- **Safety Checks**: Added method existence check before calling calculate_leaderboard()
+- **Both Platforms**: Applied fix to both Employee Details and My Account
+
+#### DETAILS
+- Leaderboard calculation now uses global `$wc_team_payroll_performance_settings` variable
+- Prevents fatal errors when leaderboard is enabled
+- Maintains backward compatibility with existing functionality
+
+#### FILES MODIFIED
+- `includes/class-employee-detail.php`
+- `includes/class-myaccount.php`
+- `woocommerce-team-payroll.php`
