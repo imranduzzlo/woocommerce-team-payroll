@@ -628,7 +628,7 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	 * @param string $period Period identifier
 	 * @return array Start and end dates
 	 */
-	private function get_period_date_range( $period ) {
+	public function get_period_date_range( $period ) {
 		$timezone = wp_timezone();
 		$now = new DateTime( 'now', $timezone );
 

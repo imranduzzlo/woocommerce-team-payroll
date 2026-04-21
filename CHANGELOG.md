@@ -1,3 +1,52 @@
+## [1.7.5] - 2026-04-22
+### 🐛 Critical Fix - Leaderboard Method Visibility
+
+#### ROOT CAUSE IDENTIFIED
+- **Problem**: AJAX error "Network error. Please try again." when clicking "Recalculate Leaderboard" or viewing leaderboard in My Account
+- **Root Cause**: `get_period_date_range()` method in `WC_Team_Payroll_Leaderboard_Engine` class was **private** but being called from AJAX handler
+- **Error**: PHP Fatal Error when trying to access private method from outside the class
+- **Impact**: Leaderboard completely non-functional on both admin and frontend
+
+#### TECHNICAL DETAILS
+**The Issue:**
+```php
+// In includes/class-performance-tracker-ajax.php (line 764)
+$date_range = $engine->get_period_date_range( $period ); // ❌ Calling private method
+
+// In includes/class-leaderboard-engine.php (line 631)
+private function get_period_date_range( $period ) { // ❌ Private visibility
+```
+
+**The Fix:**
+```php
+// Changed from private to public
+public function get_period_date_range( $period ) { // ✅ Public visibility
+```
+
+#### WHAT WAS FIXED
+- Changed `get_period_date_range()` method visibility from `private` to `public`
+- Allows AJAX handler to properly call the method
+- Enables leaderboard data calculation and display
+
+#### FILES MODIFIED
+- `includes/class-leaderboard-engine.php` - Changed method visibility
+
+#### BENEFITS
+- ✅ Leaderboard now loads successfully in My Account
+- ✅ "Recalculate Leaderboard" button works in admin
+- ✅ No more AJAX errors
+- ✅ No more "Network error" messages
+- ✅ Leaderboard fully functional
+
+#### HOW TO VERIFY
+1. Go to My Account → Reports → Leaderboard tab
+2. Verify leaderboard data loads without errors ✅
+3. Go to WooCommerce → Settings → Team Payroll → Performance Settings → Leaderboard
+4. Click "Recalculate Leaderboard"
+5. Verify success message appears ✅
+
+---
+
 ## [1.7.4] - 2026-04-22
 ### 🐛 Critical Fix - Leaderboard Employee Role Detection
 
