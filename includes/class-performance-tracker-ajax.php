@@ -732,28 +732,55 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		// Get leaderboard configuration
 		$config = get_option( 'wc_tp_leaderboard_config', array() );
 		
-		// Check if leaderboard is enabled
-		if ( empty( $config ) || ! isset( $config['enabled'] ) || ! $config['enabled'] ) {
+		// Check if configuration exists
+		if ( empty( $config ) ) {
 			wp_send_json_error( array( 
-				'message' => __( 'Leaderboard is not enabled', 'wc-team-payroll' ),
+				'message' => __( 'Leaderboard has not been configured yet. Please contact your administrator to set up the leaderboard.', 'wc-team-payroll' ),
+				'disabled' => true
+			) );
+		}
+		
+		// Check if leaderboard is enabled
+		if ( ! isset( $config['enabled'] ) || ! $config['enabled'] ) {
+			wp_send_json_error( array( 
+				'message' => __( 'Leaderboard is currently disabled. Please contact your administrator.', 'wc-team-payroll' ),
 				'disabled' => true
 			) );
 		}
 
 		// Initialize leaderboard engine
-		$engine = new WC_Team_Payroll_Leaderboard_Engine();
+		try {
+			$engine = new WC_Team_Payroll_Leaderboard_Engine();
+		} catch ( Exception $e ) {
+			wp_send_json_error( array( 
+				'message' => sprintf( __( 'Error initializing leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() )
+			) );
+		}
 		
 		// Try to get cached data first
 		$period = isset( $config['period'] ) ? $config['period'] : 'current_month';
-		$date_range = $engine->get_period_date_range( $period );
-		$cached_data = $engine->get_cached_leaderboard( $date_range['period_id'] );
+		
+		try {
+			$date_range = $engine->get_period_date_range( $period );
+			$cached_data = $engine->get_cached_leaderboard( $date_range['period_id'] );
+		} catch ( Exception $e ) {
+			wp_send_json_error( array( 
+				'message' => sprintf( __( 'Error getting date range: %s', 'wc-team-payroll' ), $e->getMessage() )
+			) );
+		}
 		
 		// If no cache, generate fresh data
 		if ( ! $cached_data ) {
-			$cached_data = $engine->generate_leaderboard( $config );
-			
-			if ( isset( $cached_data['error'] ) && $cached_data['error'] ) {
-				wp_send_json_error( array( 'message' => $cached_data['message'] ) );
+			try {
+				$cached_data = $engine->generate_leaderboard( $config );
+				
+				if ( isset( $cached_data['error'] ) && $cached_data['error'] ) {
+					wp_send_json_error( array( 'message' => $cached_data['message'] ) );
+				}
+			} catch ( Exception $e ) {
+				wp_send_json_error( array( 
+					'message' => sprintf( __( 'Error generating leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() )
+				) );
 			}
 		}
 
