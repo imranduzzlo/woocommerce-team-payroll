@@ -7,6 +7,39 @@
 jQuery(document).ready(function($) {
 	'use strict';
 
+	// Restore active tab from URL hash or localStorage on page load
+	function restoreActiveTab() {
+		// Try URL hash first (e.g., #leaderboard)
+		let activeSection = window.location.hash.substring(1);
+		
+		// If no hash, try localStorage
+		if (!activeSection) {
+			activeSection = localStorage.getItem('wc_tp_active_perf_tab');
+		}
+		
+		// If we have a saved section, activate it
+		if (activeSection && $('#wc-tp-perf-' + activeSection).length) {
+			$('.wc-tp-perf-nav-tab').removeClass('active');
+			$('.wc-tp-perf-nav-tab[data-section="' + activeSection + '"]').addClass('active');
+			
+			$('.wc-tp-perf-section').removeClass('active');
+			$('#wc-tp-perf-' + activeSection).addClass('active');
+		}
+	}
+	
+	// Save active tab to URL hash and localStorage
+	function saveActiveTab(section) {
+		// Update URL hash without scrolling
+		if (history.pushState) {
+			history.pushState(null, null, '#' + section);
+		} else {
+			window.location.hash = section;
+		}
+		
+		// Also save to localStorage as backup
+		localStorage.setItem('wc_tp_active_perf_tab', section);
+	}
+
 	// Navigation tabs
 	$('.wc-tp-perf-nav-tab').on('click', function(e) {
 		e.preventDefault(); // Prevent form submission
@@ -19,7 +52,13 @@ jQuery(document).ready(function($) {
 		// Show corresponding section
 		$('.wc-tp-perf-section').removeClass('active');
 		$('#wc-tp-perf-' + section).addClass('active');
+		
+		// Save active tab state
+		saveActiveTab(section);
 	});
+	
+	// Restore active tab on page load
+	restoreActiveTab();
 
 	// Calculation Period toggle for custom date range
 	$(document).on('change', '#calc_period_type', function() {
