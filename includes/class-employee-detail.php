@@ -83,6 +83,13 @@ class WC_Team_Payroll_Employee_Detail {
 							// IMPORTANT: Update achievements first to ensure fresh data
 							$performance_tracker->update_achievements( $user_id );
 							
+							// Calculate leaderboard to ensure rank is available
+							$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
+							if ( ! empty( $leaderboard_config['enabled'] ) ) {
+								// Trigger leaderboard calculation via AJAX or directly
+								do_action( 'wc_tp_leaderboard_' . $leaderboard_config['period'] . '_update' );
+							}
+							
 							// Get current period achievements stats (where highest_tier is stored)
 							$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
 							
@@ -118,88 +125,64 @@ class WC_Team_Payroll_Employee_Detail {
 								<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
 									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 										<defs>
-											<!-- Gold 3D Coin Gradients -->
-											<radialGradient id="goldGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#FFFACD;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#FFD700;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#FFA500;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#8B6914;stop-opacity:1"/>
+											<!-- Gold Gradients with Inner Shadow -->
+											<radialGradient id="goldGradient" cx="40%" cy="40%">
+												<stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1"/>
+												<stop offset="50%" style="stop-color:#FFD700;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#DAA520;stop-opacity:1"/>
 											</radialGradient>
 											
-											<linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
-											</linearGradient>
-											
-											<!-- Silver 3D Coin Gradients -->
-											<radialGradient id="silverGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#E8E8E8;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#C0C0C0;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#808080;stop-opacity:1"/>
+											<!-- Silver Gradients with Inner Shadow -->
+											<radialGradient id="silverGradient" cx="40%" cy="40%">
+												<stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1"/>
+												<stop offset="50%" style="stop-color:#D3D3D3;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#A9A9A9;stop-opacity:1"/>
 											</radialGradient>
 											
-											<linearGradient id="silverShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.2"/>
-											</linearGradient>
-											
-											<!-- Bronze 3D Coin Gradients -->
-											<radialGradient id="bronzeGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#CD7F32;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#B8860B;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#654321;stop-opacity:1"/>
+											<!-- Bronze Gradients with Inner Shadow -->
+											<radialGradient id="bronzeGradient" cx="40%" cy="40%">
+												<stop offset="0%" style="stop-color:#E8A76A;stop-opacity:1"/>
+												<stop offset="50%" style="stop-color:#CD7F32;stop-opacity:1"/>
+												<stop offset="100%" style="stop-color:#8B4513;stop-opacity:1"/>
 											</radialGradient>
 											
-											<linearGradient id="bronzeShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.5"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
-											</linearGradient>
-											
-											<!-- Shadow Filter for 3D Effect -->
-											<filter id="coinShadow" x="-50%" y="-50%" width="200%" height="200%">
-												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.4"/>
+											<!-- Inner Shadow Filter -->
+											<filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+												<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="coloredBlur"/>
+												<feFlood flood-color="#000000" flood-opacity="0.4" result="offsetblur"/>
+												<feComposite in="offsetblur" in2="SourceGraphic" operator="in" result="offsetblur"/>
+												<feComposite in="offsetblur" in2="SourceGraphic" operator="in" result="offsetblur"/>
+												<feOffset in="offsetblur" dx="2" dy="2" result="offsetblur"/>
+												<feFlood flood-color="#FFFFFF" flood-opacity="0.3" result="offsetblur2"/>
+												<feComposite in="offsetblur2" in2="SourceGraphic" operator="in" result="offsetblur2"/>
+												<feOffset in="offsetblur2" dx="-2" dy="-2" result="offsetblur2"/>
+												<feComposite in="SourceGraphic" in2="offsetblur" operator="arithmetic" k2="1" k3="1" result="composite1"/>
+												<feComposite in="composite1" in2="offsetblur2" operator="arithmetic" k2="1" k3="1" result="composite2"/>
 											</filter>
 										</defs>
 										
-										<!-- Outer Ring (3D Edge) -->
-										<circle cx="50" cy="50" r="46" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
+										<!-- Main Badge Circle with Inner Shadow -->
+										<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="none"/>
 										
-										<!-- Main Coin Circle with 3D Gradient -->
-										<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="1" filter="url(#coinShadow)"/>
+										<!-- Inner Shadow Top-Left -->
+										<circle cx="50" cy="50" r="44" fill="none" stroke="#000000" stroke-width="2" opacity="0.15" filter="url(#innerShadow)"/>
 										
-										<!-- Shine/Highlight for 3D Effect -->
-										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Shine)" opacity="0.7"/>
+										<!-- Inner Shadow Bottom-Right -->
+										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.2"/>
 										
-										<!-- Inner Ring for Depth -->
-										<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
-										
-										<!-- Letter Badge (G, S, or B) with Stars -->
-										<g class="badge-letter">
-											<?php if ( $highest_tier === 'gold' ) : ?>
-												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#8B6914" font-family="Arial, sans-serif" letter-spacing="2">G</text>
-											<?php elseif ( $highest_tier === 'silver' ) : ?>
-												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#606060" font-family="Arial, sans-serif" letter-spacing="2">S</text>
-											<?php else : ?>
-												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#6B3410" font-family="Arial, sans-serif" letter-spacing="2">B</text>
-											<?php endif; ?>
-										</g>
+										<!-- Letter Badge (G, S, or B) -->
+										<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#8B6914' : ( $highest_tier === 'silver' ? '#505050' : '#4A2511' ) ); ?>" font-family="Arial, sans-serif" letter-spacing="1">
+											<?php if ( $highest_tier === 'gold' ) : ?>G<?php elseif ( $highest_tier === 'silver' ) : ?>S<?php else : ?>B<?php endif; ?>
+										</text>
 										
 										<!-- Stars for Category Count -->
 										<?php if ( $tier_star_count > 0 ) : ?>
 											<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
-												<g class="badge-star" transform="translate(<?php echo esc_attr( 50 + ( $i - ( $tier_star_count - 1 ) / 2 ) * 18 ); ?>, 78)">
-													<polygon points="0,-6 1.5,-2 6,-2 2.5,1 4,5 0,2 -4,5 -2.5,1 -6,-2 -1.5,-2" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#FFD700' : ( $highest_tier === 'silver' ? '#C0C0C0' : '#CD7F32' ) ); ?>" stroke="#000000" stroke-width="0.3"/>
+												<g transform="translate(<?php echo esc_attr( 50 + ( $i - ( $tier_star_count - 1 ) / 2 ) * 16 ); ?>, 78)">
+													<polygon points="0,-5 1.2,-1.5 5,-1.5 2,1 3,4.5 0,1.5 -3,4.5 -2,1 -5,-1.5 -1.2,-1.5" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#FFD700' : ( $highest_tier === 'silver' ? '#C0C0C0' : '#CD7F32' ) ); ?>" stroke="none"/>
 												</g>
 											<?php endfor; ?>
 										<?php endif; ?>
-										
-										<!-- Subtle Border Highlight -->
-										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
 									</svg>
 									
 									<?php
@@ -216,17 +199,27 @@ class WC_Team_Payroll_Employee_Detail {
 											<div class="leaderboard-rank-badge">
 												<svg class="rank-badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 													<defs>
-														<radialGradient id="rankGradient" cx="35%" cy="35%">
-															<stop offset="0%" style="stop-color:#FFD700;stop-opacity:1"/>
-															<stop offset="30%" style="stop-color:#FFA500;stop-opacity:1"/>
-															<stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1"/>
+														<radialGradient id="rankGradient" cx="40%" cy="40%">
+															<stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1"/>
+															<stop offset="50%" style="stop-color:#FFD700;stop-opacity:1"/>
+															<stop offset="100%" style="stop-color:#DAA520;stop-opacity:1"/>
 														</radialGradient>
-														<filter id="rankShadow" x="-50%" y="-50%" width="200%" height="200%">
-															<feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.5"/>
+														<filter id="rankInnerShadow" x="-50%" y="-50%" width="200%" height="200%">
+															<feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="coloredBlur"/>
+															<feFlood flood-color="#000000" flood-opacity="0.3" result="offsetblur"/>
+															<feComposite in="offsetblur" in2="SourceGraphic" operator="in" result="offsetblur"/>
+															<feOffset in="offsetblur" dx="1.5" dy="1.5" result="offsetblur"/>
+															<feFlood flood-color="#FFFFFF" flood-opacity="0.25" result="offsetblur2"/>
+															<feComposite in="offsetblur2" in2="SourceGraphic" operator="in" result="offsetblur2"/>
+															<feOffset in="offsetblur2" dx="-1.5" dy="-1.5" result="offsetblur2"/>
+															<feComposite in="SourceGraphic" in2="offsetblur" operator="arithmetic" k2="1" k3="1" result="composite1"/>
+															<feComposite in="composite1" in2="offsetblur2" operator="arithmetic" k2="1" k3="1" result="composite2"/>
 														</filter>
 													</defs>
-													<circle cx="50" cy="50" r="45" fill="url(#rankGradient)" stroke="#000000" stroke-width="1" filter="url(#rankShadow)"/>
-													<text x="50" y="65" font-size="52" font-weight="bold" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif"><?php echo esc_html( $rank ); ?></text>
+													<circle cx="50" cy="50" r="45" fill="url(#rankGradient)" stroke="none"/>
+													<circle cx="50" cy="50" r="44" fill="none" stroke="#000000" stroke-width="1.5" opacity="0.12" filter="url(#rankInnerShadow)"/>
+													<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.15"/>
+													<text x="50" y="65" font-size="50" font-weight="bold" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif"><?php echo esc_html( $rank ); ?></text>
 												</svg>
 											</div>
 										<?php endif;

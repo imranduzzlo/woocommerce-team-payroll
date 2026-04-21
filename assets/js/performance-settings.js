@@ -298,6 +298,15 @@ jQuery(document).ready(function($) {
 				case 'bonuses':
 					// Bonus config is already handled in the "always save" section above
 					break;
+				case 'leaderboard':
+					try {
+						const leaderboardConfig = collectLeaderboardConfigurationData();
+						if (leaderboardConfig && Object.keys(leaderboardConfig).length > 0) {
+							savePromises.push(saveLeaderboardConfig(leaderboardConfig));
+						}
+					} catch (e) {
+					}
+					break;
 			}
 			if (savePromises.length === 0) {
 				showMessage('warning', 'No configuration data to save');
@@ -1934,23 +1943,23 @@ jQuery(document).ready(function($) {
 	// ============================================================================
 	// LEADERBOARD HANDLERS
 	// ============================================================================
+	// LEADERBOARD HANDLERS
+	// ============================================================================
 
-	// Save Leaderboard Configuration
-	$('#wc-tp-save-leaderboard').on('click', function() {
-		const $button = $(this);
-		const originalText = $button.html();
-		
-		$button.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 5px 0 0;"></span>Saving...');
-
-		const config = {
+	// Collect Leaderboard Configuration Data
+	function collectLeaderboardConfigurationData() {
+		return {
 			enabled: $('#leaderboard_enabled').is(':checked') ? 1 : 0,
 			criteria: $('#leaderboard_criteria').val(),
 			period: $('#leaderboard_period').val(),
 			min_orders: parseInt($('#leaderboard_min_orders').val()) || 0,
 			show_badge: $('#leaderboard_show_badge').is(':checked') ? 1 : 0,
 		};
+	}
 
-		$.ajax({
+	// Save Leaderboard Configuration via AJAX
+	function saveLeaderboardConfig(config) {
+		return $.ajax({
 			url: wcTpPerformance.ajax_url,
 			type: 'POST',
 			data: {
@@ -1958,25 +1967,11 @@ jQuery(document).ready(function($) {
 				nonce: wcTpPerformance.nonce,
 				config: config
 			},
-			success: function(response) {
-				if (response.success) {
-					showMessage('success', response.data.message);
-					// Auto-trigger recalculate to show updated leaderboard
-					setTimeout(function() {
-						$('#wc-tp-recalculate-leaderboard').trigger('click');
-					}, 500);
-				} else {
-					showMessage('error', response.data.message || 'Error saving configuration');
-				}
-			},
-			error: function() {
-				showMessage('error', 'AJAX error occurred');
-			},
-			complete: function() {
-				$button.prop('disabled', false).html(originalText);
-			}
+			dataType: 'json'
+		}).catch(function(xhr) {
+			return { success: false, message: xhr.responseJSON && xhr.responseJSON.data ? xhr.responseJSON.data.message : 'Error saving leaderboard config' };
 		});
-	});
+	}
 
 	// Recalculate Leaderboard
 	$('#wc-tp-recalculate-leaderboard').on('click', function() {

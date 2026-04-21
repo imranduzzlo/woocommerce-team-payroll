@@ -841,10 +841,6 @@ class WC_Team_Payroll_Performance_Settings {
 					</table>
 					
 					<div class="wc-tp-perf-actions">
-						<button type="button" class="button button-primary" id="wc-tp-save-leaderboard">
-							<span class="dashicons dashicons-saved"></span>
-							<?php esc_html_e( 'Save Leaderboard Config', 'wc-team-payroll' ); ?>
-						</button>
 						<button type="button" class="button button-secondary" id="wc-tp-recalculate-leaderboard">
 							<span class="dashicons dashicons-update"></span>
 							<?php esc_html_e( 'Recalculate Now', 'wc-team-payroll' ); ?>
@@ -3668,9 +3664,6 @@ class WC_Team_Payroll_Performance_Settings {
 
 		// Schedule cron jobs based on period
 		$this->schedule_leaderboard_cron();
-
-		// Recalculate leaderboard with new settings
-		$this->calculate_leaderboard();
 
 		wp_send_json_success( array( 'message' => __( 'Leaderboard configuration saved successfully!', 'wc-team-payroll' ) ) );
 	}
