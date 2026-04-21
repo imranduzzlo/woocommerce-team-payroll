@@ -295,9 +295,6 @@ jQuery(document).ready(function($) {
 					} catch (e) {
 					}
 					break;
-				case 'bonuses':
-					// Bonus config is already handled in the "always save" section above
-					break;
 				case 'leaderboard':
 					try {
 						const leaderboardConfig = collectLeaderboardConfigurationData();
@@ -306,6 +303,9 @@ jQuery(document).ready(function($) {
 						}
 					} catch (e) {
 					}
+					break;
+				case 'bonuses':
+					// Bonus config is already handled in the "always save" section above
 					break;
 			}
 			if (savePromises.length === 0) {
@@ -455,6 +455,78 @@ jQuery(document).ready(function($) {
 			return { success: false, message: xhr.responseJSON && xhr.responseJSON.data ? xhr.responseJSON.data.message : 'Error saving system config' };
 		});
 	}
+
+	// Collect leaderboard configuration data
+	function collectLeaderboardConfigurationData() {
+		const config = {
+			enabled: $('#leaderboard_enabled').is(':checked') ? 1 : 0,
+			criteria: $('#leaderboard_criteria').val(),
+			period: $('#leaderboard_period').val(),
+			update_frequency: $('#leaderboard_update_frequency').val(),
+			minimum_orders: parseInt($('#leaderboard_minimum_orders').val()) || 0,
+			exclude_inactive: $('#leaderboard_exclude_inactive').is(':checked') ? 1 : 0,
+			display_limit: parseInt($('#leaderboard_display_limit').val()) || 10,
+			show_user_rank: $('#leaderboard_show_user_rank').is(':checked') ? 1 : 0,
+			anonymize: $('#leaderboard_anonymize').is(':checked') ? 1 : 0,
+			show_scores: $('#leaderboard_show_scores').is(':checked') ? 1 : 0,
+			show_metrics: $('#leaderboard_show_metrics').is(':checked') ? 1 : 0
+		};
+		
+		return config;
+	}
+
+	function saveLeaderboardConfig(config) {
+		return $.ajax({
+			url: wcTpPerformance.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'wc_tp_save_leaderboard_config',
+				nonce: wcTpPerformance.nonce,
+				leaderboard_config: config
+			}
+		}).then(function(response) {
+			return { success: response.success, message: response.data ? response.data.message : 'Leaderboard config saved' };
+		}).catch(function(xhr) {
+			return { success: false, message: xhr.responseJSON && xhr.responseJSON.data ? xhr.responseJSON.data.message : 'Error saving leaderboard config' };
+		});
+	}
+
+	// Manual leaderboard refresh button
+	$(document).on('click', '#wc-tp-refresh-leaderboard', function() {
+		const button = $(this);
+		const statusDiv = $('#wc-tp-leaderboard-refresh-status');
+		
+		button.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span>Refreshing...');
+		statusDiv.html('');
+		
+		$.ajax({
+			url: wcTpPerformance.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'wc_tp_refresh_leaderboard',
+				nonce: wcTpPerformance.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					statusDiv.html('<div class="notice notice-success inline"><p>' + response.data.message + '</p></div>');
+					// Update last updated timestamp if available
+					if (response.data.timestamp) {
+						const date = new Date(response.data.timestamp);
+						const formattedDate = date.toLocaleString();
+						statusDiv.append('<p style="color: #666; margin-top: 5px;">Last updated: ' + formattedDate + '</p>');
+					}
+				} else {
+					statusDiv.html('<div class="notice notice-error inline"><p>' + (response.data.message || 'Error refreshing leaderboard') + '</p></div>');
+				}
+			},
+			error: function() {
+				statusDiv.html('<div class="notice notice-error inline"><p>AJAX error occurred</p></div>');
+			},
+			complete: function() {
+				button.prop('disabled', false).html('<span class="dashicons dashicons-update"></span>Refresh Leaderboard Rankings');
+			}
+		});
+	});
 
 	function saveBonusConfig(config) {
 		return $.ajax({
@@ -1939,73 +2011,5 @@ jQuery(document).ready(function($) {
 	// Initialize on page load
 	initializeBonusTypeHandlers();
 
-
-	// ============================================================================
-	// LEADERBOARD HANDLERS
-	// ============================================================================
-	// LEADERBOARD HANDLERS
-	// ============================================================================
-
-	// Collect Leaderboard Configuration Data
-	function collectLeaderboardConfigurationData() {
-		return {
-			enabled: $('#leaderboard_enabled').is(':checked') ? 1 : 0,
-			criteria: $('#leaderboard_criteria').val(),
-			period: $('#leaderboard_period').val(),
-			min_orders: parseInt($('#leaderboard_min_orders').val()) || 0,
-			show_badge: $('#leaderboard_show_badge').is(':checked') ? 1 : 0,
-		};
-	}
-
-	// Save Leaderboard Configuration via AJAX
-	function saveLeaderboardConfig(config) {
-		return $.ajax({
-			url: wcTpPerformance.ajax_url,
-			type: 'POST',
-			data: {
-				action: 'wc_tp_save_leaderboard_config',
-				nonce: wcTpPerformance.nonce,
-				config: config
-			},
-			dataType: 'json'
-		}).catch(function(xhr) {
-			return { success: false, message: xhr.responseJSON && xhr.responseJSON.data ? xhr.responseJSON.data.message : 'Error saving leaderboard config' };
-		});
-	}
-
-	// Recalculate Leaderboard
-	$('#wc-tp-recalculate-leaderboard').on('click', function() {
-		const $button = $(this);
-		const originalText = $button.html();
-		
-		$button.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 5px 0 0;"></span>Calculating...');
-		
-		$('#wc-tp-leaderboard-preview').html('<div class="wc-tp-loading"><span class="spinner is-active"></span><p>Calculating leaderboard rankings...</p></div>');
-
-		$.ajax({
-			url: wcTpPerformance.ajax_url,
-			type: 'POST',
-			data: {
-				action: 'wc_tp_recalculate_leaderboard',
-				nonce: wcTpPerformance.nonce
-			},
-			success: function(response) {
-				if (response.success) {
-					$('#wc-tp-leaderboard-preview').html(response.data.html);
-					showMessage('success', response.data.message + ' (' + response.data.count + ' employees ranked)');
-				} else {
-					$('#wc-tp-leaderboard-preview').html('<p class="description">' + response.data.message + '</p>');
-					showMessage('error', response.data.message || 'Error calculating leaderboard');
-				}
-			},
-			error: function() {
-				$('#wc-tp-leaderboard-preview').html('<p class="description">Error loading leaderboard.</p>');
-				showMessage('error', 'AJAX error occurred');
-			},
-			complete: function() {
-				$button.prop('disabled', false).html(originalText);
-			}
-		});
-	});
-
 });
+

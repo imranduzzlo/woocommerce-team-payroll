@@ -35,6 +35,7 @@ class WC_Team_Payroll_Performance_Tracker {
 		add_action( 'wc_tp_daily_baseline_update', array( $this, 'cron_update_baselines' ) );
 		add_action( 'wc_tp_check_achievements', array( $this, 'cron_check_achievements' ) );
 		add_action( 'wc_tp_finalize_period_goals', array( $this, 'cron_finalize_period_goals' ) );
+		add_action( 'wc_tp_update_leaderboard', array( $this, 'cron_update_leaderboard' ) );
 
 		// Schedule cron jobs if not scheduled
 		if ( ! wp_next_scheduled( 'wc_tp_daily_baseline_update' ) ) {
@@ -45,6 +46,9 @@ class WC_Team_Payroll_Performance_Tracker {
 		}
 		if ( ! wp_next_scheduled( 'wc_tp_finalize_period_goals' ) ) {
 			wp_schedule_event( time(), 'daily', 'wc_tp_finalize_period_goals' );
+		}
+		if ( ! wp_next_scheduled( 'wc_tp_update_leaderboard' ) ) {
+			wp_schedule_event( time(), 'daily', 'wc_tp_update_leaderboard' );
 		}
 	}
 
@@ -2502,6 +2506,64 @@ class WC_Team_Payroll_Performance_Tracker {
 			
 			// Finalize and save to history
 			$this->finalize_period_goals( $employee_id );
+		}
+	}
+
+	/**
+	 * Cron: Update leaderboard rankings
+	 */
+	public function cron_update_leaderboard() {
+		// Get leaderboard configuration
+		$config = get_option( 'wc_tp_leaderboard_config', array() );
+		
+		// Check if leaderboard is enabled
+		if ( empty( $config ) || ! isset( $config['enabled'] ) || ! $config['enabled'] ) {
+			return;
+		}
+
+		// Check update frequency
+		$update_frequency = isset( $config['update_frequency'] ) ? $config['update_frequency'] : 'daily';
+		
+		// Get last update time
+		$last_updated = isset( $config['last_updated'] ) ? $config['last_updated'] : '';
+		
+		// Determine if we should update based on frequency
+		$should_update = false;
+		if ( empty( $last_updated ) ) {
+			$should_update = true;
+		} else {
+			$last_update_time = strtotime( $last_updated );
+			$current_time = current_time( 'timestamp' );
+			$time_diff = $current_time - $last_update_time;
+			
+			switch ( $update_frequency ) {
+				case 'hourly':
+					$should_update = $time_diff >= HOUR_IN_SECONDS;
+					break;
+				case 'weekly':
+					$should_update = $time_diff >= WEEK_IN_SECONDS;
+					break;
+				case 'daily':
+				default:
+					$should_update = $time_diff >= DAY_IN_SECONDS;
+					break;
+			}
+		}
+
+		if ( ! $should_update ) {
+			return;
+		}
+
+		// Initialize leaderboard engine
+		$engine = new WC_Team_Payroll_Leaderboard_Engine();
+		
+		// Generate leaderboard
+		$result = $engine->generate_leaderboard( $config );
+		
+		// Update last updated timestamp if successful
+		if ( ! isset( $result['error'] ) || ! $result['error'] ) {
+			$config['last_updated'] = current_time( 'mysql' );
+			update_option( 'wc_tp_leaderboard_config', $config );
 		}
 	}
 

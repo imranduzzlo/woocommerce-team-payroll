@@ -1948,6 +1948,9 @@ class WC_Team_Payroll_MyAccount {
 					<button class="performance-tab" data-tab="baselines">
 						<i class="ph ph-chart-line-up"></i> <?php esc_html_e( 'Baselines', 'wc-team-payroll' ); ?>
 					</button>
+					<button class="performance-tab" data-tab="leaderboard">
+						<i class="ph ph-ranking"></i> <?php esc_html_e( 'Leaderboard', 'wc-team-payroll' ); ?>
+					</button>
 				</div>
 
 				<!-- Performance Content -->
@@ -2823,13 +2826,6 @@ class WC_Team_Payroll_MyAccount {
 		// IMPORTANT: Update achievements first to ensure fresh data
 		$performance_tracker->update_achievements( $user_id );
 		
-		// Calculate leaderboard to ensure rank is available
-		$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
-		if ( ! empty( $leaderboard_config['enabled'] ) ) {
-			// Trigger leaderboard calculation via action
-			do_action( 'wc_tp_leaderboard_' . $leaderboard_config['period'] . '_update' );
-		}
-		
 		// Get current period achievements stats (where highest_tier is stored)
 		$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
 		
@@ -2878,110 +2874,25 @@ class WC_Team_Payroll_MyAccount {
 						
 						<?php if ( ! empty( $highest_tier ) ) : ?>
 							<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
-								<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-									<defs>
-										<!-- Gold Gradients with Inner Shadow -->
-										<radialGradient id="goldGradient" cx="40%" cy="40%">
-											<stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1"/>
-											<stop offset="50%" style="stop-color:#FFD700;stop-opacity:1"/>
-											<stop offset="100%" style="stop-color:#DAA520;stop-opacity:1"/>
-										</radialGradient>
-										
-										<!-- Silver Gradients with Inner Shadow -->
-										<radialGradient id="silverGradient" cx="40%" cy="40%">
-											<stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1"/>
-											<stop offset="50%" style="stop-color:#D3D3D3;stop-opacity:1"/>
-											<stop offset="100%" style="stop-color:#A9A9A9;stop-opacity:1"/>
-										</radialGradient>
-										
-										<!-- Bronze Gradients with Inner Shadow -->
-										<radialGradient id="bronzeGradient" cx="40%" cy="40%">
-											<stop offset="0%" style="stop-color:#E8A76A;stop-opacity:1"/>
-											<stop offset="50%" style="stop-color:#CD7F32;stop-opacity:1"/>
-											<stop offset="100%" style="stop-color:#8B4513;stop-opacity:1"/>
-										</radialGradient>
-										
-										<!-- Inner Shadow Filter -->
-										<filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
-											<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="coloredBlur"/>
-											<feFlood flood-color="#000000" flood-opacity="0.4" result="offsetblur"/>
-											<feComposite in="offsetblur" in2="SourceGraphic" operator="in" result="offsetblur"/>
-											<feComposite in="offsetblur" in2="SourceGraphic" operator="in" result="offsetblur"/>
-											<feOffset in="offsetblur" dx="2" dy="2" result="offsetblur"/>
-											<feFlood flood-color="#FFFFFF" flood-opacity="0.3" result="offsetblur2"/>
-											<feComposite in="offsetblur2" in2="SourceGraphic" operator="in" result="offsetblur2"/>
-											<feOffset in="offsetblur2" dx="-2" dy="-2" result="offsetblur2"/>
-											<feComposite in="SourceGraphic" in2="offsetblur" operator="arithmetic" k2="1" k3="1" result="composite1"/>
-											<feComposite in="composite1" in2="offsetblur2" operator="arithmetic" k2="1" k3="1" result="composite2"/>
-										</filter>
-									</defs>
-									
-									<!-- Main Badge Circle with Inner Shadow -->
-									<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="none"/>
-									
-									<!-- Inner Shadow Top-Left -->
-									<circle cx="50" cy="50" r="44" fill="none" stroke="#000000" stroke-width="2" opacity="0.15" filter="url(#innerShadow)"/>
-									
-									<!-- Inner Shadow Bottom-Right -->
-									<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.2"/>
-									
-									<!-- Letter Badge (G, S, or B) -->
-									<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#8B6914' : ( $highest_tier === 'silver' ? '#505050' : '#4A2511' ) ); ?>" font-family="Arial, sans-serif" letter-spacing="1">
-										<?php if ( $highest_tier === 'gold' ) : ?>G<?php elseif ( $highest_tier === 'silver' ) : ?>S<?php else : ?>B<?php endif; ?>
-									</text>
-									
-									<!-- Stars for Category Count -->
+								<div class="badge-coin-container">
+									<div class="badge-coin"></div>
+									<div class="badge-letter">
+										<?php if ( $highest_tier === 'gold' ) : ?>
+											<span class="letter-g">G</span>
+										<?php elseif ( $highest_tier === 'silver' ) : ?>
+											<span class="letter-s">S</span>
+										<?php else : ?>
+											<span class="letter-b">B</span>
+										<?php endif; ?>
+									</div>
 									<?php if ( $tier_star_count > 0 ) : ?>
-										<g class="badge-stars">
+										<div class="badge-stars">
 											<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
-												<g transform="translate(<?php echo esc_attr( 50 + ( $i - ( $tier_star_count - 1 ) / 2 ) * 16 ); ?>, 78)">
-													<polygon points="0,-5 1.2,-1.5 5,-1.5 2,1 3,4.5 0,1.5 -3,4.5 -2,1 -5,-1.5 -1.2,-1.5" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#FFD700' : ( $highest_tier === 'silver' ? '#C0C0C0' : '#CD7F32' ) ); ?>" stroke="none"/>
-												</g>
+												<span class="badge-star">★</span>
 											<?php endfor; ?>
-										</g>
-									<?php endif; ?>
-								</svg>
-								
-								<?php
-								// Get leaderboard rank
-								$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
-								if ( ! empty( $leaderboard_config['enabled'] ) ) {
-									$period = isset( $leaderboard_config['period'] ) ? $leaderboard_config['period'] : 'monthly';
-									$performance_tracker = WC_Team_Payroll_Performance_Tracker::init();
-									$date_range = $performance_tracker->get_leaderboard_period_range( $period );
-									$period_id = $date_range['period_id'];
-									$rank = get_user_meta( $user_id, '_wc_tp_leaderboard_rank_' . $period_id, true );
-									
-									if ( ! empty( $rank ) ) : ?>
-										<div class="leaderboard-rank-badge">
-											<svg class="rank-badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-												<defs>
-													<radialGradient id="rankGradient" cx="40%" cy="40%">
-														<stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1"/>
-														<stop offset="50%" style="stop-color:#FFD700;stop-opacity:1"/>
-														<stop offset="100%" style="stop-color:#DAA520;stop-opacity:1"/>
-													</radialGradient>
-													<filter id="rankInnerShadow" x="-50%" y="-50%" width="200%" height="200%">
-														<feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="coloredBlur"/>
-														<feFlood flood-color="#000000" flood-opacity="0.3" result="offsetblur"/>
-														<feComposite in="offsetblur" in2="SourceGraphic" operator="in" result="offsetblur"/>
-														<feOffset in="offsetblur" dx="1.5" dy="1.5" result="offsetblur"/>
-														<feFlood flood-color="#FFFFFF" flood-opacity="0.25" result="offsetblur2"/>
-														<feComposite in="offsetblur2" in2="SourceGraphic" operator="in" result="offsetblur2"/>
-														<feOffset in="offsetblur2" dx="-1.5" dy="-1.5" result="offsetblur2"/>
-														<feComposite in="SourceGraphic" in2="offsetblur" operator="arithmetic" k2="1" k3="1" result="composite1"/>
-														<feComposite in="composite1" in2="offsetblur2" operator="arithmetic" k2="1" k3="1" result="composite2"/>
-													</filter>
-												</defs>
-												<circle cx="50" cy="50" r="45" fill="url(#rankGradient)" stroke="none"/>
-												<circle cx="50" cy="50" r="44" fill="none" stroke="#000000" stroke-width="1.5" opacity="0.12" filter="url(#rankInnerShadow)"/>
-												<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.15"/>
-												<text x="50" y="65" font-size="50" font-weight="bold" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif"><?php echo esc_html( $rank ); ?></text>
-											</svg>
 										</div>
-									<?php endif;
-								}
-								?>
+									<?php endif; ?>
+								</div>
 							</div>
 						<?php else : ?>
 							<!-- Locked Badge -->

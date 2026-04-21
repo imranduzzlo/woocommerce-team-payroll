@@ -21,6 +21,7 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		add_action( 'wp_ajax_wc_tp_claim_bonus', array( __CLASS__, 'ajax_claim_bonus' ) );
 		add_action( 'wp_ajax_wc_tp_submit_bonus', array( __CLASS__, 'ajax_submit_bonus' ) );
 		add_action( 'wp_ajax_wc_tp_resend_secret_code', array( __CLASS__, 'ajax_resend_secret_code' ) );
+		add_action( 'wp_ajax_wc_tp_get_leaderboard_data', array( __CLASS__, 'ajax_get_leaderboard_data' ) );
 	}
 
 	/**
@@ -239,23 +240,6 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				
 				$data['baselines'] = $baselines;
 				$data['history'] = get_user_meta( $user_id, '_wc_tp_baseline_history', true );
-				break;
-
-			case 'leaderboard':
-				// Get leaderboard config and data
-				$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
-				
-				// Check if leaderboard is enabled
-				if ( empty( $leaderboard_config['enabled'] ) ) {
-					wp_send_json_error( array( 'message' => __( 'Leaderboard is disabled', 'wc-team-payroll' ) ) );
-				}
-				
-				// Get leaderboard data from performance settings
-				$performance_settings = new WC_Team_Payroll_Performance_Settings();
-				$leaderboard = $performance_settings->get_frontend_leaderboard( $user_id );
-				
-				$data['leaderboard'] = $leaderboard;
-				$data['config'] = $leaderboard_config;
 				break;
 
 			default:
@@ -732,6 +716,118 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		$tracker->send_physical_bonus_email_public( $user_id, $bonus );
 
 		wp_send_json_success( array( 'message' => __( 'Secret code email resent successfully!', 'wc-team-payroll' ) ) );
+	}
+
+	/**
+	 * AJAX: Get Leaderboard Data
+	 */
+	public static function ajax_get_leaderboard_data() {
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
+
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		// Get leaderboard configuration
+		$config = get_option( 'wc_tp_leaderboard_config', array() );
+		
+		// Check if leaderboard is enabled
+		if ( empty( $config ) || ! isset( $config['enabled'] ) || ! $config['enabled'] ) {
+			wp_send_json_error( array( 
+				'message' => __( 'Leaderboard is not enabled', 'wc-team-payroll' ),
+				'disabled' => true
+			) );
+		}
+
+		// Initialize leaderboard engine
+		$engine = new WC_Team_Payroll_Leaderboard_Engine();
+		
+		// Try to get cached data first
+		$period = isset( $config['period'] ) ? $config['period'] : 'current_month';
+		$date_range = $engine->get_period_date_range( $period );
+		$cached_data = $engine->get_cached_leaderboard( $date_range['period_id'] );
+		
+		// If no cache, generate fresh data
+		if ( ! $cached_data ) {
+			$cached_data = $engine->generate_leaderboard( $config );
+			
+			if ( isset( $cached_data['error'] ) && $cached_data['error'] ) {
+				wp_send_json_error( array( 'message' => $cached_data['message'] ) );
+			}
+		}
+
+		// Get display settings
+		$display_limit = isset( $config['display_limit'] ) ? intval( $config['display_limit'] ) : 10;
+		$show_user_rank = isset( $config['show_user_rank'] ) ? $config['show_user_rank'] : 1;
+		$anonymize = isset( $config['anonymize'] ) ? $config['anonymize'] : 0;
+		$show_scores = isset( $config['show_scores'] ) ? $config['show_scores'] : 1;
+		$show_metrics = isset( $config['show_metrics'] ) ? $config['show_metrics'] : 1;
+
+		// Get leaderboard data
+		$leaderboard = isset( $cached_data['leaderboard'] ) ? $cached_data['leaderboard'] : array();
+		
+		// Apply display limit
+		$displayed_leaderboard = $leaderboard;
+		if ( $display_limit > 0 && $display_limit < count( $leaderboard ) ) {
+			$displayed_leaderboard = array_slice( $leaderboard, 0, $display_limit );
+		}
+
+		// Apply anonymization
+		if ( $anonymize ) {
+			foreach ( $displayed_leaderboard as &$entry ) {
+				// Don't anonymize current user
+				if ( $entry['user_id'] !== $user_id ) {
+					$entry['display_name'] = self::anonymize_name( $entry['display_name'] );
+				}
+			}
+		}
+
+		// Find current user's rank
+		$user_rank_data = null;
+		if ( $show_user_rank ) {
+			foreach ( $leaderboard as $entry ) {
+				if ( $entry['user_id'] === $user_id ) {
+					$user_rank_data = $entry;
+					break;
+				}
+			}
+		}
+
+		// Prepare response
+		$response = array(
+			'leaderboard' => $displayed_leaderboard,
+			'user_rank' => $user_rank_data,
+			'config' => array(
+				'criteria' => isset( $config['criteria'] ) ? $config['criteria'] : 'total_earnings',
+				'period' => $period,
+				'display_limit' => $display_limit,
+				'show_scores' => $show_scores,
+				'show_metrics' => $show_metrics,
+				'anonymize' => $anonymize,
+			),
+			'date_range' => isset( $cached_data['date_range'] ) ? $cached_data['date_range'] : array(),
+			'total_employees' => isset( $cached_data['total_employees'] ) ? $cached_data['total_employees'] : 0,
+			'generated_at' => isset( $cached_data['generated_at'] ) ? $cached_data['generated_at'] : '',
+		);
+
+		wp_send_json_success( $response );
+	}
+
+	/**
+	 * Anonymize name to initials
+	 */
+	private static function anonymize_name( $name ) {
+		$parts = explode( ' ', $name );
+		$initials = '';
+		
+		foreach ( $parts as $part ) {
+			if ( ! empty( $part ) ) {
+				$initials .= strtoupper( substr( $part, 0, 1 ) ) . '.';
+			}
+		}
+		
+		return $initials;
 	}
 }
 
