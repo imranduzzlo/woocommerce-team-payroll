@@ -1,3 +1,40 @@
+## [1.7.1] - 2026-04-22
+### 🐛 Bug Fix - Leaderboard AJAX Error Handling
+
+#### FIXED - AJAX Errors When Leaderboard Not Configured
+- **Better Error Messages**: Changed generic errors to specific, actionable messages
+- **Configuration Check**: Now distinguishes between "not configured" vs "disabled" states
+- **User Guidance**: Provides clear instructions to contact administrator
+- **Error Handling**: Added try-catch blocks for robust error handling
+
+#### TECHNICAL CHANGES
+- Added check for empty leaderboard configuration
+- Wrapped leaderboard engine initialization in try-catch
+- Added error handling for date range calculations
+- Added error handling for leaderboard generation
+- Improved error messages in `ajax_get_leaderboard_data()`
+
+#### ERROR MESSAGES
+**Before**: "Network error. Please try again." (generic)
+**After**: "Leaderboard has not been configured yet. Please contact your administrator to set up the leaderboard." (specific)
+
+#### BENEFITS
+- ✅ Clear error messages guide users
+- ✅ Distinguishes between different error states
+- ✅ Provides actionable next steps
+- ✅ Better debugging information
+- ✅ Improved user experience
+
+#### HOW TO FIX
+If you see leaderboard errors:
+1. Go to WooCommerce → Settings → Team Payroll → Performance Settings
+2. Click "Leaderboard" tab
+3. Enable leaderboard and configure settings
+4. Click "Save Leaderboard Configuration"
+5. Click "Recalculate Leaderboard"
+
+---
+
 ## [1.7.0] - 2026-04-22
 ### 🎯 Major Feature - Complete Leaderboard System
 
