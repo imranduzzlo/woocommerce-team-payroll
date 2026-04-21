@@ -2826,8 +2826,11 @@ class WC_Team_Payroll_MyAccount {
 		// Calculate leaderboard to ensure rank is available
 		$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
 		if ( ! empty( $leaderboard_config['enabled'] ) ) {
-			// Trigger leaderboard calculation via action
-			do_action( 'wc_tp_leaderboard_' . $leaderboard_config['period'] . '_update' );
+			// Trigger leaderboard calculation directly
+			global $wc_team_payroll_performance_settings;
+			if ( isset( $wc_team_payroll_performance_settings ) && method_exists( $wc_team_payroll_performance_settings, 'calculate_leaderboard' ) ) {
+				$wc_team_payroll_performance_settings->calculate_leaderboard();
+			}
 		}
 		
 		// Get current period achievements stats (where highest_tier is stored)
