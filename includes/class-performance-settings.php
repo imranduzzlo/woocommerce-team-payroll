@@ -3836,18 +3836,19 @@ class WC_Team_Payroll_Performance_Settings {
 		$leaderboard_config = isset( $_POST['leaderboard_config'] ) ? $_POST['leaderboard_config'] : array();
 
 		// Sanitize leaderboard configuration
+		// For checkboxes: check if key exists in the posted config array, not if it's set to 1
 		$sanitized_config = array(
-			'enabled' => isset( $leaderboard_config['enabled'] ) ? 1 : 0,
+			'enabled' => isset( $leaderboard_config['enabled'] ) && $leaderboard_config['enabled'] == 1 ? 1 : 0,
 			'criteria' => isset( $leaderboard_config['criteria'] ) ? sanitize_text_field( $leaderboard_config['criteria'] ) : 'total_earnings',
 			'period' => isset( $leaderboard_config['period'] ) ? sanitize_text_field( $leaderboard_config['period'] ) : 'current_month',
 			'update_frequency' => isset( $leaderboard_config['update_frequency'] ) ? sanitize_text_field( $leaderboard_config['update_frequency'] ) : 'daily',
 			'minimum_orders' => isset( $leaderboard_config['minimum_orders'] ) ? intval( $leaderboard_config['minimum_orders'] ) : 0,
-			'exclude_inactive' => isset( $leaderboard_config['exclude_inactive'] ) ? 1 : 0,
+			'exclude_inactive' => isset( $leaderboard_config['exclude_inactive'] ) && $leaderboard_config['exclude_inactive'] == 1 ? 1 : 0,
 			'display_limit' => isset( $leaderboard_config['display_limit'] ) ? intval( $leaderboard_config['display_limit'] ) : 10,
-			'show_user_rank' => isset( $leaderboard_config['show_user_rank'] ) ? 1 : 0,
-			'anonymize' => isset( $leaderboard_config['anonymize'] ) ? 1 : 0,
-			'show_scores' => isset( $leaderboard_config['show_scores'] ) ? 1 : 0,
-			'show_metrics' => isset( $leaderboard_config['show_metrics'] ) ? 1 : 0,
+			'show_user_rank' => isset( $leaderboard_config['show_user_rank'] ) && $leaderboard_config['show_user_rank'] == 1 ? 1 : 0,
+			'anonymize' => isset( $leaderboard_config['anonymize'] ) && $leaderboard_config['anonymize'] == 1 ? 1 : 0,
+			'show_scores' => isset( $leaderboard_config['show_scores'] ) && $leaderboard_config['show_scores'] == 1 ? 1 : 0,
+			'show_metrics' => isset( $leaderboard_config['show_metrics'] ) && $leaderboard_config['show_metrics'] == 1 ? 1 : 0,
 			'last_updated' => current_time( 'mysql' ),
 		);
 
