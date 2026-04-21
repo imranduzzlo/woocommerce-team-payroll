@@ -3601,6 +3601,9 @@ class WC_Team_Payroll_Employee_Detail {
 					<button class="performance-tab" data-tab="baselines">
 						<i class="ph ph-chart-line-up"></i> <?php esc_html_e( 'Baselines', 'wc-team-payroll' ); ?>
 					</button>
+					<button class="performance-tab" data-tab="leaderboard">
+						<i class="ph ph-ranking"></i> <?php esc_html_e( 'Leaderboard', 'wc-team-payroll' ); ?>
+					</button>
 				</div>
 
 				<!-- Performance Content -->

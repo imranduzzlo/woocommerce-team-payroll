@@ -1,3 +1,76 @@
+## [1.6.45] - 2026-04-21
+### ⭐ Feature - Leaderboard Frontend Display & Integration
+
+#### ADDED - Leaderboard Frontend Tab
+- **New Tab in My Account**: Added "Leaderboard" tab in Performance Tracker section
+- **Ranking Display**: Display ranked employees with medals for top 3 (🥇 🥈 🥉)
+- **Comprehensive Table**: Shows Rank, Employee, Score, Earnings, and Orders
+- **Current User Highlight**: Highlights current user's row with orange background
+- **Criteria Display**: Shows which criteria and period the leaderboard uses
+- **Responsive Design**: Fully responsive table that works on mobile devices
+
+#### ADDED - Leaderboard Data Retrieval
+- **Backend Integration**: Connected to existing leaderboard calculation engine
+- **Proper Ranking**: Leverages already calculated ranks and scores from Performance Settings
+- **User Metrics**: Displays earnings, orders, and composite scores
+- **Config Display**: Shows criteria (e.g., "Complete Score", "Earnings + Orders") and period
+
+#### ADDED - JavaScript Methods
+- `loadLeaderboard()`: Fetches leaderboard data via AJAX
+- `renderLeaderboard()`: Renders professional leaderboard table
+- `formatCriteriaLabel()`: Converts criteria keys to human-readable labels
+- `formatPeriodLabel()`: Converts period keys to human-readable labels
+- `getRankBadge()`: Generates medal badges for top 3 ranks
+- `escapeHtml()`: Sanitizes employee names
+
+#### ADDED - AJAX Handler
+- **New Case**: Added 'leaderboard' case to `wc_tp_get_performance_tracker_data` AJAX handler
+- **Config Validation**: Checks if leaderboard is enabled before returning data
+- **Efficient Retrieval**: Uses new `get_frontend_leaderboard()` method
+- **Safe Output**: Formats data properly for frontend display
+
+#### ADDED - Backend Method
+- `get_frontend_leaderboard()`: New public method in Performance Settings class
+  - Returns formatted leaderboard data
+  - Includes user info, rank, score, metrics
+  - Flags current user for highlighting
+  - Respects minimum orders filter
+
+#### ADDED - CSS Styling
+- Professional table styling with proper spacing and colors
+- Rank badges (gold/silver/bronze for top 3, gray for others)
+- Hover effects for better interactivity
+- Current user row highlighting (light orange background)
+- Color-coded metric values (green earnings, blue orders, orange score)
+- Mobile-responsive breakpoints for tablet and phone devices
+- Proper typography and visual hierarchy
+
+#### FILES MODIFIED
+- `includes/class-employee-detail.php`: Added leaderboard tab button
+- `assets/js/performance-tracker.js`: Added load/render methods and helpers
+- `assets/css/performance-tracker.css`: Added leaderboard styling
+- `includes/class-performance-tracker-ajax.php`: Added leaderboard case
+- `includes/class-performance-settings.php`: Added `get_frontend_leaderboard()` method
+
+#### FEATURES
+- ✅ No shortcode needed - fully integrated into My Account
+- ✅ Uses existing leaderboard calculation system
+- ✅ Employees can see their ranking at a glance
+- ✅ Works with all 17 ranking criteria
+- ✅ Works with all 6 time periods
+- ✅ Professional, clean UI with medal badges
+- ✅ Mobile responsive
+- ✅ GDPR-safe (only shows display name)
+
+#### BENEFITS
+- Employees can monitor their performance vs peers
+- Motivates healthy competition through visible rankings
+- Shows impact of criteria configuration
+- Seamless integration with existing performance system
+- No additional database queries needed
+
+---
+
 ## [1.6.44] - 2026-04-20
 ### 🐛 Bug Fix - Profile Badge Display Issues
 

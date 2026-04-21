@@ -241,6 +241,23 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$data['history'] = get_user_meta( $user_id, '_wc_tp_baseline_history', true );
 				break;
 
+			case 'leaderboard':
+				// Get leaderboard config and data
+				$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
+				
+				// Check if leaderboard is enabled
+				if ( empty( $leaderboard_config['enabled'] ) ) {
+					wp_send_json_error( array( 'message' => __( 'Leaderboard is disabled', 'wc-team-payroll' ) ) );
+				}
+				
+				// Get leaderboard data from performance settings
+				$performance_settings = new WC_Team_Payroll_Performance_Settings();
+				$leaderboard = $performance_settings->get_frontend_leaderboard( $user_id );
+				
+				$data['leaderboard'] = $leaderboard;
+				$data['config'] = $leaderboard_config;
+				break;
+
 			default:
 				wp_send_json_error( array( 'message' => __( 'Invalid section', 'wc-team-payroll' ) ) );
 		}

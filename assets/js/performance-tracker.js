@@ -170,6 +170,9 @@
 				case 'baselines':
 					this.loadBaselines();
 					break;
+				case 'leaderboard':
+					this.loadLeaderboard();
+					break;
 			}
 		},
 
@@ -256,6 +259,17 @@
 			
 			this.fetchData('baselines', (data) => {
 				this.renderBaselines(data);
+			});
+		},
+
+		/**
+		 * Load leaderboard data
+		 */
+		loadLeaderboard() {
+			this.showLoading();
+			
+			this.fetchData('leaderboard', (data) => {
+				this.renderLeaderboard(data);
 			});
 		},
 
@@ -1832,6 +1846,166 @@
 			return key.split('_').map(word => 
 				word.charAt(0).toUpperCase() + word.slice(1)
 			).join(' ');
+		},
+
+		/**
+		 * Render leaderboard table
+		 */
+		renderLeaderboard(data) {
+			if (!data.leaderboard || data.leaderboard.length === 0) {
+				this.showError('Leaderboard is disabled or no data available');
+				return;
+			}
+
+			const leaderboard = data.leaderboard;
+			const config = data.config || {};
+
+			let html = `
+				<div class="performance-leaderboard">
+					<div class="leaderboard-header">
+						<h3><i class="ph ph-ranking"></i> Leaderboard Rankings</h3>
+						<div class="leaderboard-meta">
+							<span class="criteria-badge">Criteria: ${this.formatCriteriaLabel(config.criteria)}</span>
+							<span class="period-badge">Period: ${this.formatPeriodLabel(config.period)}</span>
+						</div>
+					</div>
+
+					<div class="leaderboard-table-wrapper">
+						<table class="leaderboard-table">
+							<thead>
+								<tr>
+									<th class="rank-col">Rank</th>
+									<th class="employee-col">Employee</th>
+									<th class="score-col">Score</th>
+									<th class="earnings-col">Earnings</th>
+									<th class="orders-col">Orders</th>
+								</tr>
+							</thead>
+							<tbody>
+			`;
+
+			leaderboard.forEach((entry, index) => {
+				const rankBadge = this.getRankBadge(entry.rank);
+				const isCurrentUser = entry.is_current_user ? 'current-user' : '';
+				const score = parseFloat(entry.final_score).toFixed(2);
+				const earnings = this.formatCurrency(entry.metrics.total_earnings);
+				const orders = parseInt(entry.metrics.total_orders);
+
+				html += `
+					<tr class="leaderboard-row ${isCurrentUser} rank-${entry.rank}">
+						<td class="rank-col">
+							<div class="rank-badge ${rankBadge.class}">${rankBadge.text}</div>
+						</td>
+						<td class="employee-col">
+							<div class="employee-info">
+								<span class="employee-name">${this.escapeHtml(entry.user.display_name)}</span>
+							</div>
+						</td>
+						<td class="score-col">
+							<span class="score-value">${score}</span>
+						</td>
+						<td class="earnings-col">
+							<span class="earnings-value">${earnings}</span>
+						</td>
+						<td class="orders-col">
+							<span class="orders-value">${orders}</span>
+						</td>
+					</tr>
+				`;
+			});
+
+			html += `
+							</tbody>
+						</table>
+					</div>
+				</div>
+			`;
+
+			$('#performance-content').html(html);
+		},
+
+		/**
+		 * Helper: Get rank badge with medal
+		 */
+		getRankBadge(rank) {
+			const badges = {
+				1: { text: '🥇 1st', class: 'rank-1' },
+				2: { text: '🥈 2nd', class: 'rank-2' },
+				3: { text: '🥉 3rd', class: 'rank-3' }
+			};
+			return badges[rank] || { text: `#${rank}`, class: 'rank-other' };
+		},
+
+		/**
+		 * Helper: Format criteria label
+		 */
+		formatCriteriaLabel(criteria) {
+			const labels = {
+				'total_earnings': 'Total Earnings',
+				'total_orders': 'Total Orders',
+				'average_order_value': 'Average Order Value',
+				'commission_earnings': 'Commission Earnings',
+				'total_order_value': 'Total Order Value',
+				'achievement_score': 'Achievement Score',
+				'goal_completion': 'Goal Completion Rate',
+				'earnings_orders': 'Earnings + Orders (50/50)',
+				'earnings_aov': 'Earnings + AOV (60/40)',
+				'orders_aov': 'Orders + AOV (50/50)',
+				'earnings_achievement': 'Earnings + Achievement (70/30)',
+				'orders_achievement': 'Orders + Achievement (60/40)',
+				'earnings_orders_aov': 'Earnings + Orders + AOV (40/30/30)',
+				'earnings_orders_achievement': 'Earnings + Orders + Achievement (50/30/20)',
+				'earnings_aov_achievement': 'Earnings + AOV + Achievement (50/25/25)',
+				'orders_aov_achievement': 'Orders + AOV + Achievement (40/30/30)',
+				'complete_score': 'Complete Score'
+			};
+			return labels[criteria] || criteria;
+		},
+
+		/**
+		 * Helper: Format period label
+		 */
+		formatPeriodLabel(period) {
+			const labels = {
+				'daily': 'Daily',
+				'weekly': 'Weekly',
+				'monthly': 'Monthly',
+				'quarterly': 'Quarterly',
+				'yearly': 'Yearly',
+				'alltime': 'All-Time'
+			};
+			return labels[period] || period;
+		},
+
+		/**
+		 * Helper: Format currency
+		 */
+		formatCurrency(value) {
+			const formatted = parseFloat(value).toFixed(2);
+			if (this.currencyPosition === 'left') {
+				return this.currencySymbol + formatted;
+			} else if (this.currencyPosition === 'left_space') {
+				return this.currencySymbol + ' ' + formatted;
+			} else if (this.currencyPosition === 'right') {
+				return formatted + this.currencySymbol;
+			} else if (this.currencyPosition === 'right_space') {
+				return formatted + ' ' + this.currencySymbol;
+			}
+			return this.currencySymbol + formatted;
+		},
+
+		/**
+		 * Helper: Escape HTML
+		 */
+		escapeHtml(text) {
+			const map = {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#039;'
+			};
+			return text.replace(/[&<>"']/g, m => map[m]);
 		},
 
 		/**

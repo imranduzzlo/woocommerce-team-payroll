@@ -54,6 +54,10 @@ class WC_Team_Payroll_Performance_Settings {
 		// AJAX handlers - Bonus Configuration (Phase 2 Part 2)
 		add_action( 'wp_ajax_wc_tp_save_bonus_config', array( $this, 'ajax_save_bonus_config' ) );
 		add_action( 'wp_ajax_wc_tp_get_bonus_config', array( $this, 'ajax_get_bonus_config' ) );
+		
+		// AJAX handlers - Leaderboard
+		add_action( 'wp_ajax_wc_tp_save_leaderboard_config', array( $this, 'ajax_save_leaderboard_config' ) );
+		add_action( 'wp_ajax_wc_tp_recalculate_leaderboard', array( $this, 'ajax_recalculate_leaderboard' ) );
 	}
 
 	/**
@@ -142,6 +146,10 @@ class WC_Team_Payroll_Performance_Settings {
 					<i class="dashicons dashicons-money-alt"></i>
 					<?php esc_html_e( 'Bonus Configuration', 'wc-team-payroll' ); ?>
 				</button>
+				<button type="button" class="wc-tp-perf-nav-tab" data-section="leaderboard">
+					<i class="dashicons dashicons-chart-bar"></i>
+					<?php esc_html_e( 'Leaderboard', 'wc-team-payroll' ); ?>
+				</button>
 				<button type="button" class="wc-tp-perf-nav-tab" data-section="baselines">
 					<i class="dashicons dashicons-chart-line"></i>
 					<?php esc_html_e( 'Baselines', 'wc-team-payroll' ); ?>
@@ -174,6 +182,11 @@ class WC_Team_Payroll_Performance_Settings {
 			<!-- Section: Bonus Configuration -->
 			<div class="wc-tp-perf-section" id="wc-tp-perf-bonuses">
 				<?php $this->render_bonuses_section(); ?>
+			</div>
+
+			<!-- Section: Leaderboard -->
+			<div class="wc-tp-perf-section" id="wc-tp-perf-leaderboard">
+				<?php $this->render_leaderboard_section(); ?>
 			</div>
 
 			<!-- Section: Baselines -->
@@ -696,6 +709,149 @@ class WC_Team_Payroll_Performance_Settings {
 						<?php esc_html_e( 'Repeatable (can be earned multiple times)', 'wc-team-payroll' ); ?>
 					</label>
 					<p class="description"><?php esc_html_e( 'If unchecked, bonus can only be earned once per employee', 'wc-team-payroll' ); ?></p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render Leaderboard Section
+	 */
+	private function render_leaderboard_section() {
+		$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
+		
+		$enabled = isset( $leaderboard_config['enabled'] ) ? intval( $leaderboard_config['enabled'] ) : 1;
+		$criteria = isset( $leaderboard_config['criteria'] ) ? $leaderboard_config['criteria'] : 'total_earnings';
+		$period = isset( $leaderboard_config['period'] ) ? $leaderboard_config['period'] : 'monthly';
+		$min_orders = isset( $leaderboard_config['min_orders'] ) ? intval( $leaderboard_config['min_orders'] ) : 0;
+		$show_badge = isset( $leaderboard_config['show_badge'] ) ? intval( $leaderboard_config['show_badge'] ) : 1;
+		
+		?>
+		<div class="wc-tp-perf-leaderboard-config">
+			<h3><?php esc_html_e( 'Leaderboard Configuration', 'wc-team-payroll' ); ?></h3>
+			<p class="description">
+				<?php esc_html_e( 'Configure the leaderboard ranking system that determines employee rankings based on performance metrics. Rankings are displayed on profile badges and can be used for competitive motivation.', 'wc-team-payroll' ); ?>
+			</p>
+
+			<div class="wc-tp-perf-card">
+				<div class="wc-tp-perf-card-header">
+					<h4><?php esc_html_e( 'Global Settings', 'wc-team-payroll' ); ?></h4>
+				</div>
+				<div class="wc-tp-perf-card-body">
+					<table class="form-table">
+						<tr>
+							<th scope="row">
+								<label for="leaderboard_enabled"><?php esc_html_e( 'Enable Leaderboard', 'wc-team-payroll' ); ?></label>
+							</th>
+							<td>
+								<label class="wc-tp-toggle-switch">
+									<input type="checkbox" id="leaderboard_enabled" name="leaderboard_enabled" value="1" <?php checked( $enabled, 1 ); ?>>
+									<span class="wc-tp-toggle-slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Enable or disable the leaderboard ranking system.', 'wc-team-payroll' ); ?></p>
+							</td>
+						</tr>
+						
+						<tr>
+							<th scope="row">
+								<label for="leaderboard_criteria"><?php esc_html_e( 'Ranking Criteria', 'wc-team-payroll' ); ?></label>
+							</th>
+							<td>
+								<select id="leaderboard_criteria" name="leaderboard_criteria" class="regular-text">
+									<optgroup label="<?php esc_attr_e( 'Single Metrics', 'wc-team-payroll' ); ?>">
+										<option value="total_earnings" <?php selected( $criteria, 'total_earnings' ); ?>><?php esc_html_e( 'Total Earnings', 'wc-team-payroll' ); ?></option>
+										<option value="total_orders" <?php selected( $criteria, 'total_orders' ); ?>><?php esc_html_e( 'Total Orders', 'wc-team-payroll' ); ?></option>
+										<option value="average_order_value" <?php selected( $criteria, 'average_order_value' ); ?>><?php esc_html_e( 'Average Order Value (AOV)', 'wc-team-payroll' ); ?></option>
+										<option value="commission_earnings" <?php selected( $criteria, 'commission_earnings' ); ?>><?php esc_html_e( 'Commission Earnings', 'wc-team-payroll' ); ?></option>
+										<option value="total_order_value" <?php selected( $criteria, 'total_order_value' ); ?>><?php esc_html_e( 'Total Order Value', 'wc-team-payroll' ); ?></option>
+										<option value="achievement_score" <?php selected( $criteria, 'achievement_score' ); ?>><?php esc_html_e( 'Achievement Score', 'wc-team-payroll' ); ?></option>
+										<option value="goal_completion" <?php selected( $criteria, 'goal_completion' ); ?>><?php esc_html_e( 'Goal Completion Rate', 'wc-team-payroll' ); ?></option>
+									</optgroup>
+									<optgroup label="<?php esc_attr_e( 'Dual Metrics (Balanced)', 'wc-team-payroll' ); ?>">
+										<option value="earnings_orders" <?php selected( $criteria, 'earnings_orders' ); ?>><?php esc_html_e( 'Earnings + Orders (50/50)', 'wc-team-payroll' ); ?></option>
+										<option value="earnings_aov" <?php selected( $criteria, 'earnings_aov' ); ?>><?php esc_html_e( 'Earnings + AOV (60/40)', 'wc-team-payroll' ); ?></option>
+										<option value="orders_aov" <?php selected( $criteria, 'orders_aov' ); ?>><?php esc_html_e( 'Orders + AOV (50/50)', 'wc-team-payroll' ); ?></option>
+										<option value="earnings_achievement" <?php selected( $criteria, 'earnings_achievement' ); ?>><?php esc_html_e( 'Earnings + Achievement (70/30)', 'wc-team-payroll' ); ?></option>
+										<option value="orders_achievement" <?php selected( $criteria, 'orders_achievement' ); ?>><?php esc_html_e( 'Orders + Achievement (60/40)', 'wc-team-payroll' ); ?></option>
+									</optgroup>
+									<optgroup label="<?php esc_attr_e( 'Triple Metrics (Comprehensive)', 'wc-team-payroll' ); ?>">
+										<option value="earnings_orders_aov" <?php selected( $criteria, 'earnings_orders_aov' ); ?>><?php esc_html_e( 'Earnings + Orders + AOV (40/30/30)', 'wc-team-payroll' ); ?></option>
+										<option value="earnings_orders_achievement" <?php selected( $criteria, 'earnings_orders_achievement' ); ?>><?php esc_html_e( 'Earnings + Orders + Achievement (50/30/20)', 'wc-team-payroll' ); ?></option>
+										<option value="earnings_aov_achievement" <?php selected( $criteria, 'earnings_aov_achievement' ); ?>><?php esc_html_e( 'Earnings + AOV + Achievement (50/25/25)', 'wc-team-payroll' ); ?></option>
+										<option value="orders_aov_achievement" <?php selected( $criteria, 'orders_aov_achievement' ); ?>><?php esc_html_e( 'Orders + AOV + Achievement (40/30/30)', 'wc-team-payroll' ); ?></option>
+									</optgroup>
+									<optgroup label="<?php esc_attr_e( 'All-Round Performance', 'wc-team-payroll' ); ?>">
+										<option value="complete_score" <?php selected( $criteria, 'complete_score' ); ?>><?php esc_html_e( 'Complete Score (Earnings 35% + Orders 25% + AOV 20% + Achievement 15% + Goals 5%)', 'wc-team-payroll' ); ?></option>
+									</optgroup>
+								</select>
+								<p class="description"><?php esc_html_e( 'Select the criteria used to rank employees. Composite criteria use weighted percentile scoring.', 'wc-team-payroll' ); ?></p>
+							</td>
+						</tr>
+						
+						<tr>
+							<th scope="row">
+								<label for="leaderboard_period"><?php esc_html_e( 'Ranking Period', 'wc-team-payroll' ); ?></label>
+							</th>
+							<td>
+								<select id="leaderboard_period" name="leaderboard_period" class="regular-text">
+									<option value="daily" <?php selected( $period, 'daily' ); ?>><?php esc_html_e( 'Daily (Updates at Midnight)', 'wc-team-payroll' ); ?></option>
+									<option value="weekly" <?php selected( $period, 'weekly' ); ?>><?php esc_html_e( 'Weekly (Updates Sunday Midnight)', 'wc-team-payroll' ); ?></option>
+									<option value="monthly" <?php selected( $period, 'monthly' ); ?>><?php esc_html_e( 'Monthly (Updates 1st of Month)', 'wc-team-payroll' ); ?></option>
+									<option value="quarterly" <?php selected( $period, 'quarterly' ); ?>><?php esc_html_e( 'Quarterly (Updates 1st of Quarter)', 'wc-team-payroll' ); ?></option>
+									<option value="yearly" <?php selected( $period, 'yearly' ); ?>><?php esc_html_e( 'Yearly (Updates Jan 1st)', 'wc-team-payroll' ); ?></option>
+									<option value="alltime" <?php selected( $period, 'alltime' ); ?>><?php esc_html_e( 'All-Time (Updates Daily)', 'wc-team-payroll' ); ?></option>
+								</select>
+								<p class="description"><?php esc_html_e( 'How often the leaderboard rankings are recalculated and reset.', 'wc-team-payroll' ); ?></p>
+							</td>
+						</tr>
+						
+						<tr>
+							<th scope="row">
+								<label for="leaderboard_min_orders"><?php esc_html_e( 'Minimum Orders', 'wc-team-payroll' ); ?></label>
+							</th>
+							<td>
+								<input type="number" id="leaderboard_min_orders" name="leaderboard_min_orders" value="<?php echo esc_attr( $min_orders ); ?>" min="0" class="small-text">
+								<p class="description"><?php esc_html_e( 'Minimum number of orders required to appear on leaderboard (0 = no minimum).', 'wc-team-payroll' ); ?></p>
+							</td>
+						</tr>
+						
+						<tr>
+							<th scope="row">
+								<label for="leaderboard_show_badge"><?php esc_html_e( 'Show Rank on Badge', 'wc-team-payroll' ); ?></label>
+							</th>
+							<td>
+								<label class="wc-tp-toggle-switch">
+									<input type="checkbox" id="leaderboard_show_badge" name="leaderboard_show_badge" value="1" <?php checked( $show_badge, 1 ); ?>>
+									<span class="wc-tp-toggle-slider"></span>
+								</label>
+								<p class="description"><?php esc_html_e( 'Display leaderboard rank number on profile badges.', 'wc-team-payroll' ); ?></p>
+							</td>
+						</tr>
+					</table>
+					
+					<div class="wc-tp-perf-actions">
+						<button type="button" class="button button-primary" id="wc-tp-save-leaderboard">
+							<span class="dashicons dashicons-saved"></span>
+							<?php esc_html_e( 'Save Leaderboard Config', 'wc-team-payroll' ); ?>
+						</button>
+						<button type="button" class="button button-secondary" id="wc-tp-recalculate-leaderboard">
+							<span class="dashicons dashicons-update"></span>
+							<?php esc_html_e( 'Recalculate Now', 'wc-team-payroll' ); ?>
+						</button>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Current Leaderboard Preview -->
+			<div class="wc-tp-perf-card" style="margin-top: 20px;">
+				<div class="wc-tp-perf-card-header">
+					<h4><?php esc_html_e( 'Current Leaderboard', 'wc-team-payroll' ); ?></h4>
+				</div>
+				<div class="wc-tp-perf-card-body">
+					<div id="wc-tp-leaderboard-preview">
+						<p class="description"><?php esc_html_e( 'Click "Recalculate Now" to see the current leaderboard rankings.', 'wc-team-payroll' ); ?></p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -3475,6 +3631,725 @@ class WC_Team_Payroll_Performance_Settings {
 		wp_send_json_success( array( 
 			'config' => $bonus_config
 		) );
+	}
+
+	/**
+	 * AJAX: Save leaderboard configuration
+	 */
+	public function ajax_save_leaderboard_config() {
+		check_ajax_referer( 'wc_tp_performance_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		$config = isset( $_POST['config'] ) ? $_POST['config'] : array();
+		
+		$sanitized_config = array(
+			'enabled' => isset( $config['enabled'] ) ? intval( $config['enabled'] ) : 0,
+			'criteria' => isset( $config['criteria'] ) ? sanitize_text_field( $config['criteria'] ) : 'total_earnings',
+			'period' => isset( $config['period'] ) ? sanitize_text_field( $config['period'] ) : 'monthly',
+			'min_orders' => isset( $config['min_orders'] ) ? intval( $config['min_orders'] ) : 0,
+			'show_badge' => isset( $config['show_badge'] ) ? intval( $config['show_badge'] ) : 1,
+		);
+		
+		// Save configuration
+		update_option( 'wc_tp_leaderboard_config', $sanitized_config );
+
+		// Recalculate leaderboard with new settings
+		$this->calculate_leaderboard();
+
+		wp_send_json_success( array( 'message' => __( 'Leaderboard configuration saved successfully!', 'wc-team-payroll' ) ) );
+	}
+
+	/**
+	 * AJAX: Recalculate leaderboard
+	 */
+	public function ajax_recalculate_leaderboard() {
+		check_ajax_referer( 'wc_tp_performance_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		$leaderboard = $this->calculate_leaderboard();
+
+		if ( empty( $leaderboard ) ) {
+			wp_send_json_error( array( 'message' => __( 'No employees found or leaderboard is disabled.', 'wc-team-payroll' ) ) );
+		}
+
+		// Generate HTML for preview
+		$html = $this->render_leaderboard_preview( $leaderboard );
+
+		wp_send_json_success( array( 
+			'message' => __( 'Leaderboard recalculated successfully!', 'wc-team-payroll' ),
+			'html' => $html,
+			'count' => count( $leaderboard )
+		) );
+	}
+
+	/**
+	 * Calculate leaderboard rankings
+	 */
+	private function calculate_leaderboard() {
+		$config = get_option( 'wc_tp_leaderboard_config', array() );
+		
+		if ( empty( $config['enabled'] ) ) {
+			return array();
+		}
+
+		$criteria = isset( $config['criteria'] ) ? $config['criteria'] : 'total_earnings';
+		$period = isset( $config['period'] ) ? $config['period'] : 'monthly';
+		$min_orders = isset( $config['min_orders'] ) ? intval( $config['min_orders'] ) : 0;
+
+		// Get all active employees
+		$employees = $this->get_active_employees();
+		
+		if ( empty( $employees ) ) {
+			return array();
+		}
+
+		// Get period date range
+		$date_range = $this->get_leaderboard_period_range( $period );
+		$period_id = $date_range['period_id'];
+
+		// Calculate metrics for each employee
+		$employee_data = array();
+		
+		foreach ( $employees as $employee ) {
+			$user_id = $employee->ID;
+			
+			// Calculate base metrics
+			$metrics = $this->calculate_employee_metrics( $user_id, $date_range );
+			
+			// Skip if below minimum orders
+			if ( $min_orders > 0 && $metrics['total_orders'] < $min_orders ) {
+				continue;
+			}
+			
+			$employee_data[] = array(
+				'user_id' => $user_id,
+				'user' => $employee,
+				'metrics' => $metrics,
+			);
+		}
+
+		if ( empty( $employee_data ) ) {
+			return array();
+		}
+
+		// Calculate final scores based on criteria
+		$employee_data = $this->calculate_composite_scores( $employee_data, $criteria );
+
+		// Sort by score (descending)
+		usort( $employee_data, function( $a, $b ) {
+			return $b['final_score'] <=> $a['final_score'];
+		} );
+
+		// Assign ranks
+		$rank = 1;
+		foreach ( $employee_data as &$data ) {
+			$data['rank'] = $rank++;
+			
+			// Save rank to user meta
+			update_user_meta( $data['user_id'], '_wc_tp_leaderboard_rank_' . $period_id, $data['rank'] );
+			update_user_meta( $data['user_id'], '_wc_tp_leaderboard_score_' . $period_id, $data['final_score'] );
+			update_user_meta( $data['user_id'], '_wc_tp_leaderboard_criteria', $criteria );
+			update_user_meta( $data['user_id'], '_wc_tp_leaderboard_period', $period );
+		}
+
+		return $employee_data;
+	}
+
+	/**
+	 * Get active employees
+	 */
+	private function get_active_employees() {
+		$employees = get_users( array(
+			'role' => 'shop_employee',
+			'meta_query' => array(
+				'relation' => 'OR',
+				array(
+					'key' => '_wc_tp_employee_status',
+					'value' => 'active',
+					'compare' => '='
+				),
+				array(
+					'key' => '_wc_tp_employee_status',
+					'compare' => 'NOT EXISTS'
+				)
+			)
+		) );
+
+		// Also get users with other employee roles
+		$all_roles = $this->get_all_roles();
+		foreach ( $all_roles as $role_key => $role_name ) {
+			if ( $role_key !== 'shop_employee' ) {
+				$role_employees = get_users( array(
+					'role' => $role_key,
+					'meta_query' => array(
+						'relation' => 'OR',
+						array(
+							'key' => '_wc_tp_employee_status',
+							'value' => 'active',
+							'compare' => '='
+						),
+						array(
+							'key' => '_wc_tp_employee_status',
+							'compare' => 'NOT EXISTS'
+						)
+					)
+				) );
+				$employees = array_merge( $employees, $role_employees );
+			}
+		}
+
+		// Remove duplicates
+		$unique_employees = array();
+		$seen_ids = array();
+		
+		foreach ( $employees as $employee ) {
+			if ( ! in_array( $employee->ID, $seen_ids ) ) {
+				$unique_employees[] = $employee;
+				$seen_ids[] = $employee->ID;
+			}
+		}
+
+		return $unique_employees;
+	}
+
+	/**
+	 * Get leaderboard period date range
+	 */
+	private function get_leaderboard_period_range( $period ) {
+		$now = current_time( 'timestamp' );
+		
+		switch ( $period ) {
+			case 'daily':
+				$start_date = date( 'Y-m-d', $now );
+				$end_date = $start_date;
+				$period_id = date( 'Y-m-d', $now );
+				break;
+				
+			case 'weekly':
+				$start_of_week = get_option( 'start_of_week', 0 );
+				$day_of_week = date( 'w', $now );
+				$days_since_start = ( $day_of_week - $start_of_week + 7 ) % 7;
+				$week_start = strtotime( "-{$days_since_start} days", $now );
+				$start_date = date( 'Y-m-d', $week_start );
+				$end_date = date( 'Y-m-d', strtotime( '+6 days', $week_start ) );
+				$period_id = date( 'Y', $week_start ) . '-W' . date( 'W', $week_start );
+				break;
+				
+			case 'monthly':
+				$start_date = date( 'Y-m-01', $now );
+				$end_date = date( 'Y-m-t', $now );
+				$period_id = date( 'Y-m', $now );
+				break;
+				
+			case 'quarterly':
+				$month = date( 'n', $now );
+				$quarter = ceil( $month / 3 );
+				$quarter_start_month = ( $quarter - 1 ) * 3 + 1;
+				$start_date = date( 'Y', $now ) . '-' . sprintf( '%02d', $quarter_start_month ) . '-01';
+				$end_date = date( 'Y-m-t', strtotime( $start_date . ' +2 months' ) );
+				$period_id = date( 'Y', $now ) . '-Q' . $quarter;
+				break;
+				
+			case 'yearly':
+				$start_date = date( 'Y', $now ) . '-01-01';
+				$end_date = date( 'Y', $now ) . '-12-31';
+				$period_id = date( 'Y', $now );
+				break;
+				
+			case 'alltime':
+			default:
+				$start_date = '2000-01-01';
+				$end_date = date( 'Y-m-d', $now );
+				$period_id = 'alltime';
+				break;
+		}
+		
+		return array(
+			'start_date' => $start_date,
+			'end_date' => $end_date,
+			'period_id' => $period_id,
+		);
+	}
+
+	/**
+	 * Calculate employee metrics for leaderboard
+	 */
+	private function calculate_employee_metrics( $user_id, $date_range ) {
+		$start_date = $date_range['start_date'];
+		$end_date = $date_range['end_date'];
+		
+		// Get commission calculation statuses
+		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+		
+		// Initialize metrics
+		$metrics = array(
+			'total_earnings' => 0,
+			'total_orders' => 0,
+			'average_order_value' => 0,
+			'commission_earnings' => 0,
+			'total_order_value' => 0,
+			'achievement_score' => 0,
+			'goal_completion' => 0,
+		);
+		
+		// Calculate Total Earnings (Commission + Salary)
+		$core_engine = new WC_Team_Payroll_Core_Engine();
+		$metrics['total_earnings'] = $core_engine->get_user_earnings_by_date_range( $user_id, $start_date, $end_date );
+		
+		// Calculate Commission Earnings (excluding salary)
+		$metrics['commission_earnings'] = $this->calculate_commission_only( $user_id, $start_date, $end_date );
+		
+		// Calculate Total Orders and Total Order Value
+		$order_data = $this->calculate_order_metrics( $user_id, $start_date, $end_date, $commission_statuses );
+		$metrics['total_orders'] = $order_data['count'];
+		$metrics['total_order_value'] = $order_data['value'];
+		
+		// Calculate Average Order Value
+		if ( $metrics['total_orders'] > 0 ) {
+			$metrics['average_order_value'] = $metrics['total_order_value'] / $metrics['total_orders'];
+		}
+		
+		// Calculate Achievement Score
+		$metrics['achievement_score'] = $this->calculate_achievement_score( $user_id );
+		
+		// Calculate Goal Completion Rate
+		$metrics['goal_completion'] = $this->calculate_goal_completion_rate( $user_id );
+		
+		return $metrics;
+	}
+	
+	/**
+	 * Calculate commission earnings only (excluding salary)
+	 */
+	private function calculate_commission_only( $user_id, $start_date, $end_date ) {
+		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+		$total_commission = 0;
+		
+		// Query orders as agent
+		$agent_orders = wc_get_orders( array(
+			'limit' => -1,
+			'meta_key' => '_primary_agent_id',
+			'meta_value' => $user_id,
+			'status' => $commission_statuses,
+			'date_created' => $start_date . '...' . $end_date,
+			'return' => 'ids',
+		) );
+		
+		foreach ( $agent_orders as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) continue;
+			
+			$commission_data = $order->get_meta( '_commission_data' );
+			if ( $commission_data && isset( $commission_data['agent_earnings'] ) ) {
+				$total_commission += floatval( $commission_data['agent_earnings'] );
+			}
+		}
+		
+		// Query orders as processor
+		$processor_orders = wc_get_orders( array(
+			'limit' => -1,
+			'meta_key' => '_processor_user_id',
+			'meta_value' => $user_id,
+			'status' => $commission_statuses,
+			'date_created' => $start_date . '...' . $end_date,
+			'return' => 'ids',
+		) );
+		
+		foreach ( $processor_orders as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) continue;
+			
+			$commission_data = $order->get_meta( '_commission_data' );
+			if ( $commission_data && isset( $commission_data['processor_earnings'] ) ) {
+				$total_commission += floatval( $commission_data['processor_earnings'] );
+			}
+		}
+		
+		return $total_commission;
+	}
+	
+	/**
+	 * Calculate order metrics (count and value)
+	 */
+	private function calculate_order_metrics( $user_id, $start_date, $end_date, $commission_statuses ) {
+		$total_count = 0;
+		$total_value = 0;
+		
+		// Query orders as agent
+		$agent_orders = wc_get_orders( array(
+			'limit' => -1,
+			'meta_key' => '_primary_agent_id',
+			'meta_value' => $user_id,
+			'status' => $commission_statuses,
+			'date_created' => $start_date . '...' . $end_date,
+			'return' => 'ids',
+		) );
+		
+		foreach ( $agent_orders as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) continue;
+			
+			$commission_data = $order->get_meta( '_commission_data' );
+			if ( $commission_data && isset( $commission_data['agent_order_value'] ) ) {
+				$total_count++;
+				$total_value += floatval( $commission_data['agent_order_value'] );
+			}
+		}
+		
+		// Query orders as processor
+		$processor_orders = wc_get_orders( array(
+			'limit' => -1,
+			'meta_key' => '_processor_user_id',
+			'meta_value' => $user_id,
+			'status' => $commission_statuses,
+			'date_created' => $start_date . '...' . $end_date,
+			'return' => 'ids',
+		) );
+		
+		foreach ( $processor_orders as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) continue;
+			
+			$commission_data = $order->get_meta( '_commission_data' );
+			if ( $commission_data && isset( $commission_data['processor_order_value'] ) ) {
+				$total_count++;
+				$total_value += floatval( $commission_data['processor_order_value'] );
+			}
+		}
+		
+		return array(
+			'count' => $total_count,
+			'value' => $total_value,
+		);
+	}
+	
+	/**
+	 * Calculate achievement score (Gold=3, Silver=2, Bronze=1)
+	 */
+	private function calculate_achievement_score( $user_id ) {
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+		
+		$performance_tracker = WC_Team_Payroll_Performance_Tracker::init();
+		$current_period_id = $performance_tracker->get_current_period_id( $period_type );
+		
+		$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
+		
+		if ( empty( $period_stats ) ) {
+			return 0;
+		}
+		
+		$score = 0;
+		$score += isset( $period_stats['gold_count'] ) ? intval( $period_stats['gold_count'] ) * 3 : 0;
+		$score += isset( $period_stats['silver_count'] ) ? intval( $period_stats['silver_count'] ) * 2 : 0;
+		$score += isset( $period_stats['bronze_count'] ) ? intval( $period_stats['bronze_count'] ) * 1 : 0;
+		
+		return $score;
+	}
+	
+	/**
+	 * Calculate goal completion rate (0-100%)
+	 */
+	private function calculate_goal_completion_rate( $user_id ) {
+		$goal_progress = get_user_meta( $user_id, '_wc_tp_current_goal_progress', true );
+		
+		if ( empty( $goal_progress ) ) {
+			return 0;
+		}
+		
+		$total_goals = 0;
+		$achieved_goals = 0;
+		
+		$metrics = array( 'order_value', 'orders', 'aov' );
+		foreach ( $metrics as $metric ) {
+			if ( isset( $goal_progress[ $metric ] ) ) {
+				$total_goals++;
+				$status = isset( $goal_progress[ $metric ]['status'] ) ? $goal_progress[ $metric ]['status'] : '';
+				if ( in_array( $status, array( 'achieved', 'stretch_achieved' ) ) ) {
+					$achieved_goals++;
+				}
+			}
+		}
+		
+		if ( $total_goals === 0 ) {
+			return 0;
+		}
+		
+		return ( $achieved_goals / $total_goals ) * 100;
+	}
+
+	/**
+	 * Calculate composite scores based on criteria
+	 */
+	private function calculate_composite_scores( $employee_data, $criteria ) {
+		// For single criteria, use the metric directly
+		$single_criteria = array(
+			'total_earnings', 'total_orders', 'average_order_value',
+			'commission_earnings', 'total_order_value', 'achievement_score', 'goal_completion'
+		);
+		
+		if ( in_array( $criteria, $single_criteria ) ) {
+			foreach ( $employee_data as &$data ) {
+				$data['final_score'] = $data['metrics'][ $criteria ];
+			}
+			return $employee_data;
+		}
+		
+		// For composite criteria, calculate percentile-based weighted scores
+		$weights = $this->get_criteria_weights( $criteria );
+		
+		if ( empty( $weights ) ) {
+			// Fallback to total_earnings
+			foreach ( $employee_data as &$data ) {
+				$data['final_score'] = $data['metrics']['total_earnings'];
+			}
+			return $employee_data;
+		}
+		
+		// Calculate percentiles for each metric
+		$percentiles = array();
+		foreach ( $weights as $metric => $weight ) {
+			$percentiles[ $metric ] = $this->calculate_percentiles( $employee_data, $metric );
+		}
+		
+		// Calculate final weighted scores
+		foreach ( $employee_data as &$data ) {
+			$user_id = $data['user_id'];
+			$final_score = 0;
+			
+			foreach ( $weights as $metric => $weight ) {
+				$percentile = isset( $percentiles[ $metric ][ $user_id ] ) ? $percentiles[ $metric ][ $user_id ] : 0;
+				$final_score += ( $weight / 100 ) * $percentile;
+			}
+			
+			$data['final_score'] = $final_score;
+		}
+		
+		return $employee_data;
+	}
+	
+	/**
+	 * Get criteria weights for composite scoring
+	 */
+	private function get_criteria_weights( $criteria ) {
+		$weights_map = array(
+			// Dual Metrics
+			'earnings_orders' => array(
+				'total_earnings' => 50,
+				'total_orders' => 50,
+			),
+			'earnings_aov' => array(
+				'total_earnings' => 60,
+				'average_order_value' => 40,
+			),
+			'orders_aov' => array(
+				'total_orders' => 50,
+				'average_order_value' => 50,
+			),
+			'earnings_achievement' => array(
+				'total_earnings' => 70,
+				'achievement_score' => 30,
+			),
+			'orders_achievement' => array(
+				'total_orders' => 60,
+				'achievement_score' => 40,
+			),
+			
+			// Triple Metrics
+			'earnings_orders_aov' => array(
+				'total_earnings' => 40,
+				'total_orders' => 30,
+				'average_order_value' => 30,
+			),
+			'earnings_orders_achievement' => array(
+				'total_earnings' => 50,
+				'total_orders' => 30,
+				'achievement_score' => 20,
+			),
+			'earnings_aov_achievement' => array(
+				'total_earnings' => 50,
+				'average_order_value' => 25,
+				'achievement_score' => 25,
+			),
+			'orders_aov_achievement' => array(
+				'total_orders' => 40,
+				'average_order_value' => 30,
+				'achievement_score' => 30,
+			),
+			
+			// Complete Score
+			'complete_score' => array(
+				'total_earnings' => 35,
+				'total_orders' => 25,
+				'average_order_value' => 20,
+				'achievement_score' => 15,
+				'goal_completion' => 5,
+			),
+		);
+		
+		return isset( $weights_map[ $criteria ] ) ? $weights_map[ $criteria ] : array();
+	}
+	
+	/**
+	 * Calculate percentiles for a metric
+	 */
+	private function calculate_percentiles( $employee_data, $metric ) {
+		// Extract metric values
+		$values = array();
+		foreach ( $employee_data as $data ) {
+			$values[ $data['user_id'] ] = $data['metrics'][ $metric ];
+		}
+		
+		// Sort values
+		asort( $values );
+		
+		// Calculate percentiles
+		$total = count( $values );
+		$percentiles = array();
+		$rank = 1;
+		
+		foreach ( $values as $user_id => $value ) {
+			// Percentile = (rank / total) * 100
+			$percentiles[ $user_id ] = ( $rank / $total ) * 100;
+			$rank++;
+		}
+		
+		return $percentiles;
+	}
+
+	/**
+	 * Render leaderboard preview HTML
+	 */
+	private function render_leaderboard_preview( $leaderboard ) {
+		if ( empty( $leaderboard ) ) {
+			return '<p>' . __( 'No employees found.', 'wc-team-payroll' ) . '</p>';
+		}
+
+		$html = '<table class="wp-list-table widefat fixed striped">';
+		$html .= '<thead><tr>';
+		$html .= '<th>' . __( 'Rank', 'wc-team-payroll' ) . '</th>';
+		$html .= '<th>' . __( 'Employee', 'wc-team-payroll' ) . '</th>';
+		$html .= '<th>' . __( 'Score', 'wc-team-payroll' ) . '</th>';
+		$html .= '<th>' . __( 'Earnings', 'wc-team-payroll' ) . '</th>';
+		$html .= '<th>' . __( 'Orders', 'wc-team-payroll' ) . '</th>';
+		$html .= '</tr></thead>';
+		$html .= '<tbody>';
+
+		foreach ( $leaderboard as $entry ) {
+			$user = $entry['user'];
+			$rank = $entry['rank'];
+			$score = number_format( $entry['final_score'], 2 );
+			$earnings = wc_price( $entry['metrics']['total_earnings'] );
+			$orders = $entry['metrics']['total_orders'];
+
+			$rank_badge = '';
+			if ( $rank <= 3 ) {
+				$medals = array( 1 => '🥇', 2 => '🥈', 3 => '🥉' );
+				$rank_badge = $medals[ $rank ] . ' ';
+			}
+
+			$html .= '<tr>';
+			$html .= '<td><strong>' . $rank_badge . '#' . $rank . '</strong></td>';
+			$html .= '<td>' . esc_html( $user->display_name ) . '</td>';
+			$html .= '<td>' . $score . '</td>';
+			$html .= '<td>' . $earnings . '</td>';
+			$html .= '<td>' . $orders . '</td>';
+			$html .= '</tr>';
+		}
+
+		$html .= '</tbody></table>';
+
+		return $html;
+	}
+
+	/**
+	 * Get leaderboard data formatted for frontend display
+	 */
+	public function get_frontend_leaderboard( $current_user_id = 0 ) {
+		if ( ! $current_user_id ) {
+			$current_user_id = get_current_user_id();
+		}
+
+		$config = get_option( 'wc_tp_leaderboard_config', array() );
+		
+		if ( empty( $config['enabled'] ) ) {
+			return array();
+		}
+
+		$criteria = isset( $config['criteria'] ) ? $config['criteria'] : 'total_earnings';
+		$period = isset( $config['period'] ) ? $config['period'] : 'monthly';
+		$min_orders = isset( $config['min_orders'] ) ? intval( $config['min_orders'] ) : 0;
+
+		// Get all active employees
+		$employees = $this->get_active_employees();
+		
+		if ( empty( $employees ) ) {
+			return array();
+		}
+
+		// Get period date range
+		$date_range = $this->get_leaderboard_period_range( $period );
+		$period_id = $date_range['period_id'];
+
+		// Calculate metrics for each employee
+		$employee_data = array();
+		
+		foreach ( $employees as $employee ) {
+			$user_id = $employee->ID;
+			
+			// Calculate base metrics
+			$metrics = $this->calculate_employee_metrics( $user_id, $date_range );
+			
+			// Skip if below minimum orders
+			if ( $min_orders > 0 && $metrics['total_orders'] < $min_orders ) {
+				continue;
+			}
+			
+			$employee_data[] = array(
+				'user_id' => $user_id,
+				'user' => $employee,
+				'metrics' => $metrics,
+			);
+		}
+
+		if ( empty( $employee_data ) ) {
+			return array();
+		}
+
+		// Calculate final scores based on criteria
+		$employee_data = $this->calculate_composite_scores( $employee_data, $criteria );
+
+		// Sort by score (descending)
+		usort( $employee_data, function( $a, $b ) {
+			return $b['final_score'] <=> $a['final_score'];
+		} );
+
+		// Assign ranks
+		$rank = 1;
+		$leaderboard = array();
+		
+		foreach ( $employee_data as $data ) {
+			$leaderboard[] = array(
+				'user_id' => $data['user_id'],
+				'user' => array(
+					'ID' => $data['user']->ID,
+					'display_name' => $data['user']->display_name,
+				),
+				'rank' => $rank,
+				'final_score' => $data['final_score'],
+				'metrics' => $data['metrics'],
+				'is_current_user' => ( $data['user_id'] === $current_user_id ),
+			);
+			$rank++;
+		}
+
+		return $leaderboard;
 	}
 
 }

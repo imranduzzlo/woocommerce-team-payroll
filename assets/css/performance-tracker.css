@@ -2532,6 +2532,240 @@
 	flex: 1;
 }
 
+/* ============================================================================
+   LEADERBOARD STYLES
+   ============================================================================ */
+
+.performance-leaderboard {
+	background: #ffffff;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.leaderboard-header {
+	padding: 20px;
+	border-bottom: 2px solid #F4F6F8;
+}
+
+.leaderboard-header h3 {
+	margin: 0 0 12px 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: #212B36;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.leaderboard-header h3 i {
+	font-size: 24px;
+	color: #FF9900;
+}
+
+.leaderboard-meta {
+	display: flex;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.criteria-badge,
+.period-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 6px 12px;
+	background: #F4F6F8;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #637381;
+}
+
+.leaderboard-table-wrapper {
+	overflow-x: auto;
+}
+
+.leaderboard-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.leaderboard-table thead {
+	background: #F4F6F8;
+	border-bottom: 2px solid #E5EAF0;
+}
+
+.leaderboard-table th {
+	padding: 12px 16px;
+	text-align: left;
+	font-size: 12px;
+	font-weight: 700;
+	color: #637381;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.leaderboard-table tbody tr {
+	border-bottom: 1px solid #E5EAF0;
+	transition: background-color 0.2s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+	background-color: #F8F9FA;
+}
+
+.leaderboard-table tbody tr.current-user {
+	background: #FFF7F0;
+}
+
+.leaderboard-table tbody tr.current-user:hover {
+	background: #FFF0E6;
+}
+
+.leaderboard-table td {
+	padding: 14px 16px;
+	font-size: 14px;
+	color: #212B36;
+}
+
+.rank-col {
+	width: 80px;
+	text-align: center;
+}
+
+.employee-col {
+	width: auto;
+	flex: 1;
+	min-width: 150px;
+}
+
+.score-col {
+	width: 100px;
+	text-align: right;
+}
+
+.earnings-col {
+	width: 120px;
+	text-align: right;
+}
+
+.orders-col {
+	width: 80px;
+	text-align: center;
+}
+
+/* Rank Badge */
+.rank-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 700;
+	min-width: 60px;
+	text-align: center;
+}
+
+.rank-badge.rank-1 {
+	background: #FFF7E6;
+	color: #B7860F;
+	border: 1px solid #FFE9A3;
+}
+
+.rank-badge.rank-2 {
+	background: #F0F4F8;
+	color: #6B7280;
+	border: 1px solid #D1D5DB;
+}
+
+.rank-badge.rank-3 {
+	background: #F0F4F8;
+	color: #6B7280;
+	border: 1px solid #D1D5DB;
+}
+
+.rank-badge.rank-other {
+	background: #F4F6F8;
+	color: #637381;
+	border: 1px solid #E5EAF0;
+}
+
+/* Employee Info */
+.employee-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.employee-name {
+	font-weight: 600;
+	color: #212B36;
+}
+
+/* Score Value */
+.score-value {
+	font-weight: 700;
+	color: #FF9900;
+	font-size: 16px;
+}
+
+/* Currency Values */
+.earnings-value {
+	font-weight: 600;
+	color: #28A745;
+	font-size: 15px;
+}
+
+.orders-value {
+	font-weight: 600;
+	color: #007BFF;
+	font-size: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.leaderboard-meta {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.leaderboard-table {
+		font-size: 13px;
+	}
+
+	.leaderboard-table th,
+	.leaderboard-table td {
+		padding: 10px 8px;
+	}
+
+	.employee-col {
+		min-width: 100px;
+	}
+
+	.score-col,
+	.earnings-col {
+		width: auto;
+	}
+
+	.orders-col {
+		width: 60px;
+	}
+
+	.rank-col {
+		width: 70px;
+	}
+
+	.employee-name {
+		font-size: 13px;
+	}
+
+	.score-value,
+	.earnings-value,
+	.orders-value {
+		font-size: 14px;
+	}
+}
+
 .card-achievements-list h5 {
 	margin: 0 0 12px 0;
 	font-size: 13px;

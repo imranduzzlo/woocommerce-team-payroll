@@ -1932,3 +1932,88 @@ jQuery(document).ready(function($) {
 
 });
 
+
+
+	// ============================================================================
+	// LEADERBOARD HANDLERS
+	// ============================================================================
+
+	// Save Leaderboard Configuration
+	$('#wc-tp-save-leaderboard').on('click', function() {
+		const $button = $(this);
+		const originalText = $button.html();
+		
+		$button.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 5px 0 0;"></span>Saving...');
+
+		const config = {
+			enabled: $('#leaderboard_enabled').is(':checked') ? 1 : 0,
+			criteria: $('#leaderboard_criteria').val(),
+			period: $('#leaderboard_period').val(),
+			min_orders: parseInt($('#leaderboard_min_orders').val()) || 0,
+			show_badge: $('#leaderboard_show_badge').is(':checked') ? 1 : 0,
+		};
+
+		$.ajax({
+			url: wcTpPerformance.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'wc_tp_save_leaderboard_config',
+				nonce: wcTpPerformance.nonce,
+				config: config
+			},
+			success: function(response) {
+				if (response.success) {
+					showMessage('success', response.data.message);
+					// Auto-trigger recalculate to show updated leaderboard
+					setTimeout(function() {
+						$('#wc-tp-recalculate-leaderboard').trigger('click');
+					}, 500);
+				} else {
+					showMessage('error', response.data.message || 'Error saving configuration');
+				}
+			},
+			error: function() {
+				showMessage('error', 'AJAX error occurred');
+			},
+			complete: function() {
+				$button.prop('disabled', false).html(originalText);
+			}
+		});
+	});
+
+	// Recalculate Leaderboard
+	$('#wc-tp-recalculate-leaderboard').on('click', function() {
+		const $button = $(this);
+		const originalText = $button.html();
+		
+		$button.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 5px 0 0;"></span>Calculating...');
+		
+		$('#wc-tp-leaderboard-preview').html('<div class="wc-tp-loading"><span class="spinner is-active"></span><p>Calculating leaderboard rankings...</p></div>');
+
+		$.ajax({
+			url: wcTpPerformance.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'wc_tp_recalculate_leaderboard',
+				nonce: wcTpPerformance.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					$('#wc-tp-leaderboard-preview').html(response.data.html);
+					showMessage('success', response.data.message + ' (' + response.data.count + ' employees ranked)');
+				} else {
+					$('#wc-tp-leaderboard-preview').html('<p class="description">' + response.data.message + '</p>');
+					showMessage('error', response.data.message || 'Error calculating leaderboard');
+				}
+			},
+			error: function() {
+				$('#wc-tp-leaderboard-preview').html('<p class="description">Error loading leaderboard.</p>');
+				showMessage('error', 'AJAX error occurred');
+			},
+			complete: function() {
+				$button.prop('disabled', false).html(originalText);
+			}
+		});
+	});
+
+});
