@@ -298,10 +298,14 @@ jQuery(document).ready(function($) {
 				case 'leaderboard':
 					try {
 						const leaderboardConfig = collectLeaderboardConfigurationData();
+						console.log('Leaderboard config collected:', leaderboardConfig);
 						if (leaderboardConfig && Object.keys(leaderboardConfig).length > 0) {
 							savePromises.push(saveLeaderboardConfig(leaderboardConfig));
+						} else {
+							console.warn('Leaderboard config is empty');
 						}
 					} catch (e) {
+						console.error('Error collecting leaderboard config:', e);
 					}
 					break;
 				case 'bonuses':
@@ -476,6 +480,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function saveLeaderboardConfig(config) {
+		console.log('Saving leaderboard config:', config);
 		return $.ajax({
 			url: wcTpPerformance.ajax_url,
 			type: 'POST',
@@ -485,8 +490,10 @@ jQuery(document).ready(function($) {
 				leaderboard_config: config
 			}
 		}).then(function(response) {
+			console.log('Leaderboard save response:', response);
 			return { success: response.success, message: response.data ? response.data.message : 'Leaderboard config saved' };
 		}).catch(function(xhr) {
+			console.error('Leaderboard save error:', xhr);
 			return { success: false, message: xhr.responseJSON && xhr.responseJSON.data ? xhr.responseJSON.data.message : 'Error saving leaderboard config' };
 		});
 	}
