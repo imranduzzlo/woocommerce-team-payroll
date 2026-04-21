@@ -58,6 +58,16 @@ class WC_Team_Payroll_Performance_Settings {
 		// AJAX handlers - Leaderboard
 		add_action( 'wp_ajax_wc_tp_save_leaderboard_config', array( $this, 'ajax_save_leaderboard_config' ) );
 		add_action( 'wp_ajax_wc_tp_recalculate_leaderboard', array( $this, 'ajax_recalculate_leaderboard' ) );
+		
+		// Cron hooks - Leaderboard
+		add_action( 'wc_tp_leaderboard_daily_update', array( $this, 'cron_update_leaderboard' ) );
+		add_action( 'wc_tp_leaderboard_weekly_update', array( $this, 'cron_update_leaderboard' ) );
+		add_action( 'wc_tp_leaderboard_monthly_update', array( $this, 'cron_update_leaderboard' ) );
+		add_action( 'wc_tp_leaderboard_quarterly_update', array( $this, 'cron_update_leaderboard' ) );
+		add_action( 'wc_tp_leaderboard_yearly_update', array( $this, 'cron_update_leaderboard' ) );
+		
+		// Schedule cron jobs on init
+		add_action( 'init', array( $this, 'schedule_leaderboard_cron' ) );
 	}
 
 	/**
@@ -3656,6 +3666,9 @@ class WC_Team_Payroll_Performance_Settings {
 		// Save configuration
 		update_option( 'wc_tp_leaderboard_config', $sanitized_config );
 
+		// Schedule cron jobs based on period
+		$this->schedule_leaderboard_cron();
+
 		// Recalculate leaderboard with new settings
 		$this->calculate_leaderboard();
 
@@ -4350,6 +4363,103 @@ class WC_Team_Payroll_Performance_Settings {
 		}
 
 		return $leaderboard;
+	}
+
+	/**
+	 * Schedule leaderboard cron jobs based on configured period
+	 */
+	public function schedule_leaderboard_cron() {
+		$config = get_option( 'wc_tp_leaderboard_config', array() );
+		
+		if ( empty( $config['enabled'] ) ) {
+			$this->clear_leaderboard_cron();
+			return;
+		}
+
+		$period = isset( $config['period'] ) ? $config['period'] : 'monthly';
+
+		// Clear existing cron jobs
+		$this->clear_leaderboard_cron();
+
+		// Schedule new cron job based on period
+		switch ( $period ) {
+			case 'daily':
+				$next_run = strtotime( 'tomorrow midnight' );
+				wp_schedule_event( $next_run, 'daily', 'wc_tp_leaderboard_daily_update' );
+				break;
+
+			case 'weekly':
+				$next_run = strtotime( 'next Monday midnight' );
+				wp_schedule_event( $next_run, 'weekly', 'wc_tp_leaderboard_weekly_update' );
+				break;
+
+			case 'monthly':
+				$next_run = strtotime( 'first day of next month midnight' );
+				wp_schedule_event( $next_run, 'monthly', 'wc_tp_leaderboard_monthly_update' );
+				break;
+
+			case 'quarterly':
+				$next_run = $this->get_next_quarter_start();
+				wp_schedule_event( $next_run, 'quarterly', 'wc_tp_leaderboard_quarterly_update' );
+				break;
+
+			case 'yearly':
+				$next_run = strtotime( 'January 1 next year midnight' );
+				wp_schedule_event( $next_run, 'yearly', 'wc_tp_leaderboard_yearly_update' );
+				break;
+		}
+	}
+
+	/**
+	 * Clear all leaderboard cron jobs
+	 */
+	public function clear_leaderboard_cron() {
+		$periods = array( 'daily', 'weekly', 'monthly', 'quarterly', 'yearly' );
+		
+		foreach ( $periods as $period ) {
+			$hook = 'wc_tp_leaderboard_' . $period . '_update';
+			wp_clear_scheduled_hook( $hook );
+		}
+	}
+
+	/**
+	 * Get next quarter start timestamp
+	 */
+	private function get_next_quarter_start() {
+		$current_month = (int) date( 'm' );
+		$current_year = (int) date( 'Y' );
+
+		// Determine current quarter
+		if ( $current_month <= 3 ) {
+			$quarter = 1;
+		} elseif ( $current_month <= 6 ) {
+			$quarter = 2;
+		} elseif ( $current_month <= 9 ) {
+			$quarter = 3;
+		} else {
+			$quarter = 4;
+		}
+
+		// Calculate next quarter
+		$next_quarter = $quarter + 1;
+		$next_year = $current_year;
+
+		if ( $next_quarter > 4 ) {
+			$next_quarter = 1;
+			$next_year++;
+		}
+
+		// Get first month of next quarter
+		$month = ( $next_quarter - 1 ) * 3 + 1;
+
+		return strtotime( $next_year . '-' . str_pad( $month, 2, '0', STR_PAD_LEFT ) . '-01 00:00:00' );
+	}
+
+	/**
+	 * Cron callback to update leaderboard
+	 */
+	public function cron_update_leaderboard() {
+		$this->calculate_leaderboard();
 	}
 
 }

@@ -2890,6 +2890,37 @@ class WC_Team_Payroll_MyAccount {
 										</div>
 									<?php endif; ?>
 								</div>
+								
+								<?php
+								// Get leaderboard rank
+								$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
+								if ( ! empty( $leaderboard_config['enabled'] ) ) {
+									$period = isset( $leaderboard_config['period'] ) ? $leaderboard_config['period'] : 'monthly';
+									$performance_tracker = WC_Team_Payroll_Performance_Tracker::init();
+									$date_range = $performance_tracker->get_leaderboard_period_range( $period );
+									$period_id = $date_range['period_id'];
+									$rank = get_user_meta( $user_id, '_wc_tp_leaderboard_rank_' . $period_id, true );
+									
+									if ( ! empty( $rank ) ) : ?>
+										<div class="leaderboard-rank-badge">
+											<svg class="rank-badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+												<defs>
+													<radialGradient id="rankGradient" cx="35%" cy="35%">
+														<stop offset="0%" style="stop-color:#FFD700;stop-opacity:1"/>
+														<stop offset="30%" style="stop-color:#FFA500;stop-opacity:1"/>
+														<stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1"/>
+													</radialGradient>
+													<filter id="rankShadow" x="-50%" y="-50%" width="200%" height="200%">
+														<feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.5"/>
+													</filter>
+												</defs>
+												<circle cx="50" cy="50" r="45" fill="url(#rankGradient)" stroke="#000000" stroke-width="1" filter="url(#rankShadow)"/>
+												<text x="50" y="65" font-size="52" font-weight="bold" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif"><?php echo esc_html( $rank ); ?></text>
+											</svg>
+										</div>
+									<?php endif;
+								}
+								?>
 							</div>
 						<?php else : ?>
 							<!-- Locked Badge -->

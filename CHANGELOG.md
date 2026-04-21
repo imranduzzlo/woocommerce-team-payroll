@@ -4115,3 +4115,40 @@ Employees can now see:
 
 ---
 
+
+
+## [1.6.46] - 2026-04-21
+### ⭐ Feature - Leaderboard Rank Badge Integration & Cron Scheduling
+
+#### ADDED - Leaderboard Rank Badge Display
+- **Main Badge Enhancement**: Added small rank badge (bottom-right) showing leaderboard position (1, 2, 3, etc.)
+- **Dual Badge System**: Main achievement badge (G/S/B with stars) + Rank badge (position number)
+- **Employee Details**: Rank badge displays in backend employee detail page
+- **My Account Frontend**: Rank badge displays in frontend profile section
+- **Consistent Design**: Same Marvel-style 3D design with inner shadow effect on both platforms
+- **Conditional Display**: Only shows when leaderboard is enabled and employee has a rank
+
+#### ADDED - Cron Scheduling Functions
+- **schedule_leaderboard_cron()**: Automatically schedules cron jobs based on configured period
+- **clear_leaderboard_cron()**: Clears all existing leaderboard cron jobs
+- **get_next_quarter_start()**: Calculates next quarter start timestamp for quarterly updates
+- **cron_update_leaderboard()**: Cron callback that recalculates leaderboard rankings
+- **Auto-Scheduling**: Cron jobs are scheduled when leaderboard config is saved
+- **Period Support**: Supports Daily, Weekly, Monthly, Quarterly, Yearly, and All-Time periods
+
+#### ADDED - CSS Styling
+- **Leaderboard Rank Badge CSS**: Added `.leaderboard-rank-badge` and `.rank-badge-icon` styles
+- **Responsive Design**: Rank badge scales appropriately on mobile devices
+- **Hover Effects**: Smooth scale and shadow transitions on hover
+- **Z-index Management**: Proper layering to ensure rank badge appears above main badge
+
+#### FIXED - Leaderboard Config Integration
+- **Config Saving**: `ajax_save_leaderboard_config()` now calls `schedule_leaderboard_cron()` after saving
+- **Rank Storage**: Leaderboard ranks are stored in user meta with period ID for retrieval
+- **Period Calculation**: Proper period ID calculation for rank badge display
+
+#### FILES MODIFIED
+- `includes/class-performance-settings.php`: Added cron scheduling functions, updated config save handler
+- `includes/class-employee-detail.php`: Added rank badge display in achievement badge section
+- `includes/class-myaccount.php`: Added rank badge display in achievement badge section
+- `assets/css/myaccount-shared.css`: Added rank badge styling
