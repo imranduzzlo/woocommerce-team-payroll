@@ -59,7 +59,7 @@ class WC_Team_Payroll_Settings {
 							<th><label for="wc_tp_user_id_prefix">Employee ID Prefix</label></th>
 							<td>
 								<input type="text" id="wc_tp_user_id_prefix" name="wc_tp_user_id_prefix" value="<?php echo esc_attr( $user_id_prefix ); ?>" />
-								<p class="description">Prefix for auto-generated employee IDs (e.g., PVVB-EMID)</p>
+								<p class="description">Prefix for auto-generated employee IDs (e.g., PVVB-EMID). User field name vb_user_id.</p>
 							</td>
 						</tr>
 						<tr>

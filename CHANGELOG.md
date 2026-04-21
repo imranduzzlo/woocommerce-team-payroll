@@ -1,3 +1,49 @@
+## [1.7.4] - 2026-04-22
+### 🐛 Critical Fix - Leaderboard Employee Role Detection
+
+#### FIXED - Leaderboard Not Finding Employees
+- **Root Cause**: Leaderboard engine was hardcoded to look for roles `['shop_employee', 'shop_manager', 'administrator']` but system uses custom configured employee roles from settings
+- **Problem**: When clicking "Recalculate Leaderboard", AJAX error occurred with message "No eligible employees found"
+- **Solution**: Fixed `get_eligible_employees()` function to read configured roles from `wc_tp_employee_roles` option
+
+#### TECHNICAL CHANGES
+- Updated `get_eligible_employees()` in `includes/class-leaderboard-engine.php`
+- Now reads employee roles from settings: `get_option('wc_tp_employee_roles')`
+- Handles both simple array and associative array formats
+- Added fallback to default roles if none configured
+- Improved error messages to show which roles are being searched
+
+#### CODE CHANGES
+**Before (Hardcoded):**
+```php
+$roles_to_query = array( 'shop_employee', 'shop_manager', 'administrator' );
+```
+
+**After (Dynamic from Settings):**
+```php
+$employee_roles = get_option( 'wc_tp_employee_roles', array( 'shop_employee' ) );
+// Extract role keys if associative array
+$roles_to_query = is_numeric( array_keys($employee_roles)[0] ) 
+    ? $employee_roles 
+    : array_keys($employee_roles);
+```
+
+#### BENEFITS
+- ✅ Leaderboard now respects configured employee roles
+- ✅ Works with custom role configurations
+- ✅ No more "No eligible employees found" errors
+- ✅ Better error messages for debugging
+- ✅ Consistent with rest of plugin's role handling
+
+#### HOW TO VERIFY
+1. Go to WooCommerce → Settings → Team Payroll → Performance Settings
+2. Click "Leaderboard" tab
+3. Ensure leaderboard is enabled and configured
+4. Click "Recalculate Leaderboard"
+5. Verify leaderboard data loads successfully ✅
+
+---
+
 ## [1.7.3] - 2026-04-22
 ### ✨ Enhancement - Performance Settings Tab State Persistence
 
