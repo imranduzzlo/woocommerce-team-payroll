@@ -4152,3 +4152,31 @@ Employees can now see:
 - `includes/class-employee-detail.php`: Added rank badge display in achievement badge section
 - `includes/class-myaccount.php`: Added rank badge display in achievement badge section
 - `assets/css/myaccount-shared.css`: Added rank badge styling
+
+
+## [1.6.47] - 2026-04-21
+### 🎨 Fix - Premium Badge Design & Leaderboard Rank Display
+
+#### FIXED - Badge Design
+- **Inner Shadow Effect**: Redesigned badges with premium inner shadow (not outer shadow)
+- **Flat Premium Look**: Removed curved/3D appearance for cleaner, more premium aesthetic
+- **Consistent Design**: Same inner shadow styling on both Employee Details and My Account
+- **SVG-Based Rendering**: Proper gradients and inner shadow filters for professional appearance
+
+#### FIXED - Leaderboard Rank Display
+- **Automatic Calculation**: Leaderboard now calculates on page load to ensure rank is available
+- **Rank Badge Display**: Rank number now properly displays in bottom-right badge
+- **Both Platforms**: Rank badge shows on both backend (Employee Details) and frontend (My Account)
+- **Premium Styling**: Rank badge uses same inner shadow design as main badge
+
+#### IMPROVED - CSS Styling
+- **Removed Old Classes**: Cleaned up unused badge styling classes
+- **Optimized Shadows**: Reduced drop shadow for cleaner appearance
+- **Better Gradients**: Improved color gradients for gold, silver, and bronze badges
+- **Responsive Design**: Proper scaling on all device sizes
+
+#### FILES MODIFIED
+- `woocommerce-team-payroll.php`: Version bump to 1.6.47
+- `includes/class-employee-detail.php`: Updated badge rendering, added leaderboard trigger
+- `includes/class-myaccount.php`: Updated badge rendering, added leaderboard trigger
+- `assets/css/myaccount-shared.css`: Simplified and optimized badge styling
