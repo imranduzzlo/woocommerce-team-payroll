@@ -70,9 +70,16 @@ class WC_Team_Payroll_Leaderboard_Engine {
 		$employees = $this->get_eligible_employees( $exclude_inactive );
 
 		if ( empty( $employees ) ) {
+			// Get configured roles for error message
+			$employee_roles = get_option( 'wc_tp_employee_roles', array( 'shop_employee' ) );
+			$role_list = is_array( $employee_roles ) ? implode( ', ', array_keys( $employee_roles ) ) : 'shop_employee';
+			
 			return array(
 				'error' => true,
-				'message' => __( 'No eligible employees found', 'wc-team-payroll' ),
+				'message' => sprintf( 
+					__( 'No eligible employees found. Please ensure users have one of these roles: %s', 'wc-team-payroll' ),
+					$role_list
+				),
 			);
 		}
 
@@ -92,7 +99,11 @@ class WC_Team_Payroll_Leaderboard_Engine {
 		if ( empty( $employee_data ) ) {
 			return array(
 				'error' => true,
-				'message' => __( 'No employees meet the minimum requirements', 'wc-team-payroll' ),
+				'message' => sprintf(
+					__( 'No employees meet the minimum requirements. Minimum orders required: %d. Total employees checked: %d', 'wc-team-payroll' ),
+					$minimum_orders,
+					count( $employees )
+				),
 			);
 		}
 
@@ -568,8 +579,27 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	 * @return array Employee user IDs
 	 */
 	private function get_eligible_employees( $exclude_inactive = true ) {
+		// Get configured employee roles from settings
+		$employee_roles = get_option( 'wc_tp_employee_roles', array( 'shop_employee' ) );
+		
+		// If employee_roles is an associative array (with role data), extract just the keys
+		if ( is_array( $employee_roles ) && ! empty( $employee_roles ) ) {
+			$role_keys = array_keys( $employee_roles );
+			// Check if it's already a simple array of role names
+			if ( is_numeric( $role_keys[0] ) ) {
+				// It's a simple array, use as is
+				$roles_to_query = $employee_roles;
+			} else {
+				// It's an associative array, use the keys
+				$roles_to_query = $role_keys;
+			}
+		} else {
+			// Fallback to default roles
+			$roles_to_query = array( 'shop_employee', 'shop_manager', 'administrator' );
+		}
+		
 		$args = array(
-			'role__in' => array( 'shop_employee', 'shop_manager', 'administrator' ),
+			'role__in' => $roles_to_query,
 			'fields' => 'ID',
 		);
 
