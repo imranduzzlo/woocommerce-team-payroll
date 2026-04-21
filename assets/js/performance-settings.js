@@ -1930,9 +1930,6 @@ jQuery(document).ready(function($) {
 	// Initialize on page load
 	initializeBonusTypeHandlers();
 
-});
-
-
 
 	// ============================================================================
 	// LEADERBOARD HANDLERS
