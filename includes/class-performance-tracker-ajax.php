@@ -722,6 +722,38 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 	 * AJAX: Get Leaderboard Data
 	 */
 	public static function ajax_get_leaderboard_data() {
+		// Set error handler to catch all errors
+		set_error_handler(function($errno, $errstr, $errfile, $errline) {
+			error_log("WC Team Payroll Leaderboard PHP Error: [$errno] $errstr in $errfile on line $errline");
+			wp_send_json_error(array(
+				'message' => "PHP Error: $errstr",
+				'file' => basename($errfile),
+				'line' => $errline,
+				'errno' => $errno
+			));
+		});
+		
+		// Catch fatal errors
+		register_shutdown_function(function() {
+			$error = error_get_last();
+			if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+				error_log("WC Team Payroll Leaderboard Fatal Error: " . print_r($error, true));
+				if (!headers_sent()) {
+					header('Content-Type: application/json');
+					echo json_encode(array(
+						'success' => false,
+						'data' => array(
+							'message' => 'Fatal Error: ' . $error['message'],
+							'file' => basename($error['file']),
+							'line' => $error['line'],
+							'type' => $error['type']
+						)
+					));
+					exit;
+				}
+			}
+		});
+		
 		// Enable error logging
 		$debug_log = array();
 		$debug_log[] = 'Starting ajax_get_leaderboard_data';
