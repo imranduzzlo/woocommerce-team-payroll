@@ -1,3 +1,48 @@
+## [1.7.3] - 2026-04-22
+### ✨ Enhancement - Performance Settings Tab State Persistence
+
+#### ADDED - Tab State Persistence on Page Reload
+- **Problem**: Switching to a tab (e.g., Leaderboard) and reloading would reset to first tab
+- **Solution**: Implemented dual persistence using URL hash and localStorage
+- **Result**: Active tab now persists after page reload, save, or browser refresh
+
+#### FEATURES
+- **URL Hash Persistence**: Active tab saved to URL (e.g., `#leaderboard`)
+- **localStorage Backup**: Fallback storage for tab state
+- **Bookmarkable Tabs**: Share direct links to specific settings tabs
+- **Browser Navigation**: Works with back/forward buttons
+- **Seamless Experience**: No more losing your place
+
+#### HOW IT WORKS
+**When you click a tab:**
+- Saves to URL hash: `.../settings#leaderboard`
+- Saves to localStorage: `wc_tp_active_perf_tab`
+
+**When page loads:**
+1. Check URL hash first
+2. If no hash, check localStorage
+3. Activate saved tab or default to first tab
+
+#### EXAMPLE URLS
+- Performance: `.../settings#performance`
+- Goals: `.../settings#goals`
+- Achievements: `.../settings#achievements`
+- Leaderboard: `.../settings#leaderboard`
+- Bonuses: `.../settings#bonuses`
+- Baselines: `.../settings#baselines`
+- Calculation: `.../settings#calculation`
+- System: `.../settings#system`
+
+#### BENEFITS
+- ✅ Tab state persists after page reload
+- ✅ Stays on same tab after saving configuration
+- ✅ Can bookmark specific settings tabs
+- ✅ Better user experience and workflow
+- ✅ Works with browser refresh (F5)
+- ✅ No more losing your place
+
+---
+
 ## [1.7.2] - 2026-04-22
 ### 🐛 Critical Fix - Leaderboard Checkbox Values Not Saving
 
