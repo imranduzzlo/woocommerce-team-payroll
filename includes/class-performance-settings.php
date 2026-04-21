@@ -3943,37 +3943,21 @@ class WC_Team_Payroll_Performance_Settings {
 			'meta_key' => '_primary_agent_id',
 			'meta_value' => $user_id,
 			'status' => $commission_statuses,
-			'date_created' => $start_date . '...' . $end_date,
 			'return' => 'ids',
 		) );
 		
 		foreach ( $agent_orders as $order_id ) {
 			$order = wc_get_order( $order_id );
-			if ( ! $order ) continue;
-			
-			$commission_data = $order->get_meta( '_commission_data' );
-			if ( $commission_data && isset( $commission_data['agent_earnings'] ) ) {
-				$total_commission += floatval( $commission_data['agent_earnings'] );
+			if ( ! $order ) {
+				continue;
 			}
-		}
-		
-		// Query orders as processor
-		$processor_orders = wc_get_orders( array(
-			'limit' => -1,
-			'meta_key' => '_processor_user_id',
-			'meta_value' => $user_id,
-			'status' => $commission_statuses,
-			'date_created' => $start_date . '...' . $end_date,
-			'return' => 'ids',
-		) );
-		
-		foreach ( $processor_orders as $order_id ) {
-			$order = wc_get_order( $order_id );
-			if ( ! $order ) continue;
 			
-			$commission_data = $order->get_meta( '_commission_data' );
-			if ( $commission_data && isset( $commission_data['processor_earnings'] ) ) {
-				$total_commission += floatval( $commission_data['processor_earnings'] );
+			$order_date = $order->get_date_created()->format( 'Y-m-d' );
+			if ( $order_date >= $start_date && $order_date <= $end_date ) {
+				$commission = get_post_meta( $order_id, '_agent_commission', true );
+				if ( $commission ) {
+					$total_commission += floatval( $commission );
+				}
 			}
 		}
 		
@@ -3993,7 +3977,6 @@ class WC_Team_Payroll_Performance_Settings {
 			'meta_key' => '_primary_agent_id',
 			'meta_value' => $user_id,
 			'status' => $commission_statuses,
-			'date_created' => $start_date . '...' . $end_date,
 			'return' => 'ids',
 		) );
 		
@@ -4001,10 +3984,13 @@ class WC_Team_Payroll_Performance_Settings {
 			$order = wc_get_order( $order_id );
 			if ( ! $order ) continue;
 			
-			$commission_data = $order->get_meta( '_commission_data' );
-			if ( $commission_data && isset( $commission_data['agent_order_value'] ) ) {
-				$total_count++;
-				$total_value += floatval( $commission_data['agent_order_value'] );
+			$order_date = $order->get_date_created()->format( 'Y-m-d' );
+			if ( $order_date >= $start_date && $order_date <= $end_date ) {
+				$commission_data = $order->get_meta( '_commission_data' );
+				if ( $commission_data && isset( $commission_data['agent_order_value'] ) ) {
+					$total_count++;
+					$total_value += floatval( $commission_data['agent_order_value'] );
+				}
 			}
 		}
 		
@@ -4014,7 +4000,6 @@ class WC_Team_Payroll_Performance_Settings {
 			'meta_key' => '_processor_user_id',
 			'meta_value' => $user_id,
 			'status' => $commission_statuses,
-			'date_created' => $start_date . '...' . $end_date,
 			'return' => 'ids',
 		) );
 		
@@ -4022,10 +4007,13 @@ class WC_Team_Payroll_Performance_Settings {
 			$order = wc_get_order( $order_id );
 			if ( ! $order ) continue;
 			
-			$commission_data = $order->get_meta( '_commission_data' );
-			if ( $commission_data && isset( $commission_data['processor_order_value'] ) ) {
-				$total_count++;
-				$total_value += floatval( $commission_data['processor_order_value'] );
+			$order_date = $order->get_date_created()->format( 'Y-m-d' );
+			if ( $order_date >= $start_date && $order_date <= $end_date ) {
+				$commission_data = $order->get_meta( '_commission_data' );
+				if ( $commission_data && isset( $commission_data['processor_order_value'] ) ) {
+					$total_count++;
+					$total_value += floatval( $commission_data['processor_order_value'] );
+				}
 			}
 		}
 		
