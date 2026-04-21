@@ -1,3 +1,49 @@
+## [1.7.2] - 2026-04-22
+### 🐛 Critical Fix - Leaderboard Checkbox Values Not Saving
+
+#### FIXED - Checkbox Settings Not Being Saved
+- **Root Cause**: PHP `isset()` logic was incorrect for checkbox values
+- **Problem**: Unchecked checkboxes were being saved as checked (value 1)
+- **Solution**: Changed to check both `isset()` AND `value == 1` for proper boolean handling
+
+#### AFFECTED CHECKBOXES (All Fixed)
+- ✅ **Enabled** - Enable/disable leaderboard
+- ✅ **Exclude Inactive** - Exclude inactive employees from rankings
+- ✅ **Show User Rank** - Display user's rank card on frontend
+- ✅ **Anonymize** - Convert employee names to initials
+- ✅ **Show Scores** - Display calculated scores
+- ✅ **Show Metrics** - Display performance metrics
+
+#### TECHNICAL DETAILS
+**Before (Incorrect)**:
+```php
+'enabled' => isset( $leaderboard_config['enabled'] ) ? 1 : 0
+```
+Problem: `isset()` returns true even when value is 0, so unchecked boxes saved as 1
+
+**After (Correct)**:
+```php
+'enabled' => isset( $leaderboard_config['enabled'] ) && $leaderboard_config['enabled'] == 1 ? 1 : 0
+```
+Solution: Check both key exists AND value equals 1
+
+#### BENEFITS
+- ✅ Checkbox states now save correctly
+- ✅ Unchecked boxes properly save as 0
+- ✅ Checked boxes properly save as 1
+- ✅ Settings persist after page refresh
+- ✅ Leaderboard configuration works as expected
+
+#### HOW TO VERIFY
+1. Go to WooCommerce → Settings → Team Payroll → Performance Settings
+2. Click "Leaderboard" tab
+3. Check/uncheck any checkbox
+4. Click "Save All Configuration"
+5. Refresh the page
+6. Verify checkbox states are preserved ✅
+
+---
+
 ## [1.7.1] - 2026-04-22
 ### 🐛 Bug Fix - Leaderboard AJAX Error Handling
 
