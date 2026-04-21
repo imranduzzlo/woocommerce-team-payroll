@@ -1,3 +1,96 @@
+## [1.7.6] - 2026-04-22
+### 🔧 Debug Release - Comprehensive Error Logging
+
+#### ADDED - Extensive Debugging for Leaderboard Issues
+- **Purpose**: Identify the exact root cause of AJAX errors in leaderboard functionality
+- **Problem**: Users experiencing "AJAX error occurred" and "Network error. Please try again." messages
+- **Solution**: Added comprehensive debugging to track every step of leaderboard generation
+
+#### PHP DEBUGGING (AJAX Handler)
+**Added to `includes/class-performance-tracker-ajax.php`:**
+- Step-by-step debug logging throughout the entire AJAX flow
+- Catches both `Exception` and `Error` (fatal errors)
+- Logs to WordPress error log with full stack traces
+- Returns debug information in AJAX response for troubleshooting
+- Tracks: nonce verification, config loading, engine initialization, date range calculation, leaderboard generation
+
+**Debug Log Points:**
+1. Starting ajax_get_leaderboard_data
+2. Nonce verified
+3. User ID: {id}
+4. Config loaded: EXISTS/EMPTY
+5. Enabled: {0/1}
+6. Initializing engine
+7. Engine initialized
+8. Period: {period_type}
+9. Getting date range
+10. Date range: {start} to {end}
+11. Checking cache
+12. Cache: FOUND/NOT FOUND
+13. Generating leaderboard (if no cache)
+14. Leaderboard generated
+15. Display settings loaded
+16. Leaderboard entries: {count}
+17. Displayed entries: {count}
+18. Anonymization applied (if enabled)
+19. User rank: FOUND/NOT FOUND
+20. Response prepared successfully
+
+#### JAVASCRIPT DEBUGGING (Frontend)
+**Added to `assets/js/performance-tracker.js`:**
+- Console logging for all AJAX requests and responses
+- Detailed error information display
+- Stack trace logging when available
+- XHR response parsing and display
+- Debug info extraction from error responses
+
+**Console Output:**
+- "Loading leaderboard data..."
+- "Leaderboard AJAX Response: {...}"
+- "Leaderboard data loaded successfully"
+- Error details with debug info and stack traces
+- Full XHR response for network errors
+
+#### HOW TO USE THIS DEBUG RELEASE
+
+**For Users:**
+1. Clear browser cache and reload page
+2. Open browser console (F12 → Console tab)
+3. Try to load leaderboard (Recalculate or My Account)
+4. Check console for detailed error messages
+5. Copy error messages and send to developer
+
+**For Developers:**
+1. Enable WordPress debug logging (WP_DEBUG = true)
+2. Check `wp-content/debug.log` for PHP errors
+3. Look for lines starting with "WC Team Payroll Leaderboard:"
+4. Review full stack traces for fatal errors
+5. Identify exact failure point from debug log
+
+#### ERROR INFORMATION CAPTURED
+- ✅ Nonce verification failures
+- ✅ Configuration issues (missing/empty/disabled)
+- ✅ Engine initialization errors
+- ✅ Date range calculation errors
+- ✅ Cache retrieval issues
+- ✅ Leaderboard generation failures
+- ✅ Employee role detection problems
+- ✅ Data processing errors
+- ✅ Network/AJAX failures
+
+#### BENEFITS
+- ✅ Pinpoint exact failure location
+- ✅ See full error messages and stack traces
+- ✅ Understand configuration state
+- ✅ Track data flow through system
+- ✅ Identify missing or invalid data
+- ✅ Faster troubleshooting and fixes
+
+#### NEXT STEPS
+After identifying the root cause with this debug release, a fix will be implemented in the next version.
+
+---
+
 ## [1.7.5] - 2026-04-22
 ### 🐛 Critical Fix - Leaderboard Method Visibility
 
