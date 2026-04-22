@@ -1,3 +1,74 @@
+## [1.7.7] - 2026-04-22
+### 🔧 Enhanced Error Handler - Fatal Error Detection
+
+#### ADDED - Fatal Error Handler for 500 Errors
+- **Problem**: AJAX requests returning 500 Internal Server Error with no visible error message
+- **Solution**: Added comprehensive error handler to catch and report ALL PHP errors including fatal errors
+
+#### FEATURES ADDED
+
+**1. Custom Error Handler**
+- Catches all PHP errors (warnings, notices, errors)
+- Logs errors to WordPress error log
+- Returns error details in AJAX response
+- Shows exact error message, file, and line number
+
+**2. Shutdown Function for Fatal Errors**
+- Catches fatal errors that normally kill the script
+- Detects: E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR
+- Returns JSON response even after fatal error
+- Prevents blank 500 responses
+
+**3. Enhanced Error Information**
+Returns in AJAX response:
+- Error message (exact PHP error)
+- File name (where error occurred)
+- Line number (exact location)
+- Error type/number
+- Full debug log trail
+
+#### ERROR TYPES CAUGHT
+- ✅ E_ERROR - Fatal runtime errors
+- ✅ E_PARSE - Parse errors
+- ✅ E_CORE_ERROR - Fatal errors during PHP startup
+- ✅ E_COMPILE_ERROR - Fatal compile-time errors
+- ✅ E_WARNING - Runtime warnings
+- ✅ E_NOTICE - Runtime notices
+- ✅ All other PHP errors
+
+#### EXAMPLE ERROR OUTPUT
+```json
+{
+  "success": false,
+  "data": {
+    "message": "Fatal Error: Call to undefined function xyz()",
+    "file": "class-leaderboard-engine.php",
+    "line": 123,
+    "type": 1
+  }
+}
+```
+
+#### HOW IT HELPS
+- ✅ No more blank 500 errors
+- ✅ See exact error message in browser console
+- ✅ Know which file and line has the problem
+- ✅ Faster debugging and problem identification
+- ✅ Clear error messages for developers
+
+#### USAGE
+1. Update to v1.7.7
+2. Clear browser cache
+3. Open browser console (F12)
+4. Try leaderboard action
+5. See detailed error message in console
+6. Report error message to developer
+
+#### NEXT STEPS
+Once the exact error is identified from the console output, the root cause will be fixed in the next release.
+
+---
+
 ## [1.7.6] - 2026-04-22
 ### 🔧 Debug Release - Comprehensive Error Logging
 
