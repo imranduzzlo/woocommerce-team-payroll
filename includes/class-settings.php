@@ -594,7 +594,7 @@ class WC_Team_Payroll_Settings {
 							<th><label for="agent_field_name">Agent Dropdown Reference Field</label></th>
 							<td>
 								<input type="text" id="agent_field_name" name="wc_team_payroll_checkout_fields[agent_field_name]" value="<?php echo esc_attr( isset( $checkout_fields['agent_field_name'] ) ? $checkout_fields['agent_field_name'] : 'order_other_agent_or_not' ); ?>" />
-								<p class="description">The POST field name where the agent dropdown will be inserted. This is the reference field from your checkout field editor (e.g., ThemeHigh, WooCommerce Checkout Field Editor, or any custom checkout field). The dynamic agent dropdown will be placed after this field.</p>
+								<p class="description">The POST field name where the agent dropdown will be inserted (order_agent_name). But this is the reference field from your checkout field editor (e.g., ThemeHigh, WooCommerce Checkout Field Editor, or any custom checkout field). The dynamic agent dropdown will be placed after this field.</p>
 							</td>
 						</tr>
 						<tr>

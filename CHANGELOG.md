@@ -1,3 +1,60 @@
+## [1.7.8] - 2026-04-22
+### ✅ FIXED - Leaderboard Earnings Calculation Method
+
+#### ROOT CAUSE FOUND AND FIXED
+- **Error**: `Call to undefined method WC_Team_Payroll_Performance_Settings::calculate_earnings()`
+- **Location**: Leaderboard engine trying to calculate employee earnings
+- **Root Cause**: Wrong method name - `calculate_earnings()` doesn't exist
+- **Correct Method**: `calculate_employee_earnings_with_attribution()`
+
+#### THE FIX
+**Before (Incorrect):**
+```php
+$settings = new WC_Team_Payroll_Performance_Settings();
+return $settings->calculate_earnings( $employee_id, $start_date, $end_date ); // ❌ Method doesn't exist
+```
+
+**After (Correct):**
+```php
+$settings = new WC_Team_Payroll_Performance_Settings();
+return $settings->calculate_employee_earnings_with_attribution( $employee_id, $start_date, $end_date ); // ✅ Correct method
+```
+
+#### WHAT WAS FIXED
+- Changed method call from `calculate_earnings()` to `calculate_employee_earnings_with_attribution()`
+- This method properly handles revenue attribution settings (commission split vs full value)
+- Respects admin configuration for earnings calculation
+- Uses the same calculation method as goals and achievements
+
+#### FILES MODIFIED
+- `includes/class-leaderboard-engine.php` - Fixed `get_total_earnings()` method
+
+#### BENEFITS
+- ✅ Leaderboard now loads successfully
+- ✅ No more fatal errors
+- ✅ Earnings calculated correctly with revenue attribution
+- ✅ Consistent with rest of performance tracking system
+- ✅ "Recalculate Leaderboard" button works
+- ✅ My Account leaderboard tab displays properly
+
+#### HOW TO VERIFY
+1. Update to v1.7.8
+2. Go to WooCommerce → Settings → Team Payroll → Performance Settings → Leaderboard
+3. Click "Recalculate Leaderboard"
+4. Verify success message appears ✅
+5. Go to My Account → Reports → Leaderboard tab
+6. Verify leaderboard data loads without errors ✅
+
+#### TECHNICAL NOTES
+The correct method `calculate_employee_earnings_with_attribution()` automatically:
+- Checks revenue attribution setting (commission_split or full)
+- Calculates earnings based on configuration
+- Handles both agent and processor roles
+- Respects commission calculation statuses
+- Returns accurate earnings for leaderboard ranking
+
+---
+
 ## [1.7.7] - 2026-04-22
 ### 🔧 Enhanced Error Handler - Fatal Error Detection
 

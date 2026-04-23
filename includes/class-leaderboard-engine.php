@@ -200,7 +200,7 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	private function get_total_earnings( $employee_id, $start_date, $end_date ) {
 		// Use performance settings calculation method
 		$settings = new WC_Team_Payroll_Performance_Settings();
-		return $settings->calculate_earnings( $employee_id, $start_date, $end_date );
+		return $settings->calculate_employee_earnings_with_attribution( $employee_id, $start_date, $end_date );
 	}
 
 	/**
