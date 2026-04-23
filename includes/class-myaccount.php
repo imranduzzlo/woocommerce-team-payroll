@@ -1406,8 +1406,9 @@ class WC_Team_Payroll_MyAccount {
 						.append($('<button class="btn-action btn-view"></button>')
 							.attr('data-order-id', order.order_id)
 							.append($('<i class="ph ph-eye"></i>'))
-							.on('click', function() {
-								console.log('Button clicked for order:', order.order_id);
+							.on('click', function(e) {
+								e.preventDefault();
+								e.stopPropagation();
 								showOrderDetailsModal(order.order_id);
 							}));
 					
@@ -1417,11 +1418,10 @@ class WC_Team_Payroll_MyAccount {
 
 				// Show order details modal
 				function showOrderDetailsModal(orderId) {
-					console.log('Opening modal for order:', orderId);
-					
-					// Show loading state
+					// Remove any existing modal
 					$('#order-details-modal').remove();
 					
+					// Create modal structure
 					const modal = $('<div id="order-details-modal" class="wc-tp-modal"></div>');
 					const modalContent = $('<div class="wc-tp-modal-content order-details-modal-content"></div>');
 					const modalHeader = $('<div class="wc-tp-modal-header"></div>')
@@ -1433,17 +1433,34 @@ class WC_Team_Payroll_MyAccount {
 					
 					modalContent.append(modalHeader, modalBody);
 					modal.append(modalContent);
+					
+					// Append to body and show
 					$('body').append(modal);
+					modal.show();
 					
 					// Close modal handlers
 					modal.on('click', function(e) {
 						if ($(e.target).is('#order-details-modal')) {
-							modal.remove();
+							modal.fadeOut(200, function() {
+								modal.remove();
+							});
 						}
 					});
 					
 					modalHeader.find('.wc-tp-modal-close').on('click', function() {
-						modal.remove();
+						modal.fadeOut(200, function() {
+							modal.remove();
+						});
+					});
+					
+					// ESC key to close
+					$(document).on('keydown.orderModal', function(e) {
+						if (e.key === 'Escape') {
+							modal.fadeOut(200, function() {
+								modal.remove();
+							});
+							$(document).off('keydown.orderModal');
+						}
 					});
 					
 					// Load order details via AJAX
