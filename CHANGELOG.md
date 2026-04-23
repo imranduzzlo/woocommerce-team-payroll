@@ -1,3 +1,60 @@
+## [1.7.20] - 2026-04-24
+### 🔥 Hotfix - Critical Site Error Fix
+
+#### FIXED - Site Breaking Error from v1.7.19
+- **Problem**: Version 1.7.19 caused site-wide PHP fatal error
+- **Root Cause**: PowerShell regex replacement corrupted the class-myaccount.php file by inserting entire file content into the middle of a method
+- **Solution**: Restored file from git and properly updated only the necessary parts using safe string replacement
+
+#### WHAT WAS FIXED
+
+**File Corruption:**
+- Restored includes/class-myaccount.php from working version
+- Removed corrupted code that was breaking PHP syntax
+- Properly updated ajax_get_order_details() method without corruption
+
+**Proper Implementation:**
+- Added check for both old and new meta keys (_primary_agent_id OR _wc_tp_agent_id, _processor_user_id OR _wc_tp_processor_id)
+- Added order-details-wrapper div with proper structure
+- Added two-tab navigation (Order Information and Order Changelog)
+- Added Order Information tab content
+- Added Order Changelog tab with timeline view
+- All changes done safely without file corruption
+
+**Syntax Validation:**
+- Verified no PHP syntax errors
+- Tested file integrity
+- Confirmed proper method structure
+
+#### HOW IT WORKS NOW
+1. Site loads without errors
+2. Order details modal opens correctly
+3. Two tabs display properly
+4. Tab switching works
+5. Changelog timeline shows order history
+6. All styling applied correctly
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php` - Safely updated ajax_get_order_details() method
+- `woocommerce-team-payroll.php` - Version bump to 1.7.20
+- `CHANGELOG.md` - Added hotfix documentation
+
+#### CRITICAL NOTES
+- This is a critical hotfix for v1.7.19
+- All users on v1.7.19 should update immediately
+- Site functionality fully restored
+- Modal features working as intended
+
+#### BENEFITS
+- ✅ Site error completely fixed
+- ✅ No PHP fatal errors
+- ✅ Modal displays correctly
+- ✅ Tabs work properly
+- ✅ Changelog timeline functional
+- ✅ All features from v1.7.18 working
+
+---
+
 ## [1.7.19] - 2026-04-24
 ### 🔧 Fix - Order Details Modal Structure and Styling
 
