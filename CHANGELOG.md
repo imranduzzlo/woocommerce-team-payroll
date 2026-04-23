@@ -1,3 +1,53 @@
+## [1.7.16] - 2026-04-23
+### 🔧 Fix - Leaderboard Uses Same Earnings Calculation as Reports
+
+#### FIXED - Leaderboard Earnings Match Reports KPI Cards
+- **Problem**: Leaderboard showed different earnings than Reports page KPI cards
+- **Root Cause**: Leaderboard used different calculation method (attribution-based vs actual earnings)
+- **Solution**: Changed to use same logic as Reports KPI cards
+
+#### WHAT WAS CHANGED
+
+**New Earnings Calculation:**
+```
+Total Earnings = Commission from Orders + Salary from Transactions
+```
+
+**Commission:**
+- Uses `Core_Engine->get_user_earnings()` method
+- Gets actual commission earnings from orders in the period
+- Respects commission calculation statuses from settings
+
+**Salary:**
+- Reads from `_wc_tp_salary_transactions` user meta
+- Filters transactions by date range
+- Includes only transfer types (daily_transfer, weekly_transfer, monthly_transfer, partial_transfer)
+- Works for fixed salary and combined salary employees
+
+**Period-Based:**
+- Earnings calculated for selected period (Current, Last, YTD, All Time)
+- Same date filtering as Reports page
+- Consistent across all tabs
+
+#### HOW IT WORKS NOW
+1. User selects period in frontend (Current, Last, YTD, etc.)
+2. Leaderboard calculates commission from orders in that period
+3. Leaderboard adds salary from transactions in that period
+4. Total earnings = commission + salary
+5. Rankings based on total earnings for the period
+
+#### FILES MODIFIED
+- `includes/class-leaderboard-engine.php` - Updated `get_total_earnings()` method
+
+#### BENEFITS
+- ✅ Leaderboard earnings match Reports KPI cards exactly
+- ✅ Leaderboard earnings match Employee Details page
+- ✅ Includes both commission and salary
+- ✅ Respects period selection
+- ✅ Consistent data across all pages
+
+---
+
 ## [1.7.15] - 2026-04-23
 ### 🔧 Fix - Network Error on Leaderboard Tab
 
