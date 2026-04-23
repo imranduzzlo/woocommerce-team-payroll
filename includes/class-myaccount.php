@@ -3945,9 +3945,9 @@ class WC_Team_Payroll_MyAccount {
 				</div>
 			</div>
 		</div>
-			</div>
+		</div>
 
-			<!-- Tab Content: Order Changelog -->
+		<!-- Tab Content: Order Changelog -->
 			<div id="order-changelog-tab" class="order-tab-content">
 				<div class="order-changelog-content">
 					<div class="changelog-header">
