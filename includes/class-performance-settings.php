@@ -3886,13 +3886,21 @@ class WC_Team_Payroll_Performance_Settings {
 		// Initialize leaderboard engine
 		$engine = new WC_Team_Payroll_Leaderboard_Engine();
 		
+		// Clear all leaderboard caches before regenerating
+		error_log( 'WC Team Payroll Leaderboard: Clearing all leaderboard caches' );
+		$engine->clear_cache();
+		
 		// Generate leaderboard
+		error_log( 'WC Team Payroll Leaderboard: Starting manual recalculation' );
 		$result = $engine->generate_leaderboard( $config );
 		
 		if ( isset( $result['error'] ) && $result['error'] ) {
+			error_log( 'WC Team Payroll Leaderboard: Recalculation failed - ' . $result['message'] );
 			wp_send_json_error( array( 'message' => $result['message'] ) );
 		}
 
+		error_log( 'WC Team Payroll Leaderboard: Recalculation completed successfully' );
+		
 		// Update last updated timestamp
 		$config['last_updated'] = current_time( 'mysql' );
 		update_option( 'wc_tp_leaderboard_config', $config );
