@@ -722,162 +722,64 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 	 * AJAX: Get Leaderboard Data
 	 */
 	public static function ajax_get_leaderboard_data() {
-		// Set error handler to catch all errors
-		set_error_handler(function($errno, $errstr, $errfile, $errline) {
-			error_log("WC Team Payroll Leaderboard PHP Error: [$errno] $errstr in $errfile on line $errline");
-			wp_send_json_error(array(
-				'message' => "PHP Error: $errstr",
-				'file' => basename($errfile),
-				'line' => $errline,
-				'errno' => $errno
-			));
-		});
-		
-		// Catch fatal errors
-		register_shutdown_function(function() {
-			$error = error_get_last();
-			if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-				error_log("WC Team Payroll Leaderboard Fatal Error: " . print_r($error, true));
-				if (!headers_sent()) {
-					header('Content-Type: application/json');
-					echo json_encode(array(
-						'success' => false,
-						'data' => array(
-							'message' => 'Fatal Error: ' . $error['message'],
-							'file' => basename($error['file']),
-							'line' => $error['line'],
-							'type' => $error['type']
-						)
-					));
-					exit;
-				}
-			}
-		});
-		
-		// Enable error logging
-		$debug_log = array();
-		$debug_log[] = 'Starting ajax_get_leaderboard_data';
-		
-		try {
-			check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
-			$debug_log[] = 'Nonce verified';
-		} catch ( Exception $e ) {
-			error_log( 'WC Team Payroll Leaderboard: Nonce verification failed - ' . $e->getMessage() );
-			wp_send_json_error( array( 
-				'message' => __( 'Security check failed', 'wc-team-payroll' ),
-				'debug' => $e->getMessage()
-			) );
-		}
+		check_ajax_referer( 'wc_team_payroll_nonce', 'nonce' );
 
 		$user_id = get_current_user_id();
-		$debug_log[] = 'User ID: ' . $user_id;
-		
 		if ( ! $user_id ) {
-			error_log( 'WC Team Payroll Leaderboard: Unauthorized access attempt' );
 			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
 		}
 
 		// Get leaderboard configuration
 		$config = get_option( 'wc_tp_leaderboard_config', array() );
-		$debug_log[] = 'Config loaded: ' . ( empty( $config ) ? 'EMPTY' : 'EXISTS' );
 		
 		// Check if configuration exists
 		if ( empty( $config ) ) {
-			error_log( 'WC Team Payroll Leaderboard: Configuration not found' );
 			wp_send_json_error( array( 
 				'message' => __( 'Leaderboard has not been configured yet. Please contact your administrator to set up the leaderboard.', 'wc-team-payroll' ),
-				'disabled' => true,
-				'debug' => implode( ' | ', $debug_log )
+				'disabled' => true
 			) );
 		}
 		
 		// Check if leaderboard is enabled
-		$enabled = isset( $config['enabled'] ) ? $config['enabled'] : 0;
-		$debug_log[] = 'Enabled: ' . $enabled;
-		
-		if ( ! $enabled ) {
-			error_log( 'WC Team Payroll Leaderboard: Leaderboard is disabled' );
+		if ( ! isset( $config['enabled'] ) || ! $config['enabled'] ) {
 			wp_send_json_error( array( 
 				'message' => __( 'Leaderboard is currently disabled. Please contact your administrator.', 'wc-team-payroll' ),
-				'disabled' => true,
-				'debug' => implode( ' | ', $debug_log )
+				'disabled' => true
 			) );
 		}
 
 		// Initialize leaderboard engine
 		try {
-			$debug_log[] = 'Initializing engine';
 			$engine = new WC_Team_Payroll_Leaderboard_Engine();
-			$debug_log[] = 'Engine initialized';
 		} catch ( Exception $e ) {
-			error_log( 'WC Team Payroll Leaderboard: Engine initialization failed - ' . $e->getMessage() );
 			wp_send_json_error( array( 
-				'message' => sprintf( __( 'Error initializing leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() ),
-				'debug' => implode( ' | ', $debug_log )
-			) );
-		} catch ( Error $e ) {
-			error_log( 'WC Team Payroll Leaderboard: Engine initialization error - ' . $e->getMessage() );
-			wp_send_json_error( array( 
-				'message' => sprintf( __( 'Fatal error initializing leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() ),
-				'debug' => implode( ' | ', $debug_log )
+				'message' => sprintf( __( 'Error initializing leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() )
 			) );
 		}
 		
 		// Try to get cached data first
 		$period = isset( $config['period'] ) ? $config['period'] : 'current_month';
-		$debug_log[] = 'Period: ' . $period;
 		
 		try {
-			$debug_log[] = 'Getting date range';
 			$date_range = $engine->get_period_date_range( $period );
-			$debug_log[] = 'Date range: ' . $date_range['start'] . ' to ' . $date_range['end'];
-			
-			$debug_log[] = 'Checking cache';
 			$cached_data = $engine->get_cached_leaderboard( $date_range['period_id'] );
-			$debug_log[] = 'Cache: ' . ( $cached_data ? 'FOUND' : 'NOT FOUND' );
 		} catch ( Exception $e ) {
-			error_log( 'WC Team Payroll Leaderboard: Date range error - ' . $e->getMessage() );
 			wp_send_json_error( array( 
-				'message' => sprintf( __( 'Error getting date range: %s', 'wc-team-payroll' ), $e->getMessage() ),
-				'debug' => implode( ' | ', $debug_log )
-			) );
-		} catch ( Error $e ) {
-			error_log( 'WC Team Payroll Leaderboard: Date range fatal error - ' . $e->getMessage() );
-			wp_send_json_error( array( 
-				'message' => sprintf( __( 'Fatal error getting date range: %s', 'wc-team-payroll' ), $e->getMessage() ),
-				'debug' => implode( ' | ', $debug_log )
+				'message' => sprintf( __( 'Error getting date range: %s', 'wc-team-payroll' ), $e->getMessage() )
 			) );
 		}
 		
 		// If no cache, generate fresh data
 		if ( ! $cached_data ) {
 			try {
-				$debug_log[] = 'Generating leaderboard';
 				$cached_data = $engine->generate_leaderboard( $config );
-				$debug_log[] = 'Leaderboard generated';
 				
 				if ( isset( $cached_data['error'] ) && $cached_data['error'] ) {
-					error_log( 'WC Team Payroll Leaderboard: Generation returned error - ' . $cached_data['message'] );
-					wp_send_json_error( array( 
-						'message' => $cached_data['message'],
-						'debug' => implode( ' | ', $debug_log )
-					) );
+					wp_send_json_error( array( 'message' => $cached_data['message'] ) );
 				}
 			} catch ( Exception $e ) {
-				error_log( 'WC Team Payroll Leaderboard: Generation failed - ' . $e->getMessage() );
-				error_log( 'Stack trace: ' . $e->getTraceAsString() );
 				wp_send_json_error( array( 
-					'message' => sprintf( __( 'Error generating leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() ),
-					'debug' => implode( ' | ', $debug_log ),
-					'trace' => $e->getTraceAsString()
-				) );
-			} catch ( Error $e ) {
-				error_log( 'WC Team Payroll Leaderboard: Generation fatal error - ' . $e->getMessage() );
-				error_log( 'Stack trace: ' . $e->getTraceAsString() );
-				wp_send_json_error( array( 
-					'message' => sprintf( __( 'Fatal error generating leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() ),
-					'debug' => implode( ' | ', $debug_log ),
-					'trace' => $e->getTraceAsString()
+					'message' => sprintf( __( 'Error generating leaderboard: %s', 'wc-team-payroll' ), $e->getMessage() )
 				) );
 			}
 		}
@@ -888,18 +790,15 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		$anonymize = isset( $config['anonymize'] ) ? $config['anonymize'] : 0;
 		$show_scores = isset( $config['show_scores'] ) ? $config['show_scores'] : 1;
 		$show_metrics = isset( $config['show_metrics'] ) ? $config['show_metrics'] : 1;
-		$debug_log[] = 'Display settings loaded';
 
 		// Get leaderboard data
 		$leaderboard = isset( $cached_data['leaderboard'] ) ? $cached_data['leaderboard'] : array();
-		$debug_log[] = 'Leaderboard entries: ' . count( $leaderboard );
 		
 		// Apply display limit
 		$displayed_leaderboard = $leaderboard;
 		if ( $display_limit > 0 && $display_limit < count( $leaderboard ) ) {
 			$displayed_leaderboard = array_slice( $leaderboard, 0, $display_limit );
 		}
-		$debug_log[] = 'Displayed entries: ' . count( $displayed_leaderboard );
 
 		// Apply anonymization
 		if ( $anonymize ) {
@@ -909,7 +808,6 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					$entry['display_name'] = self::anonymize_name( $entry['display_name'] );
 				}
 			}
-			$debug_log[] = 'Anonymization applied';
 		}
 
 		// Find current user's rank
@@ -921,7 +819,6 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					break;
 				}
 			}
-			$debug_log[] = 'User rank: ' . ( $user_rank_data ? 'FOUND' : 'NOT FOUND' );
 		}
 
 		// Prepare response
@@ -940,9 +837,6 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			'total_employees' => isset( $cached_data['total_employees'] ) ? $cached_data['total_employees'] : 0,
 			'generated_at' => isset( $cached_data['generated_at'] ) ? $cached_data['generated_at'] : '',
 		);
-		
-		$debug_log[] = 'Response prepared successfully';
-		error_log( 'WC Team Payroll Leaderboard: ' . implode( ' | ', $debug_log ) );
 
 		wp_send_json_success( $response );
 	}

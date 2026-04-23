@@ -268,8 +268,6 @@
 		loadLeaderboard() {
 			this.showLoading();
 			
-			console.log('Loading leaderboard data...');
-			
 			$.ajax({
 				url: wc_tp_reports.ajax_url,
 				type: 'POST',
@@ -279,52 +277,20 @@
 					cache_bust: Date.now()
 				},
 				success: (response) => {
-					console.log('Leaderboard AJAX Response:', response);
-					
 					if (response.success) {
-						console.log('Leaderboard data loaded successfully');
 						this.renderLeaderboard(response.data);
 					} else {
-						console.error('Leaderboard error response:', response);
-						
-						// Log debug info if available
-						if (response.data && response.data.debug) {
-							console.error('Debug info:', response.data.debug);
-						}
-						if (response.data && response.data.trace) {
-							console.error('Stack trace:', response.data.trace);
-						}
-						
 						// Check if leaderboard is disabled
 						if (response.data && response.data.disabled) {
 							this.showLeaderboardDisabled();
 						} else {
-							const errorMsg = response.data?.message || 'Failed to load leaderboard';
-							console.error('Error message:', errorMsg);
-							this.showError(errorMsg);
+							this.showError(response.data?.message || 'Failed to load leaderboard');
 						}
 					}
 				},
 				error: (xhr, status, error) => {
-					console.error('Leaderboard AJAX Error Details:');
-					console.error('Status:', status);
-					console.error('Error:', error);
-					console.error('XHR:', xhr);
-					console.error('Response Text:', xhr.responseText);
-					
-					// Try to parse response text as JSON
-					try {
-						const errorData = JSON.parse(xhr.responseText);
-						console.error('Parsed error data:', errorData);
-						if (errorData.data && errorData.data.message) {
-							this.showError(errorData.data.message);
-							return;
-						}
-					} catch (e) {
-						console.error('Could not parse error response');
-					}
-					
-					this.showError('Network error. Please try again. Check browser console for details.');
+					console.error('Leaderboard AJAX Error:', error);
+					this.showError('Network error. Please try again.');
 				}
 			});
 		},
