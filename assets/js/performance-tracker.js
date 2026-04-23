@@ -52,8 +52,15 @@
 				// Update view options based on period type
 				this.updateViewOptions();
 				
-				// Load initial data
-				this.loadOverview();
+				// Check if there's a saved tab in sessionStorage (persists during browser session only)
+				const savedTab = sessionStorage.getItem('wc_tp_active_performance_tab');
+				
+				// Load saved tab or default to overview
+				if (savedTab) {
+					this.switchTab(savedTab);
+				} else {
+					this.loadOverview();
+				}
 			});
 		},
 
@@ -142,6 +149,9 @@
 			}
 
 			this.currentTab = tab;
+			
+			// Save current tab to sessionStorage (clears when browser/tab closes)
+			sessionStorage.setItem('wc_tp_active_performance_tab', tab);
 
 			// Update tab UI
 			$('.performance-tab').removeClass('active');
