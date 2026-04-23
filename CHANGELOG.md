@@ -1,3 +1,59 @@
+## [1.7.21] - 2026-04-24
+### 🔧 Fix - Order Details Modal Loading Error
+
+#### FIXED - "Error loading order details" Message
+- **Problem**: Modal showed "Error loading order details" instead of order information
+- **Root Cause**: Extra closing `</div>` tag in HTML structure causing malformed markup
+- **Solution**: Removed the extra closing div tag to fix HTML structure
+
+#### WHAT WAS FIXED
+
+**HTML Structure:**
+- Removed extra closing `</div>` tag that was breaking the modal
+- Fixed div nesting structure in ajax_get_order_details() method
+- Proper closing sequence now:
+  1. Closes `order-details-content` div
+  2. Closes `order-tab-content` div
+  3. Opens changelog tab
+  4. Closes `order-details-wrapper` div
+
+**Before (Broken):**
+```
+</div>  <!-- commission-breakdown -->
+</div>  <!-- order-details-content -->
+</div>  <!-- EXTRA - causing error -->
+</div>  <!-- order-tab-content -->
+```
+
+**After (Fixed):**
+```
+</div>  <!-- commission-breakdown -->
+</div>  <!-- order-details-content -->
+</div>  <!-- order-tab-content -->
+```
+
+#### HOW IT WORKS NOW
+1. Click view button on any order
+2. Modal opens with loading state
+3. AJAX successfully loads order details
+4. Modal displays with proper tabs and content
+5. Order Information tab shows all details
+6. Order Changelog tab shows timeline
+7. Tab switching works correctly
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php` - Fixed HTML structure in ajax_get_order_details()
+
+#### BENEFITS
+- ✅ Modal loads successfully without errors
+- ✅ Order details display correctly
+- ✅ Tabs render properly
+- ✅ Changelog timeline functional
+- ✅ All styling applied correctly
+- ✅ No more "Error loading order details" message
+
+---
+
 ## [1.7.20] - 2026-04-24
 ### 🔥 Hotfix - Critical Site Error Fix
 
