@@ -85,16 +85,46 @@ class WC_Team_Payroll_Leaderboard_Engine {
 
 		// Calculate metrics for all employees
 		$employee_data = array();
+		$filtered_out = array();
+		
+		error_log( 'WC Team Payroll Leaderboard: Calculating metrics for ' . count( $employees ) . ' employees' );
+		error_log( 'WC Team Payroll Leaderboard: Minimum orders required: ' . $minimum_orders );
+		error_log( 'WC Team Payroll Leaderboard: Date range: ' . $date_range['start'] . ' to ' . $date_range['end'] );
+		
 		foreach ( $employees as $employee_id ) {
 			$metrics = $this->calculate_employee_metrics( $employee_id, $date_range['start'], $date_range['end'] );
 			
+			$user = get_userdata( $employee_id );
+			$username = $user ? $user->user_login : 'Unknown';
+			
+			error_log( sprintf(
+				'WC Team Payroll Leaderboard: Employee %d (%s) - Orders: %d, Earnings: %.2f',
+				$employee_id,
+				$username,
+				$metrics['orders'],
+				$metrics['earnings']
+			) );
+			
 			// Apply minimum orders filter
 			if ( $minimum_orders > 0 && $metrics['orders'] < $minimum_orders ) {
+				$filtered_out[] = sprintf(
+					'Employee %d (%s) - Has %d orders, needs %d',
+					$employee_id,
+					$username,
+					$metrics['orders'],
+					$minimum_orders
+				);
 				continue;
 			}
 
 			$employee_data[ $employee_id ] = $metrics;
 		}
+		
+		if ( ! empty( $filtered_out ) ) {
+			error_log( 'WC Team Payroll Leaderboard: Filtered out employees: ' . implode( ' | ', $filtered_out ) );
+		}
+		
+		error_log( 'WC Team Payroll Leaderboard: ' . count( $employee_data ) . ' employees passed minimum orders filter' );
 
 		if ( empty( $employee_data ) ) {
 			return array(
@@ -582,6 +612,9 @@ class WC_Team_Payroll_Leaderboard_Engine {
 		// Get configured employee roles from settings
 		$employee_roles = get_option( 'wc_tp_employee_roles', array( 'shop_employee' ) );
 		
+		// Debug logging
+		error_log( 'WC Team Payroll Leaderboard: Employee roles from settings: ' . print_r( $employee_roles, true ) );
+		
 		// If employee_roles is an associative array (with role data), extract just the keys
 		if ( is_array( $employee_roles ) && ! empty( $employee_roles ) ) {
 			$role_keys = array_keys( $employee_roles );
@@ -597,6 +630,8 @@ class WC_Team_Payroll_Leaderboard_Engine {
 			// Fallback to default roles
 			$roles_to_query = array( 'shop_employee', 'shop_manager', 'administrator' );
 		}
+		
+		error_log( 'WC Team Payroll Leaderboard: Roles to query: ' . print_r( $roles_to_query, true ) );
 		
 		$args = array(
 			'role__in' => $roles_to_query,
@@ -618,7 +653,23 @@ class WC_Team_Payroll_Leaderboard_Engine {
 			);
 		}
 
+		error_log( 'WC Team Payroll Leaderboard: Query args: ' . print_r( $args, true ) );
+		
 		$users = get_users( $args );
+		
+		error_log( 'WC Team Payroll Leaderboard: Found ' . count( $users ) . ' eligible employees' );
+		if ( ! empty( $users ) ) {
+			error_log( 'WC Team Payroll Leaderboard: Employee IDs: ' . implode( ', ', $users ) );
+			
+			// Log each user's roles
+			foreach ( $users as $user_id ) {
+				$user = get_userdata( $user_id );
+				if ( $user ) {
+					error_log( 'WC Team Payroll Leaderboard: User ' . $user_id . ' (' . $user->user_login . ') has roles: ' . implode( ', ', $user->roles ) );
+				}
+			}
+		}
+		
 		return $users;
 	}
 
