@@ -1,3 +1,44 @@
+## [1.7.13] - 2026-04-23
+### 🔧 Fix - Leaderboard Shows Correct Earnings
+
+#### FIXED - Leaderboard Showing 0 Earnings Despite Having Orders
+- **Problem**: Leaderboard showed correct order count but 0.00৳ earnings even though employee had actual earnings
+- **Root Cause**: Meta key inconsistency - order queries used different meta keys than earnings calculation
+- **Impact**: Leaderboard data didn't match employee details page
+
+#### WHAT WAS THE ISSUE
+The plugin uses two different meta key formats for storing agent/processor IDs:
+- **Old format**: `_primary_agent_id` and `_processor_user_id`
+- **New format**: `_wc_tp_agent_id` and `_wc_tp_processor_id`
+
+Leaderboard queries were only checking the old format, causing:
+- ✅ Order count worked (found orders with old meta keys)
+- ❌ Earnings showed 0 (earnings calculation used new meta keys)
+
+#### WHAT WAS FIXED
+Updated all leaderboard queries to check **both meta key formats**:
+
+1. **Order Count Query** - Now checks both `_primary_agent_id` and `_wc_tp_agent_id`
+2. **Order Total Query** - Now checks both meta key formats for attributed order values
+3. **Commission Query** - Now checks both meta key formats for commission earnings
+
+#### HOW IT WORKS NOW
+- Leaderboard queries use `meta_query` with `OR` relation to check both formats
+- Maintains backward compatibility with old meta keys
+- Works correctly with new meta keys
+- Earnings now match between leaderboard and employee details page
+
+#### FILES MODIFIED
+- `includes/class-leaderboard-engine.php` - Updated `get_order_count()`, `get_attributed_order_total()`, and `get_commission_earnings()` methods
+
+#### BENEFITS
+- ✅ Leaderboard shows correct earnings matching employee details
+- ✅ Works with both old and new meta key formats
+- ✅ Backward compatible with existing data
+- ✅ No data migration required
+
+---
+
 ## [1.7.12] - 2026-04-23
 ### 🔧 Fix - Leaderboard Cache Respects Update Frequency
 
