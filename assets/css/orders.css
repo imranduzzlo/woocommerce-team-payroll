@@ -276,10 +276,6 @@
 	color: inherit !important;
 }
 
-.wc-team-payroll-orders .btn-action.btn-view .ph {
-	color: #3498db !important;
-}
-
 /* Responsive table */
 @media (max-width: 768px) {
 	.wc-team-payroll-orders .woocommerce-table--orders {

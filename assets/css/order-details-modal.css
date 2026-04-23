@@ -1,0 +1,809 @@
+/**
+ * Order Details Modal Styles
+ * 
+ * @package WooCommerce Team Payroll
+ * @since 1.7.18
+ */
+
+/* ============================================================================
+   MODAL OVERLAY & CONTAINER
+   ============================================================================ */
+
+.wc-tp-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 999999;
+	animation: fadeIn 0.2s ease;
+	overflow-y: auto;
+	padding: 20px;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.wc-tp-modal-content {
+	background: #ffffff;
+	border-radius: 12px;
+	max-width: 900px;
+	width: 100%;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+	animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+	from {
+		transform: translateY(30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.order-details-modal-content {
+	max-width: 1000px;
+}
+
+/* ============================================================================
+   MODAL HEADER
+   ============================================================================ */
+
+.wc-tp-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 24px 32px;
+	border-bottom: 2px solid #E5EAF0;
+	flex-shrink: 0;
+}
+
+.wc-tp-modal-header h3 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 700;
+	color: #212B36;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.wc-tp-modal-header h3 i {
+	font-size: 26px;
+	color: #FF9900;
+}
+
+.wc-tp-modal-close {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: none;
+	background: #F4F6F8;
+	color: #637381;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	font-size: 20px;
+}
+
+.wc-tp-modal-close:hover {
+	background: #E5EAF0;
+	color: #212B36;
+}
+
+/* ============================================================================
+   MODAL BODY
+   ============================================================================ */
+
+.wc-tp-modal-body {
+	padding: 0;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.loading-state,
+.error-state {
+	text-align: center;
+	padding: 60px 20px;
+}
+
+.loading-state i,
+.error-state i {
+	font-size: 48px;
+	color: #919EAB;
+	margin-bottom: 16px;
+	display: block;
+}
+
+.error-state i {
+	color: #dc3545;
+}
+
+.loading-state p,
+.error-state p {
+	font-size: 16px;
+	color: #637381;
+	margin: 0;
+}
+
+.ph-spin {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ============================================================================
+   ORDER DETAIL TABS
+   ============================================================================ */
+
+.order-detail-tabs {
+	display: flex;
+	gap: 8px;
+	padding: 0 32px;
+	border-bottom: 2px solid #E5EAF0;
+	background: #F9FAFB;
+}
+
+.order-detail-tabs .tab-button {
+	padding: 16px 24px;
+	border: none;
+	background: transparent;
+	color: #637381;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -2px;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.order-detail-tabs .tab-button i {
+	font-size: 18px;
+}
+
+.order-detail-tabs .tab-button:hover {
+	color: #212B36;
+	background: rgba(145, 158, 171, 0.08);
+}
+
+.order-detail-tabs .tab-button.active {
+	color: #FF9900;
+	border-bottom-color: #FF9900;
+	background: #ffffff;
+}
+
+/* ============================================================================
+   TAB CONTENT
+   ============================================================================ */
+
+.order-tab-content {
+	display: none;
+	padding: 32px;
+}
+
+.order-tab-content.active {
+	display: block;
+}
+
+/* ============================================================================
+   ORDER SECTIONS
+   ============================================================================ */
+
+.order-header-section {
+	background: linear-gradient(135deg, #F9FAFB 0%, #ffffff 100%);
+	border: 2px solid #E5EAF0;
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 24px;
+}
+
+.order-section {
+	background: #ffffff;
+	border: 1px solid #E5EAF0;
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 20px;
+}
+
+.order-section h4 {
+	margin: 0 0 20px 0;
+	font-size: 18px;
+	font-weight: 700;
+	color: #212B36;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-bottom: 16px;
+	border-bottom: 2px solid #E5EAF0;
+}
+
+.order-section h4 i {
+	font-size: 22px;
+	color: #FF9900;
+}
+
+.section-content {
+	padding-top: 4px;
+}
+
+/* ============================================================================
+   INFO GRID
+   ============================================================================ */
+
+.info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 16px;
+}
+
+.info-item {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.info-item .label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #637381;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.info-item .label i {
+	font-size: 16px;
+	color: #919EAB;
+}
+
+.info-item .value {
+	font-size: 16px;
+	font-weight: 600;
+	color: #212B36;
+}
+
+.info-item .value.amount {
+	color: #28a745;
+	font-size: 18px;
+}
+
+/* ============================================================================
+   ADDRESS BLOCK
+   ============================================================================ */
+
+.address-block {
+	background: #F9FAFB;
+	border: 1px solid #E5EAF0;
+	border-radius: 8px;
+	padding: 16px;
+	font-size: 14px;
+	line-height: 1.6;
+	color: #212B36;
+}
+
+/* ============================================================================
+   ORDER ITEMS TABLE
+   ============================================================================ */
+
+.order-items-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.order-items-table thead {
+	background: #F9FAFB;
+	border-bottom: 2px solid #E5EAF0;
+}
+
+.order-items-table th {
+	padding: 12px;
+	text-align: left;
+	font-weight: 600;
+	color: #637381;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-size: 12px;
+}
+
+.order-items-table tbody tr {
+	border-bottom: 1px solid #E5EAF0;
+}
+
+.order-items-table tbody tr:last-child {
+	border-bottom: none;
+}
+
+.order-items-table td {
+	padding: 16px 12px;
+	color: #212B36;
+}
+
+.order-items-table .item-meta {
+	margin-top: 8px;
+	font-size: 12px;
+	color: #637381;
+}
+
+.order-items-table .item-meta div {
+	margin-top: 4px;
+}
+
+.order-items-table tfoot {
+	border-top: 2px solid #E5EAF0;
+	background: #F9FAFB;
+}
+
+.order-items-table tfoot tr {
+	border-bottom: 1px solid #E5EAF0;
+}
+
+.order-items-table tfoot tr:last-child {
+	border-bottom: none;
+}
+
+.order-items-table tfoot th {
+	padding: 12px;
+	text-align: left;
+	font-weight: 600;
+	color: #212B36;
+	font-size: 14px;
+}
+
+.order-items-table tfoot td {
+	padding: 12px;
+	text-align: left;
+	font-weight: 600;
+	color: #212B36;
+}
+
+.order-items-table tfoot .order-total-row th,
+.order-items-table tfoot .order-total-row td {
+	font-size: 16px;
+	color: #28a745;
+	padding: 16px 12px;
+}
+
+/* ============================================================================
+   TEAM GRID
+   ============================================================================ */
+
+.team-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 16px;
+}
+
+.team-member {
+	background: #F9FAFB;
+	border: 1px solid #E5EAF0;
+	border-radius: 8px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.team-member .role-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #637381;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.team-member .member-info {
+	font-size: 16px;
+	font-weight: 600;
+	color: #212B36;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.you-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background: #FF9900;
+	color: #ffffff;
+	border-radius: 4px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* ============================================================================
+   COMMISSION GRID
+   ============================================================================ */
+
+.commission-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.commission-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 16px;
+	background: #F9FAFB;
+	border: 1px solid #E5EAF0;
+	border-radius: 8px;
+}
+
+.commission-item.total {
+	background: linear-gradient(135deg, #e8f5e9 0%, #f0fff4 100%);
+	border-color: #28a745;
+	padding: 16px;
+}
+
+.commission-item .label {
+	font-size: 14px;
+	font-weight: 600;
+	color: #637381;
+}
+
+.commission-item.total .label {
+	font-size: 16px;
+	color: #28a745;
+}
+
+.commission-item .value {
+	font-size: 16px;
+	font-weight: 700;
+	color: #212B36;
+}
+
+.commission-item.total .value {
+	font-size: 20px;
+	color: #28a745;
+}
+
+.extra-earnings-section {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.extra-earnings-list {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.extra-earning-item {
+	display: flex;
+	justify-content: space-between;
+	padding: 8px 12px;
+	background: #ffffff;
+	border: 1px solid #E5EAF0;
+	border-radius: 6px;
+	font-size: 13px;
+}
+
+/* ============================================================================
+   NOTES LIST
+   ============================================================================ */
+
+.notes-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.note-item {
+	background: #F9FAFB;
+	border: 1px solid #E5EAF0;
+	border-radius: 8px;
+	padding: 16px;
+}
+
+.note-meta {
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #E5EAF0;
+}
+
+.note-date {
+	font-size: 12px;
+	font-weight: 600;
+	color: #637381;
+}
+
+.note-content {
+	font-size: 14px;
+	color: #212B36;
+	line-height: 1.6;
+}
+
+.note-content p {
+	margin: 0;
+}
+
+/* ============================================================================
+   ORDER CHANGELOG
+   ============================================================================ */
+
+.order-changelog-content {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.changelog-header {
+	margin-bottom: 24px;
+}
+
+.changelog-description {
+	background: #E3F2FD;
+	border-left: 4px solid #1976D2;
+	padding: 16px;
+	border-radius: 8px;
+	font-size: 14px;
+	color: #1565C0;
+	margin: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	line-height: 1.6;
+}
+
+.changelog-description i {
+	font-size: 20px;
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.changelog-timeline {
+	position: relative;
+	padding-left: 40px;
+}
+
+.changelog-timeline::before {
+	content: '';
+	position: absolute;
+	left: 15px;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	background: #E5EAF0;
+}
+
+.changelog-entry {
+	position: relative;
+	margin-bottom: 24px;
+	padding-bottom: 24px;
+}
+
+.changelog-entry:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.changelog-icon {
+	position: absolute;
+	left: -40px;
+	top: 0;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: #ffffff;
+	border: 2px solid #E5EAF0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	color: #637381;
+}
+
+.changelog-entry.system-note .changelog-icon {
+	background: #E3F2FD;
+	border-color: #1976D2;
+	color: #1976D2;
+}
+
+.changelog-entry.customer-note .changelog-icon {
+	background: #FFF9C4;
+	border-color: #F57C00;
+	color: #F57C00;
+}
+
+.changelog-details {
+	background: #F9FAFB;
+	border: 1px solid #E5EAF0;
+	border-radius: 8px;
+	padding: 16px;
+}
+
+.changelog-meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #E5EAF0;
+}
+
+.changelog-date {
+	font-size: 13px;
+	font-weight: 600;
+	color: #637381;
+}
+
+.changelog-type-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 6px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.changelog-type-badge.system {
+	background: #E3F2FD;
+	color: #1976D2;
+}
+
+.changelog-type-badge.customer {
+	background: #FFF9C4;
+	color: #F57C00;
+}
+
+.changelog-content {
+	font-size: 14px;
+	color: #212B36;
+	line-height: 1.6;
+}
+
+.changelog-content p {
+	margin: 0;
+}
+
+.changelog-author {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid #E5EAF0;
+	font-size: 12px;
+	color: #637381;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.changelog-author i {
+	font-size: 14px;
+}
+
+.no-changelog {
+	text-align: center;
+	padding: 60px 20px;
+}
+
+.no-changelog i {
+	font-size: 48px;
+	color: #919EAB;
+	margin-bottom: 16px;
+	display: block;
+}
+
+.no-changelog p {
+	font-size: 16px;
+	color: #637381;
+	margin: 0;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+	.wc-tp-modal {
+		padding: 10px;
+	}
+
+	.wc-tp-modal-header {
+		padding: 20px;
+	}
+
+	.wc-tp-modal-header h3 {
+		font-size: 18px;
+	}
+
+	.order-detail-tabs {
+		padding: 0 20px;
+		overflow-x: auto;
+	}
+
+	.order-detail-tabs .tab-button {
+		padding: 14px 16px;
+		font-size: 14px;
+		white-space: nowrap;
+	}
+
+	.order-tab-content {
+		padding: 20px;
+	}
+
+	.order-header-section,
+	.order-section {
+		padding: 16px;
+	}
+
+	.info-grid,
+	.team-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.order-items-table {
+		font-size: 12px;
+	}
+
+	.order-items-table th,
+	.order-items-table td {
+		padding: 10px 8px;
+	}
+
+	.changelog-timeline {
+		padding-left: 30px;
+	}
+
+	.changelog-icon {
+		left: -30px;
+		width: 28px;
+		height: 28px;
+		font-size: 14px;
+	}
+}
+
+@media (max-width: 480px) {
+	.wc-tp-modal-header h3 {
+		font-size: 16px;
+	}
+
+	.order-detail-tabs .tab-button {
+		padding: 12px;
+		font-size: 13px;
+	}
+
+	.order-detail-tabs .tab-button i {
+		display: none;
+	}
+
+	.order-items-table {
+		display: block;
+		overflow-x: auto;
+	}
+}

@@ -605,7 +605,7 @@ class WC_Team_Payroll_MyAccount {
 
 			<!-- Monthly Earnings History Section -->
 			<div class="pv-section-wrapper earnings-history-section">
-				<h3><?php esc_html_e( 'Monthly Earnings History', 'wc-team-payroll' ); ?></h3>
+				<h3><?php esc_html_e( 'Earnings History', 'wc-team-payroll' ); ?></h3>
 				<div class="table-wrapper">
 					<div class="section-header">
 						<div class="pv-table-controls table-controls">
@@ -1027,6 +1027,9 @@ class WC_Team_Payroll_MyAccount {
 	public static function orders_commission_content() {
 		$user_id = get_current_user_id();
 		
+		// Enqueue order details modal CSS
+		wp_enqueue_style( 'wc-tp-order-details-modal', WC_TEAM_PAYROLL_URL . 'assets/css/order-details-modal.css', array(), WC_TEAM_PAYROLL_VERSION );
+		
 		// Get all WooCommerce order statuses
 		$all_statuses = wc_get_order_statuses();
 		
@@ -1401,13 +1404,83 @@ class WC_Team_Payroll_MyAccount {
 					// Actions
 					const actionsCell = $('<td></td>')
 						.append($('<button class="btn-action btn-view"></button>')
+							.attr('data-order-id', order.order_id)
 							.append($('<i class="ph ph-eye"></i>'))
 							.on('click', function() {
-								window.location.href = '<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>view-order/' + order.order_id + '/';
+								showOrderDetailsModal(order.order_id);
 							}));
 					
 					row.append(orderIdCell, dateCell, customerCell, roleCell, totalCell, attributedCell, commissionCell, earningCell, statusCell, actionsCell);
 					return row;
+				}
+
+				// Show order details modal
+				function showOrderDetailsModal(orderId) {
+					// Show loading state
+					$('#order-details-modal').remove();
+					
+					const modal = $('<div id="order-details-modal" class="wc-tp-modal"></div>');
+					const modalContent = $('<div class="wc-tp-modal-content order-details-modal-content"></div>');
+					const modalHeader = $('<div class="wc-tp-modal-header"></div>')
+						.append($('<h3></h3>').html('<i class="ph ph-package"></i> <?php esc_html_e( 'Order Details', 'wc-team-payroll' ); ?>'))
+						.append($('<button class="wc-tp-modal-close"></button>').html('<i class="ph ph-x"></i>'));
+					
+					const modalBody = $('<div class="wc-tp-modal-body"></div>')
+						.html('<div class="loading-state"><i class="ph ph-spinner ph-spin"></i><p><?php esc_html_e( 'Loading order details...', 'wc-team-payroll' ); ?></p></div>');
+					
+					modalContent.append(modalHeader, modalBody);
+					modal.append(modalContent);
+					$('body').append(modal);
+					
+					// Close modal handlers
+					modal.on('click', function(e) {
+						if ($(e.target).is('#order-details-modal')) {
+							modal.remove();
+						}
+					});
+					
+					modalHeader.find('.wc-tp-modal-close').on('click', function() {
+						modal.remove();
+					});
+					
+					// Load order details via AJAX
+					$.ajax({
+						url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
+						type: 'POST',
+						data: {
+							action: 'wc_tp_get_order_details',
+							order_id: orderId,
+							nonce: '<?php echo esc_attr( wp_create_nonce( 'wc_team_payroll_nonce' ) ); ?>'
+						},
+						success: function(response) {
+							if (response.success) {
+								modalBody.html(response.data.html);
+								
+								// Initialize changelog tab switching
+								initializeOrderTabs();
+							} else {
+								modalBody.html('<div class="error-state"><i class="ph ph-warning"></i><p>' + response.data + '</p></div>');
+							}
+						},
+						error: function() {
+							modalBody.html('<div class="error-state"><i class="ph ph-warning"></i><p><?php esc_html_e( 'Error loading order details', 'wc-team-payroll' ); ?></p></div>');
+						}
+					});
+				}
+				
+				// Initialize order details tabs
+				function initializeOrderTabs() {
+					$('.order-detail-tabs .tab-button').on('click', function() {
+						const tabId = $(this).data('tab');
+						
+						// Update active tab button
+						$('.order-detail-tabs .tab-button').removeClass('active');
+						$(this).addClass('active');
+						
+						// Update active tab content
+						$('.order-tab-content').removeClass('active');
+						$('#' + tabId).addClass('active');
+					});
 				}
 
 				function getStatusIcon(status) {
@@ -2354,7 +2427,7 @@ class WC_Team_Payroll_MyAccount {
 				
 				.pv-table-controls .filter-button,
 				.pv-filter-container .filter-button,
-				.report-filters .filter-button, .btn-action {
+				.report-filters .filter-button, .pv-page-wrapper .btn-action {
 					background: {$button_background} !important;
 					color: {$button_text_color} !important;
 					font-family: {$font_family} !important;
@@ -3261,14 +3334,13 @@ class WC_Team_Payroll_MyAccount {
 	 * Helper: Get user orders count for a period
 	 */
 	private static function get_user_orders_count_for_period( $user_id, $start_date, $end_date ) {
-		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
-		
+		// Count ALL orders regardless of status (to show actual order activity)
 		// Use proper date range with time to ensure full day coverage
 		$date_query = $start_date . ' 00:00:00...' . $end_date . ' 23:59:59';
 		
 		$args = array(
 			'limit'  => -1,
-			'status' => $commission_statuses,
+			'status' => 'any', // Count all order statuses (completed, failed, cancelled, etc.)
 			'date_created' => $date_query,
 		);
 
@@ -3276,9 +3348,16 @@ class WC_Team_Payroll_MyAccount {
 		$count = 0;
 
 		foreach ( $orders as $order ) {
-
+			// Check both old and new meta keys
 			$agent_id = $order->get_meta( '_primary_agent_id' );
+			if ( ! $agent_id ) {
+				$agent_id = $order->get_meta( '_wc_tp_agent_id' );
+			}
+			
 			$processor_id = $order->get_meta( '_processor_user_id' );
+			if ( ! $processor_id ) {
+				$processor_id = $order->get_meta( '_wc_tp_processor_id' );
+			}
 
 			if ( intval( $agent_id ) === intval( $user_id ) || intval( $processor_id ) === intval( $user_id ) ) {
 				$count++;

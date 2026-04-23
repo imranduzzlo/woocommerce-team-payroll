@@ -1332,121 +1332,120 @@
 	.text-info { color: #17a2b8 !important; }
 }
 
-	.reports-kpi-card {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-kpi-card {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	/* Charts */
-	.reports-analytics-section {
-		page-break-before: always;
-	}
+/* Charts */
+.reports-analytics-section {
+	page-break-before: always;
+}
 
-	.reports-chart-container {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-chart-container {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	/* Metrics */
-	.reports-metrics-section {
-		page-break-before: always;
-	}
+/* Metrics */
+.reports-metrics-section {
+	page-break-before: always;
+}
 
-	.reports-metrics-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 15px;
-	}
+.reports-metrics-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 15px;
+}
 
-	.reports-metric-box {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-metric-box {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	/* Tables */
-	.reports-tables-section {
-		page-break-before: always;
-	}
+/* Tables */
+.reports-tables-section {
+	page-break-before: always;
+}
 
-	.reports-table-wrapper {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-table-wrapper {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	.reports-table {
-		font-size: 11px;
-	}
+.reports-table {
+	font-size: 11px;
+}
 
-	.reports-table th {
-		background: #f8f9fa !important;
-		border: 1px solid #dee2e6 !important;
-	}
+.reports-table th {
+	background: #f8f9fa !important;
+	border: 1px solid #dee2e6 !important;
+}
 
-	.reports-table td {
-		border: 1px solid #dee2e6 !important;
-	}
+.reports-table td {
+	border: 1px solid #dee2e6 !important;
+}
 
-	/* Goals */
-	.reports-goals-section-wrapper {
-		page-break-before: always;
-	}
+/* Goals */
+.reports-goals-section-wrapper {
+	page-break-before: always;
+}
 
-	.reports-goals-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 15px;
-	}
+.reports-goals-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 15px;
+}
 
-	.reports-goal-card {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-goal-card {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	.reports-performance-summary {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-performance-summary {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	.reports-achievements {
-		page-break-inside: avoid;
-		box-shadow: none;
-		border: 1px solid #dee2e6;
-	}
+.reports-achievements {
+	page-break-inside: avoid;
+	box-shadow: none;
+	border: 1px solid #dee2e6;
+}
 
-	/* Footer */
-	.reports-export-section::after {
-		content: 'Generated on ' attr(data-date) ' - WooCommerce Team Payroll';
-		display: block;
-		margin-top: 30px;
-		padding-top: 20px;
-		border-top: 1px solid #dee2e6;
-		font-size: 11px;
-		color: #6c757d;
-		text-align: center;
-	}
+/* Footer */
+.reports-export-section::after {
+	content: 'Generated on ' attr(data-date) ' - WooCommerce Team Payroll';
+	display: block;
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 1px solid #dee2e6;
+	font-size: 11px;
+	color: #6c757d;
+	text-align: center;
+}
 
-	/* Remove colors for better printing */
-	.reports-kpi-card::before {
-		display: none;
-	}
+/* Remove colors for better printing */
+.reports-kpi-card::before {
+	display: none;
+}
 
-	/* Adjust spacing */
-	h3 {
-		page-break-after: avoid;
-		margin-top: 20px;
-	}
+/* Adjust spacing */
+h3 {
+	page-break-after: avoid;
+	margin-top: 20px;
+}
 
-	/* Links */
-	a {
-		color: #0073aa;
-		text-decoration: underline;
-	}
+/* Links */
+a {
+	color: #0073aa;
+	text-decoration: underline;
 }
 
 .reports-table td {

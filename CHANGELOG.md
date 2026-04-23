@@ -1,3 +1,95 @@
+## [1.7.18] - 2026-04-24
+### ✨ Feature - Comprehensive Order Details Modal with Changelog
+
+#### NEW - Order Details Modal in My Orders Page
+- **Feature**: Clicking view button now opens a comprehensive modal with full order details and changelog
+- **Benefit**: Employees can view complete order information without leaving the page
+- **Includes**: Order items, customer info, addresses, team assignment, commission breakdown, and order history
+
+#### WHAT WAS ADDED
+
+**Order Details Modal:**
+- Two-tab interface: Order Information and Order Changelog
+- Full order information matching admin order details page
+- Order items table with product details, quantities, prices, and totals
+- Customer information (name, email, phone, company)
+- Billing and shipping addresses
+- Payment and shipping methods
+- Team assignment (agent and processor)
+- Commission breakdown with extra earnings
+- Customer notes section
+
+**Order Changelog Tab:**
+- Complete timeline of all order changes
+- System notes (status changes, updates, modifications)
+- Customer notes (order notes visible to customer)
+- Timestamp for each change
+- Author information for each note
+- Visual distinction between system and customer notes
+- Timeline view with icons
+
+**Modal Features:**
+- Responsive design for mobile and desktop
+- Smooth animations and transitions
+- Easy-to-read layout with sections
+- Close button and click-outside-to-close
+- Tab switching between information and changelog
+- Professional styling matching My Account theme
+
+#### FIXED - Order Count Now Shows All Orders
+
+**Problem**: Order count in Earnings History only counted orders with commission calculation statuses
+**Solution**: Changed to count ALL order statuses (including failed, cancelled, etc.)
+
+**What Changed:**
+- `get_user_orders_count_for_period()` now uses `'status' => 'any'`
+- Counts all orders regardless of status
+- Also checks both old and new meta keys (`_primary_agent_id` OR `_wc_tp_agent_id`, `_processor_user_id` OR `_wc_tp_processor_id`)
+
+**Benefit**: Shows actual order activity, not just commission-earning orders
+
+#### FILES ADDED
+- `assets/css/order-details-modal.css` - Complete modal styling with tabs, timeline, and responsive design
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php`:
+  - Updated button click handler to open modal instead of redirect
+  - Enhanced `ajax_get_order_details()` with comprehensive order information
+  - Added order changelog with timeline view
+  - Fixed `get_user_orders_count_for_period()` to count all order statuses
+  - Added CSS enqueue for order details modal
+  - Checks both old and new meta keys for agent/processor
+
+#### HOW IT WORKS NOW
+
+**Order Details Modal:**
+1. Employee clicks view button (eye icon) on any order
+2. Modal opens with loading state
+3. AJAX loads complete order details
+4. Two tabs available:
+   - **Order Information**: All order details, items, customer, addresses, commission
+   - **Order Changelog**: Timeline of all changes, notes, and updates
+5. Employee can switch between tabs
+6. Close modal by clicking X, outside modal, or ESC key
+
+**Order Count:**
+1. Counts ALL orders where employee is agent or processor
+2. Includes completed, processing, pending, failed, cancelled, refunded, etc.
+3. Shows true order activity regardless of commission status
+4. Works with both old and new meta key formats
+
+#### BENEFITS
+- ✅ Complete order information in modal (no page redirect needed)
+- ✅ Order changelog shows all changes and updates
+- ✅ Professional timeline view for order history
+- ✅ Responsive design works on all devices
+- ✅ Order count shows actual activity (all statuses)
+- ✅ Better user experience with modal interface
+- ✅ Employees can track order changes and status updates
+- ✅ Matches admin order details functionality
+
+---
+
 ## [1.7.17] - 2026-04-24
 ### 🔧 Fix - Performance Tracker Tab Styling Override
 
