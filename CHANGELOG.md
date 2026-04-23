@@ -1,3 +1,74 @@
+## [1.7.14] - 2026-04-23
+### 🎯 Major - Leaderboard Period Selection Moved to Frontend
+
+#### CHANGED - Period Selection Now in Frontend
+- **Before**: Leaderboard period was hardcoded in backend settings (Current Month, Last 30 Days, etc.)
+- **After**: Users select period dynamically in frontend using the view selector (Current, Last, YTD, etc.)
+- **Benefit**: Same period selector as Overview and Goals tabs - consistent user experience
+
+#### WHAT WAS CHANGED
+
+**1. Removed Backend "Leaderboard Period" Setting**
+- Deleted the "Period Configuration" section from Performance Settings
+- Period is no longer hardcoded - users control it in real-time
+- Simplified admin settings interface
+
+**2. Frontend Period Selection**
+- Leaderboard now respects the view selector dropdown (same as Overview/Goals)
+- Available periods: Current, Last, Year to Date, All Time
+- Period changes instantly update leaderboard rankings
+- Each period has its own cache for performance
+
+**3. Enhanced Update Frequency Options**
+- Added "Monthly" option (30 days)
+- Options now: Hourly, Daily, Weekly, Monthly
+- Controls how often rankings are recalculated in background
+- Monthly frequency useful for stable, long-term rankings
+
+**4. Improved Caching System**
+- Cache key now includes view_mode (current, last, ytd, etc.)
+- Each period view has separate cache
+- Cache respects update frequency setting
+- Prevents stale data across different period views
+
+#### HOW IT WORKS NOW
+
+**Admin Settings:**
+- Enable/Disable leaderboard
+- Select ranking criteria (Earnings, Orders, AOV, etc.)
+- Set update frequency (Hourly/Daily/Weekly/Monthly)
+- Configure filters (minimum orders, exclude inactive)
+- Configure display options
+
+**Frontend (My Account → Performance Tracker → Leaderboard):**
+- User selects period from dropdown (Current, Last, YTD, All Time)
+- Leaderboard instantly shows rankings for that period
+- Rankings calculated using same period as Overview/Goals tabs
+- Consistent experience across all Performance Tracker tabs
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker-ajax.php` - Get view_mode from frontend, calculate period dates
+- `includes/class-leaderboard-engine.php` - Use provided period dates, support view_mode in cache
+- `includes/class-performance-settings.php` - Removed period setting, added monthly frequency
+- `includes/class-performance-tracker.php` - Support monthly frequency in cron
+- `assets/js/performance-tracker.js` - Send view_mode to leaderboard AJAX
+
+#### BENEFITS
+- ✅ Users control period selection in real-time
+- ✅ Consistent period selection across all tabs
+- ✅ Simplified admin settings
+- ✅ Better caching per period view
+- ✅ Monthly update frequency option
+- ✅ More flexible and user-friendly
+
+#### MIGRATION NOTES
+- Existing "period" setting in database is ignored (backward compatible)
+- No data migration needed
+- Leaderboard will use "current" period by default
+- Update frequency setting is preserved
+
+---
+
 ## [1.7.13] - 2026-04-23
 ### 🔧 Fix - Leaderboard Shows Correct Earnings
 
