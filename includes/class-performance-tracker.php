@@ -237,7 +237,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $period_type Period type (weekly, monthly, quarterly, yearly)
 	 * @return array Array with 'start' and 'end' dates
 	 */
-	private function get_view_mode_dates( $view_mode, $period_type ) {
+	public function get_view_mode_dates( $view_mode, $period_type ) {
 		$timezone = wp_timezone();
 		$now = new DateTime( 'now', $timezone );
 
