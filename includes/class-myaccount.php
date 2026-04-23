@@ -2220,7 +2220,7 @@ class WC_Team_Payroll_MyAccount {
 					border-color: {$border_color} !important;
 				}
 				
-				.section-header h3, .performance-tab {
+				.section-header h3 {
 					border-bottom-color: {$border_color} !important;
 				}
 				
@@ -2247,9 +2247,6 @@ class WC_Team_Payroll_MyAccount {
 				/* Phosphor icons in content */
 				.pv-page-wrapper .ph {
 					color: {$primary_color};
-				}				
-				.pv-page-wrapper button .ph, .btn-action .ph {
-					color: {$button_text_color} !important;
 				}
 				
 				/* Grid layouts */
@@ -2371,8 +2368,8 @@ class WC_Team_Payroll_MyAccount {
 				}
 				
 				.pv-table-controls .btn-clear-filters, .performance-tab{
-					background: rgba(233, 236, 239, 0.1) !important;
-					border: 1px solid rgba(233, 236, 239, 0.3) !important;
+					background: transparent !important;
+					border-bottom-color: transparent !important;
 					color: {$text_color} !important;
 					font-family: {$font_family} !important;
 					outline: none !important;
@@ -2380,15 +2377,21 @@ class WC_Team_Payroll_MyAccount {
 				}
 				
 				.pv-table-controls .btn-clear-filters .ph, .performance-tab .ph {
-					color: {$primary_color} !important;
+					color: {$text_color} !important;
 				}
 				
 				.pv-table-controls .btn-clear-filters:hover, .performance-tab:hover {
-					background-color: rgba(" . implode(',', sscanf($border_color, "#%02x%02x%02x")) . ", 0.1) !important;
+					background-color: rgba(" . implode(',', sscanf($primary_color, "#%02x%02x%02x")) . ", 0.1) !important;
 				}
-				
+				.performance-tab.active{
+					border-bottom-color:{$button_background} !important;
+					color:{$button_background} !important;
+				}
+				.performance-tab.active .ph{
+					color:{$button_background} !important;
+				}
 				/* Clear button active state (when filters are changed) */
-				.pv-table-controls .btn-clear-filters.filters-active, .performance-tab.active {
+				.pv-table-controls .btn-clear-filters.filters-active {
 					background: {$button_background} !important;
 					color: {$button_text_color} !important;
 					border-color: {$button_background} !important;
@@ -2600,6 +2603,7 @@ class WC_Team_Payroll_MyAccount {
 				.pv-section-wrapper .woocommerce-Price-amount {
 					color: {$primary_color} !important;
 				}
+				
 			";
 
 			// Add the dynamic CSS to shared stylesheet

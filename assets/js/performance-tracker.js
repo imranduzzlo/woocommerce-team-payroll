@@ -1854,6 +1854,25 @@
 		 * Render user rank card
 		 */
 		renderUserRankCard(userRank, totalEmployees) {
+			// Check if user is filtered out (doesn't meet minimum requirements)
+			if (userRank.filtered_out) {
+				return `
+					<div class="user-rank-card filtered-out">
+						<div class="rank-badge-large">⚠️</div>
+						<div class="rank-info">
+							<h4>Not Ranked</h4>
+							<p class="rank-position">${userRank.reason || 'Does not meet minimum requirements'}</p>
+							<p class="rank-percentile">Complete more orders to appear on leaderboard</p>
+						</div>
+						<div class="rank-stats">
+							${userRank.metrics && userRank.metrics.orders !== undefined ? `<div class="stat"><span>Your Orders:</span> <strong>${userRank.metrics.orders}</strong></div>` : ''}
+							${userRank.metrics && userRank.metrics.earnings !== undefined ? `<div class="stat"><span>Your Earnings:</span> <strong>${this.formatValue(userRank.metrics.earnings, 'value')}</strong></div>` : ''}
+						</div>
+					</div>
+				`;
+			}
+			
+			// Normal ranked user
 			const rankBadge = userRank.rank <= 3 ? 
 				['🥇', '🥈', '🥉'][userRank.rank - 1] : 
 				`#${userRank.rank}`;
@@ -1870,9 +1889,9 @@
 					</div>
 					<div class="rank-stats">
 						${userRank.score !== undefined ? `<div class="stat"><span>Score:</span> <strong>${userRank.score.toFixed(2)}</strong></div>` : ''}
-						${userRank.total_earnings !== undefined ? `<div class="stat"><span>Earnings:</span> <strong>${this.formatValue(userRank.total_earnings, 'value')}</strong></div>` : ''}
-						${userRank.total_orders !== undefined ? `<div class="stat"><span>Orders:</span> <strong>${userRank.total_orders}</strong></div>` : ''}
-						${userRank.average_order_value !== undefined ? `<div class="stat"><span>AOV:</span> <strong>${this.formatValue(userRank.average_order_value, 'value')}</strong></div>` : ''}
+						${userRank.metrics && userRank.metrics.earnings !== undefined ? `<div class="stat"><span>Earnings:</span> <strong>${this.formatValue(userRank.metrics.earnings, 'value')}</strong></div>` : ''}
+						${userRank.metrics && userRank.metrics.orders !== undefined ? `<div class="stat"><span>Orders:</span> <strong>${userRank.metrics.orders}</strong></div>` : ''}
+						${userRank.metrics && userRank.metrics.aov !== undefined ? `<div class="stat"><span>AOV:</span> <strong>${this.formatValue(userRank.metrics.aov, 'value')}</strong></div>` : ''}
 					</div>
 				</div>
 			`;

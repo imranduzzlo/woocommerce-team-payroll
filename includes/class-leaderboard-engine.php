@@ -147,6 +147,7 @@ class WC_Team_Payroll_Leaderboard_Engine {
 		// Cache leaderboard data
 		$cache_data = array(
 			'leaderboard' => $leaderboard,
+			'all_employees' => $employees, // Store all eligible employees for user rank check
 			'config' => $config,
 			'date_range' => $date_range,
 			'total_employees' => count( $leaderboard ),
@@ -170,7 +171,7 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	 * @param string $end_date End date (Y-m-d)
 	 * @return array Metrics data
 	 */
-	private function calculate_employee_metrics( $employee_id, $start_date, $end_date ) {
+	public function calculate_employee_metrics( $employee_id, $start_date, $end_date ) {
 		// Get basic metrics using performance tracker methods
 		$earnings = $this->get_total_earnings( $employee_id, $start_date, $end_date );
 		$orders = $this->get_order_count( $employee_id, $start_date, $end_date );

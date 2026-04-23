@@ -813,10 +813,46 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 		// Find current user's rank
 		$user_rank_data = null;
 		if ( $show_user_rank ) {
+			// First check if user is in the filtered leaderboard
 			foreach ( $leaderboard as $entry ) {
 				if ( $entry['user_id'] === $user_id ) {
 					$user_rank_data = $entry;
 					break;
+				}
+			}
+			
+			// If user not found in leaderboard (filtered out by minimum orders), 
+			// check if they should still be shown
+			if ( ! $user_rank_data ) {
+				// Check if user is an eligible employee
+				$all_employees = isset( $cached_data['all_employees'] ) ? $cached_data['all_employees'] : array();
+				if ( in_array( $user_id, $all_employees ) ) {
+					// User is eligible but filtered out - show them with a note
+					$user = get_userdata( $user_id );
+					if ( $user ) {
+						// Get user's actual metrics (even if below minimum)
+						$engine = new WC_Team_Payroll_Leaderboard_Engine();
+						$date_range = isset( $cached_data['date_range'] ) ? $cached_data['date_range'] : array();
+						
+						if ( ! empty( $date_range ) ) {
+							$user_metrics = $engine->calculate_employee_metrics( $user_id, $date_range['start'], $date_range['end'] );
+							
+							$user_rank_data = array(
+								'rank' => 0, // Not ranked
+								'user_id' => $user_id,
+								'display_name' => $user->display_name,
+								'user_email' => $user->user_email,
+								'score' => 0,
+								'percentile' => 0,
+								'metrics' => $user_metrics,
+								'filtered_out' => true, // Flag to show they don't meet minimum
+								'reason' => sprintf(
+									__( 'Does not meet minimum requirement (%d orders)', 'wc-team-payroll' ),
+									isset( $config['minimum_orders'] ) ? intval( $config['minimum_orders'] ) : 0
+								),
+							);
+						}
+					}
 				}
 			}
 		}

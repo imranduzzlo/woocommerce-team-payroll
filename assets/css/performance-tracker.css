@@ -64,27 +64,20 @@
 .performance-tabs {
 	display: flex;
 	gap: 8px;
+	flex-wrap: wrap;
 	margin-bottom: 24px;
-	border-bottom: 2px solid #f0f0f0;
+	border-bottom: 1px solid;
 }
 
 .performance-tab {
 	padding: 12px 24px;
-	background: rgba(233, 236, 239, 0.1);
-	border: 1px solid rgba(233, 236, 239, 0.3);
-	border-bottom: none;
+	border-bottom: 3px solid transparent;
 	border-radius: 6px 6px 0 0;
 	font-size: 15px;
 	font-weight: 500;
-	color: #637381;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	position: relative;
-}
-
-.performance-tab:hover {
-	background: rgba(233, 236, 239, 0.15);
-	color: #637381;
 }
 
 .performance-tab.active {
@@ -865,6 +858,7 @@
 
 	.performance-tabs {
 		overflow-x: auto;
+		flex-wrap:nowrap;
 		-webkit-overflow-scrolling: touch;
 	}
 
@@ -3105,6 +3099,28 @@
 .rank-stats .stat strong {
 	color: #212B36;
 	font-weight: 600;
+}
+
+/* Filtered Out User Rank Card */
+.user-rank-card.filtered-out {
+	background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+	border-color: #ff9800;
+	box-shadow: 0 4px 16px rgba(255, 152, 0, 0.15);
+}
+
+.user-rank-card.filtered-out .rank-badge-large {
+	color: #ff9800;
+}
+
+.user-rank-card.filtered-out .rank-position {
+	color: #ff9800;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.user-rank-card.filtered-out .rank-percentile {
+	color: #637381;
+	font-style: italic;
 }
 
 /* Leaderboard List */
