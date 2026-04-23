@@ -1,9 +1,9 @@
 # GitHub Release Creation Script for WooCommerce Team Payroll
-# Version: 1.7.9
+# Version: 1.7.10
 # Uses GitHub API to automatically create releases
 
 param(
-    [string]$Version = "1.7.9"
+    [string]$Version = "1.7.10"
 )
 
 # Configuration
@@ -12,7 +12,7 @@ $RepoName = "woocommerce-team-payroll"
 $Branch = "main"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "GitHub Release Creator v1.7.9" -ForegroundColor Cyan
+Write-Host "GitHub Release Creator v1.7.10" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -53,7 +53,7 @@ git add .
 
 Write-Host ""
 Write-Host "Step 3: Creating commit..." -ForegroundColor Yellow
-$commitMessage = "Release v$Version - Employee Detection Debugging"
+$commitMessage = "Release v$Version - Cache Clearing Fix"
 git commit -m $commitMessage
 
 if ($LASTEXITCODE -ne 0) {

@@ -1,3 +1,46 @@
+## [1.7.10] - 2026-04-23
+### 🔧 Fix - Cache Clearing for Debug Logs
+
+#### FIXED - Debug Logs Not Appearing on Recalculate
+- **Problem**: Debug logs weren't showing when clicking "Recalculate Leaderboard" because cached data was being used
+- **Root Cause**: Leaderboard was using cached results, skipping the employee detection and calculation code
+- **Solution**: Added explicit cache clearing before recalculation to force fresh data generation
+
+#### WHAT WAS FIXED
+- Added `$engine->clear_cache()` call before generating leaderboard
+- Ensures fresh calculation every time "Recalculate" is clicked
+- Debug logs now appear for every recalculation
+- Added logging for cache clearing and recalculation start
+
+#### NEW DEBUG LOGS
+Now when you click "Recalculate Leaderboard", you'll see:
+```
+WC Team Payroll Leaderboard: Clearing all leaderboard caches
+WC Team Payroll Leaderboard: Starting manual recalculation
+WC Team Payroll Leaderboard: Employee roles from settings: ...
+WC Team Payroll Leaderboard: Found X eligible employees
+WC Team Payroll Leaderboard: Employee X (username) - Orders: X, Earnings: X
+WC Team Payroll Leaderboard: Recalculation completed successfully
+```
+
+#### FILES MODIFIED
+- `includes/class-performance-settings.php` - Added cache clearing in `ajax_refresh_leaderboard()`
+
+#### BENEFITS
+- ✅ Debug logs now appear on every recalculation
+- ✅ Fresh data generated instead of using cache
+- ✅ Can see employee detection and filtering process
+- ✅ Easier to troubleshoot leaderboard issues
+
+#### HOW TO USE
+1. Update to v1.7.10
+2. Go to Performance Settings → Leaderboard
+3. Click "Recalculate Leaderboard"
+4. Check `wp-content/debug.log` for complete debug output
+5. All employee detection logs will now appear
+
+---
+
 ## [1.7.9] - 2026-04-23
 ### 🔍 Debug Release - Employee Detection & Filtering
 
