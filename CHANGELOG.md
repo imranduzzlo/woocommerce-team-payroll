@@ -1,3 +1,44 @@
+## [1.7.12] - 2026-04-23
+### 🔧 Fix - Leaderboard Cache Respects Update Frequency
+
+#### FIXED - Frontend Shows Stale Leaderboard Data
+- **Problem**: Leaderboard cache was hardcoded to expire after 1 hour, ignoring the "Update Frequency" setting
+- **Impact**: Even when set to "Daily" or "Weekly", cache expired hourly, but frontend still showed old data
+- **Root Cause**: Cache expiration was hardcoded to `HOUR_IN_SECONDS` instead of using configured frequency
+
+#### WHAT WAS FIXED
+1. **Dynamic Cache Expiration**: Cache now expires based on configured update frequency
+   - Hourly → 1 hour cache
+   - Daily → 24 hour cache  
+   - Weekly → 7 day cache
+
+2. **Automatic Cron Rescheduling**: When you change update frequency in settings:
+   - Old cron schedule is cleared
+   - New schedule is created with correct frequency
+   - Cache is cleared to force fresh data
+
+3. **Smart Initialization**: On plugin load, cron uses configured frequency instead of hardcoded "daily"
+
+#### HOW IT WORKS NOW
+- Set "Update Frequency" to "Daily" → Leaderboard updates once per day, cache lasts 24 hours
+- Set "Update Frequency" to "Hourly" → Leaderboard updates every hour, cache lasts 1 hour
+- Set "Update Frequency" to "Weekly" → Leaderboard updates weekly, cache lasts 7 days
+- Changing frequency automatically reschedules background updates
+- Saving settings clears cache to show fresh data immediately
+
+#### FILES MODIFIED
+- `includes/class-leaderboard-engine.php` - Dynamic cache expiration based on frequency
+- `includes/class-performance-settings.php` - Added cron rescheduling on settings save
+- `includes/class-performance-tracker.php` - Use configured frequency on initialization
+
+#### BENEFITS
+- ✅ Frontend always shows current leaderboard data
+- ✅ Cache duration matches update frequency setting
+- ✅ No need to manually click "Recalculate" to see updates
+- ✅ Automatic background updates work correctly
+
+---
+
 ## [1.7.11] - 2026-04-23
 ### ✨ Feature - Tab Persistence for Performance Tracker
 
