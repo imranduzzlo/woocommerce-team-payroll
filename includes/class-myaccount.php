@@ -2367,7 +2367,7 @@ class WC_Team_Payroll_MyAccount {
 					background: {$button_hover_background} !important;
 				}
 				
-				.pv-table-controls .btn-clear-filters, .performance-tab{
+				.pv-table-controls .btn-clear-filters, .pv-page-wrapper .performance-tab{
 					background: transparent !important;
 					border-bottom-color: transparent !important;
 					color: {$text_color} !important;
@@ -2376,18 +2376,18 @@ class WC_Team_Payroll_MyAccount {
 					transition: all 0.2s ease !important;
 				}
 				
-				.pv-table-controls .btn-clear-filters .ph, .performance-tab .ph {
+				.pv-table-controls .btn-clear-filters .ph, .pv-page-wrapper .performance-tab .ph {
 					color: {$text_color} !important;
 				}
 				
-				.pv-table-controls .btn-clear-filters:hover, .performance-tab:hover {
+				.pv-table-controls .btn-clear-filters:hover, .pv-page-wrapper .performance-tab:hover {
 					background-color: rgba(" . implode(',', sscanf($primary_color, "#%02x%02x%02x")) . ", 0.1) !important;
 				}
-				.performance-tab.active{
+				.pv-page-wrapper .performance-tab.active{
 					border-bottom-color:{$button_background} !important;
 					color:{$button_background} !important;
 				}
-				.performance-tab.active .ph{
+				.pv-page-wrapper .performance-tab.active .ph{
 					color:{$button_background} !important;
 				}
 				/* Clear button active state (when filters are changed) */
@@ -2406,13 +2406,13 @@ class WC_Team_Payroll_MyAccount {
 					border-color: {$button_hover_background} !important;
 				}
 				
-				.performance-tab.active:hover {
+				.pv-page-wrapper .performance-tab.active:hover {
 					background: {$button_hover_background} !important;
 					border-color: {$button_hover_background} !important;
 					color: {$button_text_color} !important;
 				}
 				
-				.performance-tab.active .ph {
+				.pv-page-wrapper .performance-tab.active .ph {
 					color: {$button_text_color} !important;
 				}
 				

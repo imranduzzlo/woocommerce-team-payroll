@@ -1,3 +1,46 @@
+## [1.7.17] - 2026-04-24
+### 🔧 Fix - Performance Tracker Tab Styling Override
+
+#### FIXED - Performance Tracker Tabs Now Use Dynamic Settings Colors
+- **Problem**: Performance tracker tabs inherited global `.pv-page-wrapper button` styles with hardcoded colors, ignoring dynamic CSS from settings
+- **Root Cause**: CSS specificity issue - global button styles had higher specificity than dynamic CSS
+- **Solution**: Increased specificity of dynamic CSS selectors to override global button styles
+
+#### WHAT WAS CHANGED
+
+**Dynamic CSS Selector Updates:**
+- Changed `.performance-tab` to `.pv-page-wrapper .performance-tab`
+- Changed `.performance-tab:hover` to `.pv-page-wrapper .performance-tab:hover`
+- Changed `.performance-tab.active` to `.pv-page-wrapper .performance-tab.active`
+- Changed `.performance-tab.active .ph` to `.pv-page-wrapper .performance-tab.active .ph`
+
+**Removed Hardcoded Overrides:**
+- Removed button override section from `performance-tracker.css`
+- Removed hardcoded colors (#FF9900, #637381, etc.)
+- Let dynamic CSS handle all performance-tab styling
+
+#### HOW IT WORKS NOW
+1. Dynamic CSS in myaccount.php has higher specificity
+2. Performance tabs use colors from settings:
+   - Default state: `text_color` from settings
+   - Hover state: `primary_color` with opacity
+   - Active state: `button_background` for border and color
+   - Active hover: `button_hover_background`
+3. Icon colors (`.ph`) follow text colors dynamically
+4. No hardcoded colors blocking dynamic styles
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php` - Updated dynamic CSS selectors for higher specificity
+- `assets/css/performance-tracker.css` - Removed hardcoded button override section
+
+#### BENEFITS
+- ✅ Performance tracker tabs respect settings colors
+- ✅ Consistent styling with other My Account elements
+- ✅ No hardcoded colors blocking customization
+- ✅ Dynamic CSS works as intended
+
+---
+
 ## [1.7.16] - 2026-04-23
 ### 🔧 Fix - Leaderboard Uses Same Earnings Calculation as Reports
 

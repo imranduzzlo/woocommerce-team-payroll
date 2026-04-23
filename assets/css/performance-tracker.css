@@ -3356,93 +3356,38 @@
 	}
 }
 
+
 /* ============================================================================
-   BUTTON OVERRIDE - Prevent pv-page-wrapper styles from affecting Performance Tracker
+   PERFORMANCE TAB OVERRIDE - Prevent global pv-page-wrapper button styles
    ============================================================================ */
 
-/* Override global pv-page-wrapper button styles for Performance Tracker */
-.performance-tracker-wrapper button,
-.performance-tracker-wrapper .btn,
-.performance-tab {
+/* 
+ * The .performance-tab is styled by dynamic CSS in myaccount.php
+ * This rule resets the global .pv-page-wrapper button styles
+ * Higher specificity: .pv-page-wrapper .performance-tracker-wrapper .performance-tab
+ * beats .pv-page-wrapper button
+ */
+.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab {
+	/* Reset all global button styles */
 	background: transparent !important;
 	color: inherit !important;
 	border: none !important;
-	border-radius: 0 !important;
-	font-family: inherit !important;
-	cursor: pointer !important;
-	transition: all 0.2s ease !important;
-	padding: 12px 24px !important;
-}
-
-/* Performance Tab specific styles (higher specificity) */
-.performance-tracker-wrapper .performance-tab {
-	background: transparent !important;
 	border-bottom: 3px solid transparent !important;
 	border-radius: 6px 6px 0 0 !important;
+	padding: 12px 24px !important;
 	font-size: 15px !important;
 	font-weight: 500 !important;
-	color: #637381 !important;
-}
-
-.performance-tracker-wrapper .performance-tab:hover {
-	background-color: rgba(145, 158, 171, 0.08) !important;
-	color: #212B36 !important;
-}
-
-.performance-tracker-wrapper .performance-tab.active {
-	font-weight: 600 !important;
-	color: #FF9900 !important;
-	border-bottom-color: #FF9900 !important;
-	background: transparent !important;
-}
-
-.performance-tracker-wrapper .performance-tab.active:hover {
-	background-color: rgba(255, 153, 0, 0.08) !important;
-}
-
-/* Claim/Action buttons in Performance Tracker */
-.performance-tracker-wrapper .btn-claim,
-.performance-tracker-wrapper .btn-view-code,
-.performance-tracker-wrapper .btn-copy,
-.performance-tracker-wrapper .btn-resend,
-.performance-tracker-wrapper .btn-notification-close {
-	/* These buttons keep their own specific styles defined elsewhere in this file */
-	background: #0073aa !important;
-	color: #ffffff !important;
-	border: none !important;
-	border-radius: 6px !important;
-	padding: 8px 16px !important;
-	font-weight: 500 !important;
+	cursor: pointer !important;
 	transition: all 0.2s ease !important;
 }
 
-.performance-tracker-wrapper .btn-claim:hover,
-.performance-tracker-wrapper .btn-view-code:hover,
-.performance-tracker-wrapper .btn-copy:hover,
-.performance-tracker-wrapper .btn-resend:hover {
-	background: #005a87 !important;
-	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
+/* Reset hover state - dynamic CSS will apply its own */
+.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab:hover {
+	background: transparent !important;
 }
 
-.performance-tracker-wrapper .btn-notification-close {
-	background: #FF9900 !important;
-}
-
-.performance-tracker-wrapper .btn-notification-close:hover {
-	background: #E68A00 !important;
-	box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3) !important;
-}
-
-/* View selector dropdown */
-.performance-tracker-wrapper #performance-view-selector {
-	background: #ffffff !important;
-	color: #212B36 !important;
-	border: 1px solid #E5EAF0 !important;
-	border-radius: 6px !important;
-	padding: 8px 16px !important;
-}
-
-.performance-tracker-wrapper #performance-view-selector:focus {
-	border-color: #FF9900 !important;
-	box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1) !important;
+/* Reset active state - dynamic CSS will apply its own */
+.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab.active {
+	background: transparent !important;
+	font-weight: 600 !important;
 }
