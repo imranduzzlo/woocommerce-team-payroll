@@ -832,37 +832,14 @@ class WC_Team_Payroll_Performance_Settings {
 				</table>
 			</div>
 
-			<!-- Period Configuration -->
+			<!-- Update Frequency -->
 			<div class="wc-tp-perf-card">
-				<h4><?php esc_html_e( 'Period Configuration', 'wc-team-payroll' ); ?></h4>
-				<p class="description"><?php esc_html_e( 'Configure the time period for leaderboard calculations.', 'wc-team-payroll' ); ?></p>
+				<h4><?php esc_html_e( 'Update Frequency', 'wc-team-payroll' ); ?></h4>
+				<p class="description"><?php esc_html_e( 'Configure how often leaderboard rankings are automatically recalculated. Users select the time period (Current, Last, YTD, etc.) in the frontend Performance Tracker.', 'wc-team-payroll' ); ?></p>
 				
 				<table class="form-table">
 					<tr>
-						<th><label for="leaderboard_period"><?php esc_html_e( 'Leaderboard Period', 'wc-team-payroll' ); ?></label></th>
-						<td>
-							<select id="leaderboard_period" name="leaderboard_period" class="wc-tp-leaderboard-setting">
-								<?php
-								$current_period = isset( $leaderboard_config['period'] ) ? $leaderboard_config['period'] : 'current_month';
-								$periods = array(
-									'current_week' => __( 'Current Week', 'wc-team-payroll' ),
-									'current_month' => __( 'Current Month', 'wc-team-payroll' ),
-									'current_quarter' => __( 'Current Quarter', 'wc-team-payroll' ),
-									'current_year' => __( 'Current Year', 'wc-team-payroll' ),
-									'last_30_days' => __( 'Last 30 Days', 'wc-team-payroll' ),
-									'last_90_days' => __( 'Last 90 Days', 'wc-team-payroll' ),
-								);
-								foreach ( $periods as $key => $label ) {
-									echo '<option value="' . esc_attr( $key ) . '"' . selected( $current_period, $key, false ) . '>' . esc_html( $label ) . '</option>';
-								}
-								?>
-							</select>
-							<p class="description"><?php esc_html_e( 'Time period used for calculating rankings', 'wc-team-payroll' ); ?></p>
-						</td>
-					</tr>
-					
-					<tr>
-						<th><label for="leaderboard_update_frequency"><?php esc_html_e( 'Update Frequency', 'wc-team-payroll' ); ?></label></th>
+						<th><label for="leaderboard_update_frequency"><?php esc_html_e( 'Recalculation Frequency', 'wc-team-payroll' ); ?></label></th>
 						<td>
 							<select id="leaderboard_update_frequency" name="leaderboard_update_frequency" class="wc-tp-leaderboard-setting">
 								<?php
@@ -871,13 +848,14 @@ class WC_Team_Payroll_Performance_Settings {
 									'hourly' => __( 'Hourly', 'wc-team-payroll' ),
 									'daily' => __( 'Daily (Recommended)', 'wc-team-payroll' ),
 									'weekly' => __( 'Weekly', 'wc-team-payroll' ),
+									'monthly' => __( 'Monthly', 'wc-team-payroll' ),
 								);
 								foreach ( $frequencies as $key => $label ) {
 									echo '<option value="' . esc_attr( $key ) . '"' . selected( $current_frequency, $key, false ) . '>' . esc_html( $label ) . '</option>';
 								}
 								?>
 							</select>
-							<p class="description"><?php esc_html_e( 'How often leaderboard rankings are recalculated automatically', 'wc-team-payroll' ); ?></p>
+							<p class="description"><?php esc_html_e( 'How often leaderboard rankings are recalculated in the background', 'wc-team-payroll' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -3840,7 +3818,6 @@ class WC_Team_Payroll_Performance_Settings {
 		$sanitized_config = array(
 			'enabled' => isset( $leaderboard_config['enabled'] ) && $leaderboard_config['enabled'] == 1 ? 1 : 0,
 			'criteria' => isset( $leaderboard_config['criteria'] ) ? sanitize_text_field( $leaderboard_config['criteria'] ) : 'total_earnings',
-			'period' => isset( $leaderboard_config['period'] ) ? sanitize_text_field( $leaderboard_config['period'] ) : 'current_month',
 			'update_frequency' => isset( $leaderboard_config['update_frequency'] ) ? sanitize_text_field( $leaderboard_config['update_frequency'] ) : 'daily',
 			'minimum_orders' => isset( $leaderboard_config['minimum_orders'] ) ? intval( $leaderboard_config['minimum_orders'] ) : 0,
 			'exclude_inactive' => isset( $leaderboard_config['exclude_inactive'] ) && $leaderboard_config['exclude_inactive'] == 1 ? 1 : 0,
@@ -3920,7 +3897,7 @@ class WC_Team_Payroll_Performance_Settings {
 	/**
 	 * Reschedule leaderboard cron job based on update frequency
 	 *
-	 * @param string $frequency Update frequency (hourly, daily, weekly)
+	 * @param string $frequency Update frequency (hourly, daily, weekly, monthly)
 	 */
 	private function reschedule_leaderboard_cron( $frequency ) {
 		// Clear existing schedule
@@ -3937,6 +3914,10 @@ class WC_Team_Payroll_Performance_Settings {
 				break;
 			case 'weekly':
 				$recurrence = 'weekly';
+				break;
+			case 'monthly':
+				// WordPress doesn't have a built-in monthly schedule, use daily and check in cron
+				$recurrence = 'daily';
 				break;
 			case 'daily':
 			default:

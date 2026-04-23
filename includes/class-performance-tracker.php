@@ -2555,6 +2555,9 @@ class WC_Team_Payroll_Performance_Tracker {
 				case 'weekly':
 					$should_update = $time_diff >= WEEK_IN_SECONDS;
 					break;
+				case 'monthly':
+					$should_update = $time_diff >= ( 30 * DAY_IN_SECONDS );
+					break;
 				case 'daily':
 				default:
 					$should_update = $time_diff >= DAY_IN_SECONDS;
