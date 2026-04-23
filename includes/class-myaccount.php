@@ -1407,6 +1407,7 @@ class WC_Team_Payroll_MyAccount {
 							.attr('data-order-id', order.order_id)
 							.append($('<i class="ph ph-eye"></i>'))
 							.on('click', function() {
+								console.log('Button clicked for order:', order.order_id);
 								showOrderDetailsModal(order.order_id);
 							}));
 					
@@ -1416,6 +1417,8 @@ class WC_Team_Payroll_MyAccount {
 
 				// Show order details modal
 				function showOrderDetailsModal(orderId) {
+					console.log('Opening modal for order:', orderId);
+					
 					// Show loading state
 					$('#order-details-modal').remove();
 					
