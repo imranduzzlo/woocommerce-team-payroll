@@ -1,3 +1,26 @@
+## [1.7.15] - 2026-04-23
+### 🔧 Fix - Network Error on Leaderboard Tab
+
+#### FIXED - "Network error. Please try again." on Frontend
+- **Problem**: Leaderboard tab showed network error when trying to load
+- **Root Cause**: `get_view_mode_dates()` method was private, couldn't be called from AJAX handler
+- **Solution**: Changed method visibility from private to public
+
+#### WHAT WAS FIXED
+- Made `get_view_mode_dates()` method public in Performance Tracker class
+- AJAX handler can now properly call the method to get period dates
+- Leaderboard now loads correctly on frontend
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Changed method visibility to public
+
+#### BENEFITS
+- ✅ Leaderboard tab now loads without errors
+- ✅ Period selection works correctly
+- ✅ Rankings display properly
+
+---
+
 ## [1.7.14] - 2026-04-23
 ### 🎯 Major - Leaderboard Period Selection Moved to Frontend
 
