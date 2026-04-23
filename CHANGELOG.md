@@ -1,3 +1,29 @@
+## [1.7.11] - 2026-04-23
+### ✨ Feature - Tab Persistence for Performance Tracker
+
+#### NEW - Session-Based Tab Memory
+- **Feature**: Performance Tracker tabs now remember which tab was last opened during browser session
+- **Behavior**: 
+  - When you reload the page (F5), it stays on the same tab you were viewing
+  - When you close the browser/tab and reopen, it resets to the Overview tab (first tab)
+- **Implementation**: Uses `sessionStorage` (not `localStorage`) so it clears when browser closes
+
+#### HOW IT WORKS
+- Switching tabs saves the current tab to `sessionStorage`
+- On page load, checks for saved tab and opens it automatically
+- If no saved tab exists (first visit or after browser close), opens Overview tab
+- Session storage automatically clears when browser/tab is closed
+
+#### USER EXPERIENCE
+- ✅ Reload page → Stays on current tab
+- ✅ Close browser → Resets to Overview on next visit
+- ✅ Works across all Performance Tracker tabs (Overview, Goals, Achievements, Leaderboard, etc.)
+
+#### FILES MODIFIED
+- `assets/js/performance-tracker.js` - Added sessionStorage for tab persistence
+
+---
+
 ## [1.7.10] - 2026-04-23
 ### 🔧 Fix - Cache Clearing for Debug Logs
 
