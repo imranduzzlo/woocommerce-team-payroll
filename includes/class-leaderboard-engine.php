@@ -233,26 +233,48 @@ class WC_Team_Payroll_Leaderboard_Engine {
 
 		$order_ids = array();
 
-		// Agent orders
+		// Agent orders - check both meta keys for compatibility
 		$agent_args = array(
 			'limit'        => -1,
-			'meta_key'     => '_primary_agent_id',
-			'meta_value'   => $employee_id,
 			'status'       => $statuses_to_query,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
 			'return'       => 'ids',
+			'meta_query'   => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_primary_agent_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				),
+				array(
+					'key'     => '_wc_tp_agent_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				)
+			)
 		);
 		$agent_orders = wc_get_orders( $agent_args );
 		$order_ids = array_merge( $order_ids, $agent_orders );
 
-		// Processor orders
+		// Processor orders - check both meta keys for compatibility
 		$processor_args = array(
 			'limit'        => -1,
-			'meta_key'     => '_processor_user_id',
-			'meta_value'   => $employee_id,
 			'status'       => $statuses_to_query,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
 			'return'       => 'ids',
+			'meta_query'   => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_processor_user_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				),
+				array(
+					'key'     => '_wc_tp_processor_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				)
+			)
 		);
 		$processor_orders = wc_get_orders( $processor_args );
 		$order_ids = array_merge( $order_ids, $processor_orders );
@@ -272,14 +294,25 @@ class WC_Team_Payroll_Leaderboard_Engine {
 
 		$attributed_total = 0;
 
-		// Agent orders
+		// Agent orders - check both meta keys for compatibility
 		$agent_args = array(
 			'limit'        => -1,
-			'meta_key'     => '_primary_agent_id',
-			'meta_value'   => $employee_id,
 			'status'       => $statuses_to_query,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
 			'return'       => 'ids',
+			'meta_query'   => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_primary_agent_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				),
+				array(
+					'key'     => '_wc_tp_agent_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				)
+			)
 		);
 		$agent_orders = wc_get_orders( $agent_args );
 		foreach ( $agent_orders as $order_id ) {
@@ -293,14 +326,25 @@ class WC_Team_Payroll_Leaderboard_Engine {
 			}
 		}
 
-		// Processor orders
+		// Processor orders - check both meta keys for compatibility
 		$processor_args = array(
 			'limit'        => -1,
-			'meta_key'     => '_processor_user_id',
-			'meta_value'   => $employee_id,
 			'status'       => $statuses_to_query,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
 			'return'       => 'ids',
+			'meta_query'   => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_processor_user_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				),
+				array(
+					'key'     => '_wc_tp_processor_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				)
+			)
 		);
 		$processor_orders = wc_get_orders( $processor_args );
 		foreach ( $processor_orders as $order_id ) {
@@ -329,14 +373,25 @@ class WC_Team_Payroll_Leaderboard_Engine {
 
 		$total_commission = 0;
 
-		// Agent commission
+		// Agent commission - check both meta keys for compatibility
 		$agent_args = array(
 			'limit'        => -1,
-			'meta_key'     => '_primary_agent_id',
-			'meta_value'   => $employee_id,
 			'status'       => $statuses_to_query,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
 			'return'       => 'ids',
+			'meta_query'   => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_primary_agent_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				),
+				array(
+					'key'     => '_wc_tp_agent_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				)
+			)
 		);
 		$agent_orders = wc_get_orders( $agent_args );
 		foreach ( $agent_orders as $order_id ) {
@@ -350,14 +405,25 @@ class WC_Team_Payroll_Leaderboard_Engine {
 			}
 		}
 
-		// Processor commission
+		// Processor commission - check both meta keys for compatibility
 		$processor_args = array(
 			'limit'        => -1,
-			'meta_key'     => '_processor_user_id',
-			'meta_value'   => $employee_id,
 			'status'       => $statuses_to_query,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
 			'return'       => 'ids',
+			'meta_query'   => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_processor_user_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				),
+				array(
+					'key'     => '_wc_tp_processor_id',
+					'value'   => $employee_id,
+					'compare' => '='
+				)
+			)
 		);
 		$processor_orders = wc_get_orders( $processor_args );
 		foreach ( $processor_orders as $order_id ) {
