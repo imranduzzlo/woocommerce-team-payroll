@@ -1,3 +1,103 @@
+## [1.7.9] - 2026-04-23
+### 🔍 Debug Release - Employee Detection & Filtering
+
+#### ADDED - Comprehensive Employee Detection Debugging
+- **Purpose**: Identify why some employees are not appearing in leaderboard
+- **Problem**: Leaderboard showing only 1 employee when more exist with orders
+- **Solution**: Added detailed logging to track employee detection and filtering process
+
+#### DEBUGGING FEATURES ADDED
+
+**1. Employee Role Detection Logging**
+- Logs configured employee roles from settings
+- Shows which roles are being queried
+- Displays role extraction logic (simple array vs associative array)
+
+**2. Employee Query Logging**
+- Logs complete query arguments
+- Shows number of eligible employees found
+- Lists all employee IDs found
+- Displays each employee's username and assigned roles
+
+**3. Metrics Calculation Logging**
+- Logs date range being used for calculations
+- Shows minimum orders requirement
+- Displays each employee's calculated metrics:
+  - Order count
+  - Total earnings
+  - Username for identification
+
+**4. Filtering Process Logging**
+- Tracks which employees are filtered out
+- Shows reason for filtering (e.g., "Has 0 orders, needs 1")
+- Displays final count of employees passing filters
+
+#### WHAT GETS LOGGED
+
+**Example Log Output:**
+```
+WC Team Payroll Leaderboard: Employee roles from settings: Array([administrator] => Administrator)
+WC Team Payroll Leaderboard: Roles to query: Array([0] => administrator)
+WC Team Payroll Leaderboard: Query args: Array([role__in] => Array([0] => administrator))
+WC Team Payroll Leaderboard: Found 2 eligible employees
+WC Team Payroll Leaderboard: Employee IDs: 1, 5
+WC Team Payroll Leaderboard: User 1 (admin) has roles: administrator
+WC Team Payroll Leaderboard: User 5 (employee1) has roles: administrator
+WC Team Payroll Leaderboard: Calculating metrics for 2 employees
+WC Team Payroll Leaderboard: Minimum orders required: 1
+WC Team Payroll Leaderboard: Date range: 2026-04-01 to 2026-04-30
+WC Team Payroll Leaderboard: Employee 1 (admin) - Orders: 5, Earnings: 1500.00
+WC Team Payroll Leaderboard: Employee 5 (employee1) - Orders: 0, Earnings: 0.00
+WC Team Payroll Leaderboard: Filtered out employees: Employee 5 (employee1) - Has 0 orders, needs 1
+WC Team Payroll Leaderboard: 1 employees passed minimum orders filter
+```
+
+#### ISSUES THIS HELPS IDENTIFY
+
+- ✅ **Wrong Role Assignment**: Employee has wrong role (not in configured roles)
+- ✅ **Inactive Status**: Employee marked as inactive
+- ✅ **No Orders in Period**: Employee has orders but not in selected date range
+- ✅ **Order Status Issues**: Orders not in commission calculation statuses
+- ✅ **Minimum Orders Filter**: Employee doesn't meet minimum order requirement
+- ✅ **Role Configuration**: Employee roles setting is empty or misconfigured
+
+#### HOW TO USE
+
+1. Update to v1.7.9
+2. Enable WordPress debug logging in `wp-config.php`:
+   ```php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   define('WP_DEBUG_DISPLAY', false);
+   ```
+3. Go to Performance Settings → Leaderboard
+4. Click "Recalculate Leaderboard"
+5. Check `wp-content/debug.log` for detailed logs
+6. Look for lines starting with "WC Team Payroll Leaderboard:"
+7. Identify why employees are missing from leaderboard
+
+#### COMMON ISSUES & SOLUTIONS
+
+**Issue**: "Found 0 eligible employees"
+- **Cause**: No users have configured employee roles
+- **Solution**: Assign correct roles to employees in Settings → Employee Roles
+
+**Issue**: "Employee X - Has 0 orders, needs 1"
+- **Cause**: Employee has no orders in the selected period
+- **Solution**: Check date range or verify orders exist with correct statuses
+
+**Issue**: "User X has roles: customer"
+- **Cause**: Employee has wrong role assigned
+- **Solution**: Change user role to match configured employee roles
+
+#### FILES MODIFIED
+- `includes/class-leaderboard-engine.php` - Added comprehensive logging
+
+#### NEXT STEPS
+After reviewing debug logs, the specific issue will be fixed in the next release.
+
+---
+
 ## [1.7.8] - 2026-04-22
 ### ✅ FIXED - Leaderboard Earnings Calculation Method
 
