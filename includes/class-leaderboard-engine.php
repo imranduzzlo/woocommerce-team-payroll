@@ -232,12 +232,49 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	}
 
 	/**
-	 * Get total earnings for employee
+	 * Get total earnings for employee (same logic as Reports KPI cards)
+	 * Total Earnings = Commission from orders + Salary from transactions (filtered by date)
 	 */
 	private function get_total_earnings( $employee_id, $start_date, $end_date ) {
-		// Use performance settings calculation method
-		$settings = new WC_Team_Payroll_Performance_Settings();
-		return $settings->calculate_employee_earnings_with_attribution( $employee_id, $start_date, $end_date );
+		// Get commission calculation statuses
+		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+		
+		// Get user earnings data (commission from orders)
+		$engine = new WC_Team_Payroll_Core_Engine();
+		$earnings_data = $engine->get_user_earnings( $employee_id, $start_date, $end_date, $commission_statuses );
+		
+		// Calculate total commission from orders
+		$total_commission = 0;
+		foreach ( $earnings_data['orders'] as $order_data ) {
+			$total_commission += $order_data['earnings'];
+		}
+		
+		// Get salary for the period (from transactions filtered by date range)
+		$salary_for_period = 0;
+		$is_fixed_salary = get_user_meta( $employee_id, '_wc_tp_fixed_salary', true );
+		$is_combined_salary = get_user_meta( $employee_id, '_wc_tp_combined_salary', true );
+		
+		if ( $is_fixed_salary || $is_combined_salary ) {
+			$transactions = get_user_meta( $employee_id, '_wc_tp_salary_transactions', true );
+			if ( is_array( $transactions ) ) {
+				foreach ( $transactions as $transaction ) {
+					if ( ! isset( $transaction['date'] ) ) {
+						continue;
+					}
+					
+					$trans_date = date( 'Y-m-d', strtotime( $transaction['date'] ) );
+					if ( $trans_date >= $start_date && $trans_date <= $end_date ) {
+						// Check for transfer types (daily_transfer, weekly_transfer, monthly_transfer, partial_transfer)
+						if ( isset( $transaction['type'] ) && strpos( $transaction['type'], 'transfer' ) !== false ) {
+							$salary_for_period += floatval( $transaction['amount'] ?? 0 );
+						}
+					}
+				}
+			}
+		}
+		
+		// Total earnings = commission + salary (same as KPI cards)
+		return $total_commission + $salary_for_period;
 	}
 
 	/**
