@@ -48,7 +48,19 @@ class WC_Team_Payroll_Performance_Tracker {
 			wp_schedule_event( time(), 'daily', 'wc_tp_finalize_period_goals' );
 		}
 		if ( ! wp_next_scheduled( 'wc_tp_update_leaderboard' ) ) {
-			wp_schedule_event( time(), 'daily', 'wc_tp_update_leaderboard' );
+			// Get configured frequency for leaderboard
+			$config = get_option( 'wc_tp_leaderboard_config', array() );
+			$frequency = isset( $config['update_frequency'] ) ? $config['update_frequency'] : 'daily';
+			
+			// Map frequency to WordPress cron recurrence
+			$recurrence = 'daily';
+			if ( $frequency === 'hourly' ) {
+				$recurrence = 'hourly';
+			} elseif ( $frequency === 'weekly' ) {
+				$recurrence = 'weekly';
+			}
+			
+			wp_schedule_event( time(), $recurrence, 'wc_tp_update_leaderboard' );
 		}
 	}
 

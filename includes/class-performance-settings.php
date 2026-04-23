@@ -3855,9 +3855,12 @@ class WC_Team_Payroll_Performance_Settings {
 		// Save to database
 		update_option( 'wc_tp_leaderboard_config', $sanitized_config );
 
-		// Clear leaderboard cache
-		wp_cache_delete( 'wc_tp_leaderboard_config', 'options' );
-		delete_transient( 'wc_tp_leaderboard_data' );
+		// Reschedule cron job if update frequency changed
+		$this->reschedule_leaderboard_cron( $sanitized_config['update_frequency'] );
+
+		// Clear leaderboard cache to force fresh data on next load
+		$engine = new WC_Team_Payroll_Leaderboard_Engine();
+		$engine->clear_cache();
 
 		wp_send_json_success( array( 
 			'message' => __( 'Leaderboard configuration saved successfully!', 'wc-team-payroll' ),
@@ -3912,6 +3915,37 @@ class WC_Team_Payroll_Performance_Settings {
 			'total_employees' => isset( $result['total_employees'] ) ? $result['total_employees'] : 0,
 			'period' => isset( $result['date_range']['period_id'] ) ? $result['date_range']['period_id'] : '',
 		) );
+	}
+
+	/**
+	 * Reschedule leaderboard cron job based on update frequency
+	 *
+	 * @param string $frequency Update frequency (hourly, daily, weekly)
+	 */
+	private function reschedule_leaderboard_cron( $frequency ) {
+		// Clear existing schedule
+		$timestamp = wp_next_scheduled( 'wc_tp_update_leaderboard' );
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, 'wc_tp_update_leaderboard' );
+		}
+
+		// Schedule based on frequency
+		$recurrence = 'daily'; // Default
+		switch ( $frequency ) {
+			case 'hourly':
+				$recurrence = 'hourly';
+				break;
+			case 'weekly':
+				$recurrence = 'weekly';
+				break;
+			case 'daily':
+			default:
+				$recurrence = 'daily';
+				break;
+		}
+
+		// Schedule new event
+		wp_schedule_event( time(), $recurrence, 'wc_tp_update_leaderboard' );
 	}
 
 }

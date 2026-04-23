@@ -154,7 +154,23 @@ class WC_Team_Payroll_Leaderboard_Engine {
 			'generated_at' => current_time( 'mysql' ),
 		);
 
-		set_transient( 'wc_tp_leaderboard_data_' . $date_range['period_id'], $cache_data, HOUR_IN_SECONDS );
+		// Set cache expiration based on update frequency
+		$update_frequency = isset( $config['update_frequency'] ) ? $config['update_frequency'] : 'daily';
+		$cache_expiration = DAY_IN_SECONDS; // Default to daily
+		
+		switch ( $update_frequency ) {
+			case 'hourly':
+				$cache_expiration = HOUR_IN_SECONDS;
+				break;
+			case 'daily':
+				$cache_expiration = DAY_IN_SECONDS;
+				break;
+			case 'weekly':
+				$cache_expiration = WEEK_IN_SECONDS;
+				break;
+		}
+
+		set_transient( 'wc_tp_leaderboard_data_' . $date_range['period_id'], $cache_data, $cache_expiration );
 
 		return $cache_data;
 	}
