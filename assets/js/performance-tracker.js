@@ -284,6 +284,7 @@
 				data: {
 					action: 'wc_tp_get_leaderboard_data',
 					nonce: wc_tp_reports.nonce,
+					view_mode: this.currentView, // Send current view mode (current, last, ytd, etc.)
 					cache_bust: Date.now()
 				},
 				success: (response) => {

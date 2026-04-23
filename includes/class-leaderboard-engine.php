@@ -59,12 +59,22 @@ class WC_Team_Payroll_Leaderboard_Engine {
 
 		// Get configuration values
 		$criteria = isset( $config['criteria'] ) ? $config['criteria'] : 'total_earnings';
-		$period = isset( $config['period'] ) ? $config['period'] : 'current_month';
 		$minimum_orders = isset( $config['minimum_orders'] ) ? intval( $config['minimum_orders'] ) : 0;
 		$exclude_inactive = isset( $config['exclude_inactive'] ) ? $config['exclude_inactive'] : 1;
 
-		// Get date range for period
-		$date_range = $this->get_period_date_range( $period );
+		// Get date range - use provided dates from AJAX or calculate from period
+		if ( isset( $config['period_start'] ) && isset( $config['period_end'] ) && isset( $config['period_id'] ) ) {
+			// Use dates from frontend view_mode
+			$date_range = array(
+				'start' => $config['period_start'],
+				'end' => $config['period_end'],
+				'period_id' => $config['period_id'],
+			);
+		} else {
+			// Fallback to old period-based calculation (for cron jobs)
+			$period = isset( $config['period'] ) ? $config['period'] : 'current_month';
+			$date_range = $this->get_period_date_range( $period );
+		}
 
 		// Get all eligible employees
 		$employees = $this->get_eligible_employees( $exclude_inactive );
@@ -168,9 +178,18 @@ class WC_Team_Payroll_Leaderboard_Engine {
 			case 'weekly':
 				$cache_expiration = WEEK_IN_SECONDS;
 				break;
+			case 'monthly':
+				$cache_expiration = 30 * DAY_IN_SECONDS;
+				break;
 		}
 
-		set_transient( 'wc_tp_leaderboard_data_' . $date_range['period_id'], $cache_data, $cache_expiration );
+		// Cache key includes view_mode if provided (for frontend caching)
+		$cache_key = $date_range['period_id'];
+		if ( isset( $config['view_mode'] ) ) {
+			$cache_key .= '_' . $config['view_mode'];
+		}
+
+		set_transient( 'wc_tp_leaderboard_data_' . $cache_key, $cache_data, $cache_expiration );
 
 		return $cache_data;
 	}

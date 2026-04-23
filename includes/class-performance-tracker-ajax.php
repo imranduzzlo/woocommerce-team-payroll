@@ -729,6 +729,9 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
 		}
 
+		// Get view_mode from request (same as Overview/Goals tabs)
+		$view_mode = isset( $_POST['view_mode'] ) ? sanitize_text_field( $_POST['view_mode'] ) : 'current';
+		
 		// Get leaderboard configuration
 		$config = get_option( 'wc_tp_leaderboard_config', array() );
 		
@@ -748,6 +751,21 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			) );
 		}
 
+		// Get period type from goals configuration (same as Overview/Goals)
+		$goals_config = get_option( 'wc_tp_goals_config', array() );
+		$period_type = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
+		
+		// Get period dates based on view mode
+		$tracker = new WC_Team_Payroll_Performance_Tracker();
+		$period_dates = $tracker->get_view_mode_dates( $view_mode, $period_type );
+		
+		// Add period info to config for leaderboard generation
+		$config['period_start'] = $period_dates['start'];
+		$config['period_end'] = $period_dates['end'];
+		$config['period_id'] = $period_dates['period_id'];
+		$config['period_type'] = $period_type;
+		$config['view_mode'] = $view_mode;
+
 		// Initialize leaderboard engine
 		try {
 			$engine = new WC_Team_Payroll_Leaderboard_Engine();
@@ -757,17 +775,9 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 			) );
 		}
 		
-		// Try to get cached data first
-		$period = isset( $config['period'] ) ? $config['period'] : 'current_month';
-		
-		try {
-			$date_range = $engine->get_period_date_range( $period );
-			$cached_data = $engine->get_cached_leaderboard( $date_range['period_id'] );
-		} catch ( Exception $e ) {
-			wp_send_json_error( array( 
-				'message' => sprintf( __( 'Error getting date range: %s', 'wc-team-payroll' ), $e->getMessage() )
-			) );
-		}
+		// Try to get cached data first (cache key includes view_mode)
+		$cache_key = $period_dates['period_id'] . '_' . $view_mode;
+		$cached_data = $engine->get_cached_leaderboard( $cache_key );
 		
 		// If no cache, generate fresh data
 		if ( ! $cached_data ) {
