@@ -82,6 +82,9 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					$role_achievements = $achievements_config['roles'][ $employee_role ];
 				}
 				
+				// Get configuration version/timestamp to detect stale config
+				$config_version = get_option( 'wc_tp_config_version', 0 );
+				
 				$data['period_type'] = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
 				$data['achievements_enabled'] = isset( $achievements_config['enabled'] ) ? intval( $achievements_config['enabled'] ) : 1;
 				$data['achievements_display_style'] = isset( $achievements_config['display_style'] ) ? $achievements_config['display_style'] : 'badges';
@@ -90,6 +93,7 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				$data['achievements_period'] = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 				$data['user_role'] = $employee_role;
 				$data['role_achievements'] = $role_achievements;
+				$data['config_version'] = $config_version;
 				break;
 
 			case 'bonus_achieved':

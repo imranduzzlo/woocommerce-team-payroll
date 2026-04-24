@@ -2304,6 +2304,10 @@ class WC_Team_Payroll_Performance_Settings {
 		// Save configuration
 		update_option( 'wc_tp_goals_config', $existing_config );
 
+		// Increment config version to notify frontend of changes
+		$config_version = get_option( 'wc_tp_config_version', 0 );
+		update_option( 'wc_tp_config_version', $config_version + 1 );
+
 		// Clear all user goal caches to force recalculation with new thresholds
 		$this->clear_all_goal_caches();
 
@@ -2412,6 +2416,10 @@ class WC_Team_Payroll_Performance_Settings {
 		
 		// Save configuration
 		update_option( 'wc_tp_achievements_config', $existing_config );
+
+		// Increment config version to notify frontend of changes
+		$config_version = get_option( 'wc_tp_config_version', 0 );
+		update_option( 'wc_tp_config_version', $config_version + 1 );
 
 		// Clear all user achievement caches to force recalculation with new thresholds
 		$this->clear_all_achievement_caches();
@@ -4003,6 +4011,10 @@ class WC_Team_Payroll_Performance_Settings {
 
 		// Save to database
 		update_option( 'wc_tp_leaderboard_config', $sanitized_config );
+
+		// Increment config version to notify frontend of changes
+		$config_version = get_option( 'wc_tp_config_version', 0 );
+		update_option( 'wc_tp_config_version', $config_version + 1 );
 
 		// Reschedule cron job if update frequency changed
 		$this->reschedule_leaderboard_cron( $sanitized_config['update_frequency'] );

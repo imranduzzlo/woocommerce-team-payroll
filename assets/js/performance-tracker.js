@@ -40,6 +40,19 @@
 		 */
 		loadConfiguration() {
 			this.fetchData('config', (data) => {
+				// Check if config version has changed (indicates settings were updated)
+				const storedVersion = sessionStorage.getItem('wc_tp_config_version');
+				const currentVersion = data.config_version || 0;
+				
+				// If version changed, clear sessionStorage to force fresh data
+				if (storedVersion !== null && storedVersion !== String(currentVersion)) {
+					console.log('Config version changed from', storedVersion, 'to', currentVersion, '- clearing cache');
+					sessionStorage.clear();
+				}
+				
+				// Store current version
+				sessionStorage.setItem('wc_tp_config_version', currentVersion);
+				
 				this.periodType = data.period_type || 'monthly'; // Goals period
 				this.achievementsEnabled = data.achievements_enabled || 1;
 				this.achievementsDisplayStyle = data.achievements_display_style || 'badges';
