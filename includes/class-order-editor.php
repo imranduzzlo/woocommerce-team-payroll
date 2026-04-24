@@ -878,86 +878,116 @@ class WC_Team_Payroll_Order_Editor {
 				// Detect field type
 				$field_type = $this->detect_field_type( $meta_value );
 
-				// Prepare field configuration for WooCommerce functions
-				$field_config = array(
-					'id' => 'wc_tp_meta_' . sanitize_key( $meta_key ),
-					'label' => $label,
-					'description' => '',
-					'value' => $meta_value,
-					'wrapper_class' => 'form-field-wide',
-				);
-
-				// Render appropriate field type using WooCommerce functions
-				switch ( $field_type ) {
-					case 'checkbox':
-						woocommerce_wp_checkbox( $field_config, $order );
-						break;
-
-					case 'textarea':
-						woocommerce_wp_textarea_input( $field_config, $order );
-						break;
-
-					case 'email':
-						$field_config['type'] = 'email';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-
-					case 'url':
-						$field_config['type'] = 'url';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-
-					case 'date':
-						$field_config['type'] = 'date';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-
-					case 'number':
-						$field_config['type'] = 'number';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-
-					default:
-						woocommerce_wp_text_input( $field_config, $order );
-				}
+				// Display readonly field with edit button
+				?>
+				<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>">
+					<label><?php echo esc_html( $label ); ?>:</label>
+					<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
+					<button type="button" class="button wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" style="margin-left: 10px;">
+						<span class="dashicons dashicons-edit" style="font-size: 14px; width: 14px; height: 14px; margin-right: 5px;"></span>Edit
+					</button>
+				</p>
+				<?php
 			}
 			?>
 		</div>
 
 		<?php
-		// Add JavaScript to handle saving custom fields
+		// Add JavaScript to handle edit button clicks
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
-			// Hook into WooCommerce's save process
-			$(document).on('woocommerce_order_data_save', function() {
-				// Collect all custom field values
-				var customFields = {};
-				$('.wc-tp-custom-fields-section').find('input, textarea, select').each(function() {
-					var $field = $(this);
-					var fieldId = $field.attr('id');
-					
-					if (fieldId && fieldId.startsWith('wc_tp_meta_')) {
-						var metaKey = fieldId.replace('wc_tp_meta_', '');
-						var value = $field.is(':checkbox') ? ($field.is(':checked') ? '1' : '0') : $field.val();
-						customFields[metaKey] = value;
-					}
+			$(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) {
+				e.preventDefault();
+				
+				var $btn = $(this);
+				var metaKey = $btn.data('meta-key');
+				var label = $btn.data('label');
+				var value = $btn.data('value');
+				var fieldType = $btn.data('field-type');
+				var orderId = <?php echo $order->get_id(); ?>;
+				
+				// Create modal with proper field type
+				var fieldHtml = '';
+				
+				if (fieldType === 'checkbox') {
+					var checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
+					fieldHtml = '<label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" class="wc-tp-field-value" ' + checked + ' style="margin: 0;"> <span>Yes</span></label>';
+				} else if (fieldType === 'email') {
+					fieldHtml = '<input type="email" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'url') {
+					fieldHtml = '<input type="url" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'date') {
+					fieldHtml = '<input type="date" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'number') {
+					fieldHtml = '<input type="number" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'textarea') {
+					fieldHtml = '<textarea class="wc-tp-field-value" rows="4" style="width: 100%;">' + value + '</textarea>';
+				} else {
+					fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				}
+				
+				var modalHtml = '<div class="wc-tp-modal-overlay">' +
+					'<div class="wc-tp-modal">' +
+					'<div class="wc-tp-modal-header">' +
+					'<h2>Edit: ' + label + '</h2>' +
+					'<button class="wc-tp-modal-close">&times;</button>' +
+					'</div>' +
+					'<div class="wc-tp-modal-body">' +
+					'<div class="wc-tp-form-group">' +
+					'<label>' + label + ':</label>' +
+					fieldHtml +
+					'</div>' +
+					'<input type="hidden" class="wc-tp-field-key" value="' + metaKey + '">' +
+					'</div>' +
+					'<div class="wc-tp-modal-footer">' +
+					'<button class="button button-secondary wc-tp-modal-close">Cancel</button>' +
+					'<button class="button button-primary wc-tp-save-custom-field">Save Changes</button>' +
+					'</div>' +
+					'</div>' +
+					'</div>';
+				
+				$('body').append(modalHtml);
+				
+				$('.wc-tp-modal-close').on('click', function() {
+					$('.wc-tp-modal-overlay').remove();
 				});
-
-				// Save via AJAX
-				if (Object.keys(customFields).length > 0) {
+				
+				$('.wc-tp-save-custom-field').on('click', function() {
+					var $saveBtn = $(this);
+					$saveBtn.prop('disabled', true).text('Saving...');
+					
+					var newValue = $('.wc-tp-field-value').is(':checkbox') ? 
+						($('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
+						$('.wc-tp-field-value').val();
+					var key = $('.wc-tp-field-key').val();
+					
 					$.ajax({
 						url: wcTpOrderEditor.ajax_url,
 						type: 'POST',
 						data: {
 							action: 'wc_tp_save_custom_fields',
 							nonce: wcTpOrderEditor.nonce,
-							order_id: wcTpOrderEditor.order_id,
-							fields: customFields
+							order_id: orderId,
+							fields: {
+								[key]: newValue
+							}
 						},
-						async: false
+						success: function(response) {
+							if (response.success) {
+								$('.wc-tp-modal-overlay').remove();
+								location.reload();
+							} else {
+								alert(response.data.message || 'Error saving field');
+								$saveBtn.prop('disabled', false).text('Save Changes');
+							}
+						},
+						error: function() {
+							alert('Error saving field');
+							$saveBtn.prop('disabled', false).text('Save Changes');
+						}
 					});
-				}
+				});
 			});
 		});
 		</script>
@@ -1016,75 +1046,116 @@ class WC_Team_Payroll_Order_Editor {
 				$label = $this->format_label( str_replace( '_billing_', '', $meta_key ) );
 				$field_type = $this->detect_field_type( $meta_value );
 
-				$field_config = array(
-					'id' => 'wc_tp_billing_meta_' . sanitize_key( $meta_key ),
-					'label' => $label,
-					'description' => '',
-					'value' => $meta_value,
-					'wrapper_class' => 'form-field-wide',
-				);
-
-				switch ( $field_type ) {
-					case 'checkbox':
-						woocommerce_wp_checkbox( $field_config, $order );
-						break;
-					case 'textarea':
-						woocommerce_wp_textarea_input( $field_config, $order );
-						break;
-					case 'email':
-						$field_config['type'] = 'email';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					case 'url':
-						$field_config['type'] = 'url';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					case 'date':
-						$field_config['type'] = 'date';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					case 'number':
-						$field_config['type'] = 'number';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					default:
-						woocommerce_wp_text_input( $field_config, $order );
-				}
+				// Display readonly field with edit button
+				?>
+				<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>">
+					<label><?php echo esc_html( $label ); ?>:</label>
+					<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
+					<button type="button" class="button wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" style="margin-left: 10px;">
+						<span class="dashicons dashicons-edit" style="font-size: 14px; width: 14px; height: 14px; margin-right: 5px;"></span>Edit
+					</button>
+				</p>
+				<?php
 			}
 			?>
 		</div>
 
 		<?php
-		// Add JavaScript to handle saving custom fields
+		// Add JavaScript to handle edit button clicks
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
-			$(document).on('woocommerce_order_data_save', function() {
-				var customFields = {};
-				$('.wc-tp-billing-custom-fields-section').find('input, textarea, select').each(function() {
-					var $field = $(this);
-					var fieldId = $field.attr('id');
-					
-					if (fieldId && fieldId.startsWith('wc_tp_billing_meta_')) {
-						var metaKey = fieldId.replace('wc_tp_billing_meta_', '');
-						var value = $field.is(':checkbox') ? ($field.is(':checked') ? '1' : '0') : $field.val();
-						customFields[metaKey] = value;
-					}
+			$(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) {
+				e.preventDefault();
+				
+				var $btn = $(this);
+				var metaKey = $btn.data('meta-key');
+				var label = $btn.data('label');
+				var value = $btn.data('value');
+				var fieldType = $btn.data('field-type');
+				var orderId = <?php echo $order->get_id(); ?>;
+				
+				// Create modal with proper field type
+				var fieldHtml = '';
+				
+				if (fieldType === 'checkbox') {
+					var checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
+					fieldHtml = '<label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" class="wc-tp-field-value" ' + checked + ' style="margin: 0;"> <span>Yes</span></label>';
+				} else if (fieldType === 'email') {
+					fieldHtml = '<input type="email" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'url') {
+					fieldHtml = '<input type="url" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'date') {
+					fieldHtml = '<input type="date" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'number') {
+					fieldHtml = '<input type="number" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'textarea') {
+					fieldHtml = '<textarea class="wc-tp-field-value" rows="4" style="width: 100%;">' + value + '</textarea>';
+				} else {
+					fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				}
+				
+				var modalHtml = '<div class="wc-tp-modal-overlay">' +
+					'<div class="wc-tp-modal">' +
+					'<div class="wc-tp-modal-header">' +
+					'<h2>Edit: ' + label + '</h2>' +
+					'<button class="wc-tp-modal-close">&times;</button>' +
+					'</div>' +
+					'<div class="wc-tp-modal-body">' +
+					'<div class="wc-tp-form-group">' +
+					'<label>' + label + ':</label>' +
+					fieldHtml +
+					'</div>' +
+					'<input type="hidden" class="wc-tp-field-key" value="' + metaKey + '">' +
+					'</div>' +
+					'<div class="wc-tp-modal-footer">' +
+					'<button class="button button-secondary wc-tp-modal-close">Cancel</button>' +
+					'<button class="button button-primary wc-tp-save-custom-field">Save Changes</button>' +
+					'</div>' +
+					'</div>' +
+					'</div>';
+				
+				$('body').append(modalHtml);
+				
+				$('.wc-tp-modal-close').on('click', function() {
+					$('.wc-tp-modal-overlay').remove();
 				});
-
-				if (Object.keys(customFields).length > 0) {
+				
+				$('.wc-tp-save-custom-field').on('click', function() {
+					var $saveBtn = $(this);
+					$saveBtn.prop('disabled', true).text('Saving...');
+					
+					var newValue = $('.wc-tp-field-value').is(':checkbox') ? 
+						($('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
+						$('.wc-tp-field-value').val();
+					var key = $('.wc-tp-field-key').val();
+					
 					$.ajax({
 						url: wcTpOrderEditor.ajax_url,
 						type: 'POST',
 						data: {
 							action: 'wc_tp_save_custom_fields',
 							nonce: wcTpOrderEditor.nonce,
-							order_id: wcTpOrderEditor.order_id,
-							fields: customFields
+							order_id: orderId,
+							fields: {
+								[key]: newValue
+							}
 						},
-						async: false
+						success: function(response) {
+							if (response.success) {
+								$('.wc-tp-modal-overlay').remove();
+								location.reload();
+							} else {
+								alert(response.data.message || 'Error saving field');
+								$saveBtn.prop('disabled', false).text('Save Changes');
+							}
+						},
+						error: function() {
+							alert('Error saving field');
+							$saveBtn.prop('disabled', false).text('Save Changes');
+						}
 					});
-				}
+				});
 			});
 		});
 		</script>
@@ -1143,75 +1214,116 @@ class WC_Team_Payroll_Order_Editor {
 				$label = $this->format_label( str_replace( '_shipping_', '', $meta_key ) );
 				$field_type = $this->detect_field_type( $meta_value );
 
-				$field_config = array(
-					'id' => 'wc_tp_shipping_meta_' . sanitize_key( $meta_key ),
-					'label' => $label,
-					'description' => '',
-					'value' => $meta_value,
-					'wrapper_class' => 'form-field-wide',
-				);
-
-				switch ( $field_type ) {
-					case 'checkbox':
-						woocommerce_wp_checkbox( $field_config, $order );
-						break;
-					case 'textarea':
-						woocommerce_wp_textarea_input( $field_config, $order );
-						break;
-					case 'email':
-						$field_config['type'] = 'email';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					case 'url':
-						$field_config['type'] = 'url';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					case 'date':
-						$field_config['type'] = 'date';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					case 'number':
-						$field_config['type'] = 'number';
-						woocommerce_wp_text_input( $field_config, $order );
-						break;
-					default:
-						woocommerce_wp_text_input( $field_config, $order );
-				}
+				// Display readonly field with edit button
+				?>
+				<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>">
+					<label><?php echo esc_html( $label ); ?>:</label>
+					<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
+					<button type="button" class="button wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" style="margin-left: 10px;">
+						<span class="dashicons dashicons-edit" style="font-size: 14px; width: 14px; height: 14px; margin-right: 5px;"></span>Edit
+					</button>
+				</p>
+				<?php
 			}
 			?>
 		</div>
 
 		<?php
-		// Add JavaScript to handle saving custom fields
+		// Add JavaScript to handle edit button clicks
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
-			$(document).on('woocommerce_order_data_save', function() {
-				var customFields = {};
-				$('.wc-tp-shipping-custom-fields-section').find('input, textarea, select').each(function() {
-					var $field = $(this);
-					var fieldId = $field.attr('id');
-					
-					if (fieldId && fieldId.startsWith('wc_tp_shipping_meta_')) {
-						var metaKey = fieldId.replace('wc_tp_shipping_meta_', '');
-						var value = $field.is(':checkbox') ? ($field.is(':checked') ? '1' : '0') : $field.val();
-						customFields[metaKey] = value;
-					}
+			$(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) {
+				e.preventDefault();
+				
+				var $btn = $(this);
+				var metaKey = $btn.data('meta-key');
+				var label = $btn.data('label');
+				var value = $btn.data('value');
+				var fieldType = $btn.data('field-type');
+				var orderId = <?php echo $order->get_id(); ?>;
+				
+				// Create modal with proper field type
+				var fieldHtml = '';
+				
+				if (fieldType === 'checkbox') {
+					var checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
+					fieldHtml = '<label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" class="wc-tp-field-value" ' + checked + ' style="margin: 0;"> <span>Yes</span></label>';
+				} else if (fieldType === 'email') {
+					fieldHtml = '<input type="email" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'url') {
+					fieldHtml = '<input type="url" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'date') {
+					fieldHtml = '<input type="date" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'number') {
+					fieldHtml = '<input type="number" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				} else if (fieldType === 'textarea') {
+					fieldHtml = '<textarea class="wc-tp-field-value" rows="4" style="width: 100%;">' + value + '</textarea>';
+				} else {
+					fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="width: 100%;">';
+				}
+				
+				var modalHtml = '<div class="wc-tp-modal-overlay">' +
+					'<div class="wc-tp-modal">' +
+					'<div class="wc-tp-modal-header">' +
+					'<h2>Edit: ' + label + '</h2>' +
+					'<button class="wc-tp-modal-close">&times;</button>' +
+					'</div>' +
+					'<div class="wc-tp-modal-body">' +
+					'<div class="wc-tp-form-group">' +
+					'<label>' + label + ':</label>' +
+					fieldHtml +
+					'</div>' +
+					'<input type="hidden" class="wc-tp-field-key" value="' + metaKey + '">' +
+					'</div>' +
+					'<div class="wc-tp-modal-footer">' +
+					'<button class="button button-secondary wc-tp-modal-close">Cancel</button>' +
+					'<button class="button button-primary wc-tp-save-custom-field">Save Changes</button>' +
+					'</div>' +
+					'</div>' +
+					'</div>';
+				
+				$('body').append(modalHtml);
+				
+				$('.wc-tp-modal-close').on('click', function() {
+					$('.wc-tp-modal-overlay').remove();
 				});
-
-				if (Object.keys(customFields).length > 0) {
+				
+				$('.wc-tp-save-custom-field').on('click', function() {
+					var $saveBtn = $(this);
+					$saveBtn.prop('disabled', true).text('Saving...');
+					
+					var newValue = $('.wc-tp-field-value').is(':checkbox') ? 
+						($('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
+						$('.wc-tp-field-value').val();
+					var key = $('.wc-tp-field-key').val();
+					
 					$.ajax({
 						url: wcTpOrderEditor.ajax_url,
 						type: 'POST',
 						data: {
 							action: 'wc_tp_save_custom_fields',
 							nonce: wcTpOrderEditor.nonce,
-							order_id: wcTpOrderEditor.order_id,
-							fields: customFields
+							order_id: orderId,
+							fields: {
+								[key]: newValue
+							}
 						},
-						async: false
+						success: function(response) {
+							if (response.success) {
+								$('.wc-tp-modal-overlay').remove();
+								location.reload();
+							} else {
+								alert(response.data.message || 'Error saving field');
+								$saveBtn.prop('disabled', false).text('Save Changes');
+							}
+						},
+						error: function() {
+							alert('Error saving field');
+							$saveBtn.prop('disabled', false).text('Save Changes');
+						}
 					});
-				}
+				});
 			});
 		});
 		</script>
