@@ -1,3 +1,58 @@
+## [1.7.59] - 2026-04-26
+### ✨ Feature - Data Management Tools & Frontend Styling Improvements
+
+#### WHAT'S NEW
+
+**1. Debug Tab - Data Management Tools**
+- **Clear Frontend Data Only**: Clears user achievements, goals, baselines, and bonuses while preserving all configurations
+- **Clear All Data**: Complete plugin reset - clears everything including configurations and settings
+- **Clear Data on Uninstall**: Checkbox to control whether data is deleted when plugin is uninstalled
+- All destructive actions require confirmation dialog with "CLEAR" text input
+
+**2. Frontend Styling Tab - Improvements**
+- **Floating Preview Button**: Moved to bottom-right corner with fixed positioning and shadow effect
+- **Reset Styling Button**: Resets all styling options to default values with confirmation
+- Better visual hierarchy and accessibility
+
+#### HOW IT WORKS
+
+**Data Management:**
+- Frontend Data: Clears only user-related data, preserves plugin configurations
+- All Data: Complete reset of everything
+- Both require "CLEAR" text confirmation to prevent accidental deletion
+- Shows success message with number of users affected
+
+**Styling Reset:**
+- Resets all colors, fonts, borders, and custom CSS to defaults
+- Shows confirmation dialog before resetting
+- Reminds user to save changes after reset
+
+#### BENEFITS
+
+✅ **Easy Demo Data Cleanup**: Clear frontend data without losing configurations
+✅ **Complete Reset Option**: Full plugin reset when needed
+✅ **Data Preservation**: Option to keep data when uninstalling
+✅ **Better Styling Management**: Easy reset to defaults
+✅ **Improved UX**: Floating preview button always accessible
+✅ **Safety**: All destructive actions require confirmation
+
+#### TECHNICAL DETAILS
+
+**New AJAX Handlers:**
+- `wc_tp_clear_frontend_data` - Clears user data only
+- `wc_tp_clear_all_data` - Clears all plugin data
+
+**Security:**
+- Permission checks (manage_options)
+- Nonce verification
+- Text confirmation required
+
+#### FILES MODIFIED
+- `includes/class-settings.php` - Added data management UI and reset styling button
+- `woocommerce-team-payroll.php` - Added AJAX handlers for data clearing
+
+---
+
 ## [1.7.58] - 2026-04-26
 ### 🐛 Bug Fix - Achievements Settings Changes Now Detected Automatically
 
