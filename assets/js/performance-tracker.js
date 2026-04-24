@@ -40,17 +40,15 @@
 		 */
 		loadConfiguration() {
 			this.fetchData('config', (data) => {
-				this.periodType = data.period_type || 'monthly';
+				this.periodType = data.period_type || 'monthly'; // Goals period
 				this.achievementsEnabled = data.achievements_enabled || 1;
 				this.achievementsDisplayStyle = data.achievements_display_style || 'badges';
 				this.achievementsShowLocked = data.achievements_show_locked || 1;
 				this.achievementsNotification = data.achievements_notification || 1;
 				this.achievementsPeriod = data.achievements_period || 'monthly';
+				this.baselinesPeriod = data.period_type || 'monthly'; // Baselines use goals period
 				this.userRole = data.user_role || '';
 				this.roleAchievements = data.role_achievements || {};
-				
-				// Update view options based on period type
-				this.updateViewOptions();
 				
 				// Check if there's a saved tab in sessionStorage (persists during browser session only)
 				const savedTab = sessionStorage.getItem('wc_tp_active_performance_tab');
@@ -88,17 +86,49 @@
 		},
 
 		/**
-		 * Update view options based on period type
+		 * Update view options based on current tab
 		 */
 		updateViewOptions() {
-			const options = this.getViewOptions(this.periodType);
+			let periodType = this.periodType; // Default to goals period
+			
+			// Determine which period type to use based on current tab
+			switch(this.currentTab) {
+				case 'overview':
+					// For overview, use merged options (we'll handle this specially)
+					periodType = 'merged';
+					break;
+				case 'goals':
+					periodType = this.periodType; // Goals period
+					break;
+				case 'achievements':
+				case 'period_achievements':
+				case 'period_history':
+					periodType = this.achievementsPeriod; // Achievements period
+					break;
+				case 'baselines':
+					periodType = this.baselinesPeriod; // Baselines period (same as goals)
+					break;
+				default:
+					periodType = this.periodType;
+			}
+			
+			const options = this.getViewOptions(periodType);
 			const $selector = $('#performance-view-selector');
 			
 			if ($selector.length) {
+				const currentValue = $selector.val();
 				$selector.empty();
 				options.forEach(opt => {
 					$selector.append(`<option value="${opt.value}">${opt.label}</option>`);
 				});
+				
+				// Try to maintain the same selection if it exists in new options
+				if (options.find(opt => opt.value === currentValue)) {
+					$selector.val(currentValue);
+				} else {
+					$selector.val('current'); // Default to current period
+					this.currentView = 'current';
+				}
 			}
 		},
 
@@ -106,36 +136,66 @@
 		 * Get view options based on period type
 		 */
 		getViewOptions(periodType) {
+			// Handle merged options for overview tab
+			if (periodType === 'merged') {
+				return this.getMergedViewOptions();
+			}
+			
 			const optionsMap = {
 				'weekly': [
-					{ value: 'current', label: 'Current Week' },
-					{ value: 'last', label: 'Last Week' },
-					{ value: 'last_4', label: 'Last 4 Weeks' },
-					{ value: 'last_12', label: 'Last 12 Weeks' },
+					{ value: 'current', label: 'Current Period' },
+					{ value: 'last', label: 'Last Period' },
+					{ value: 'last_4', label: 'Last 4 Periods' },
+					{ value: 'last_12', label: 'Last 12 Periods' },
 					{ value: 'ytd', label: 'Year to Date' }
 				],
 				'monthly': [
-					{ value: 'current', label: 'Current Month' },
-					{ value: 'last', label: 'Last Month' },
-					{ value: 'last_3', label: 'Last 3 Months' },
-					{ value: 'last_6', label: 'Last 6 Months' },
-					{ value: 'last_12', label: 'Last 12 Months' },
+					{ value: 'current', label: 'Current Period' },
+					{ value: 'last', label: 'Last Period' },
+					{ value: 'last_3', label: 'Last 3 Periods' },
+					{ value: 'last_6', label: 'Last 6 Periods' },
+					{ value: 'last_12', label: 'Last 12 Periods' },
 					{ value: 'ytd', label: 'Year to Date' }
 				],
 				'quarterly': [
-					{ value: 'current', label: 'Current Quarter' },
-					{ value: 'last', label: 'Last Quarter' },
-					{ value: 'last_4', label: 'Last 4 Quarters' },
+					{ value: 'current', label: 'Current Period' },
+					{ value: 'last', label: 'Last Period' },
+					{ value: 'last_4', label: 'Last 4 Periods' },
 					{ value: 'ytd', label: 'Year to Date' }
 				],
 				'yearly': [
-					{ value: 'current', label: 'Current Year' },
-					{ value: 'last', label: 'Last Year' },
-					{ value: 'last_3', label: 'Last 3 Years' }
+					{ value: 'current', label: 'Current Period' },
+					{ value: 'last', label: 'Last Period' },
+					{ value: 'last_3', label: 'Last 3 Periods' }
 				]
 			};
 
 			return optionsMap[periodType] || optionsMap['monthly'];
+		},
+
+		/**
+		 * Get merged view options for overview tab
+		 * Combines options from all three period types (goals, achievements, baselines)
+		 */
+		getMergedViewOptions() {
+			// Get all unique period types
+			const periodTypes = [this.periodType, this.achievementsPeriod, this.baselinesPeriod];
+			const uniquePeriods = [...new Set(periodTypes)];
+			
+			// If all same, just use that period's options
+			if (uniquePeriods.length === 1) {
+				return this.getViewOptions(uniquePeriods[0]);
+			}
+			
+			// Otherwise, provide common options that work for all
+			return [
+				{ value: 'current', label: 'Current Period' },
+				{ value: 'last', label: 'Last Period' },
+				{ value: 'last_3', label: 'Last 3 Periods' },
+				{ value: 'last_6', label: 'Last 6 Periods' },
+				{ value: 'last_12', label: 'Last 12 Periods' },
+				{ value: 'ytd', label: 'Year to Date' }
+			];
 		},
 
 		/**
@@ -152,6 +212,9 @@
 			
 			// Save current tab to sessionStorage (clears when browser/tab closes)
 			sessionStorage.setItem('wc_tp_active_performance_tab', tab);
+
+			// Update dropdown options based on the new tab
+			this.updateViewOptions();
 
 			// Update tab UI
 			$('.performance-tab').removeClass('active');
@@ -223,7 +286,7 @@
 			
 			this.fetchData('achievements', (data) => {
 				this.renderAchievements(data);
-			});
+			}, { view_mode: this.currentView });
 		},
 
 		/**
@@ -269,7 +332,7 @@
 			
 			this.fetchData('baselines', (data) => {
 				this.renderBaselines(data);
-			});
+			}, { view_mode: this.currentView });
 		},
 
 		/**

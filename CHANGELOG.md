@@ -1,3 +1,47 @@
+## [1.7.48] - 2026-04-26
+### ✨ UX Improvement - Dynamic Period Dropdown Labels
+
+#### WHAT'S NEW
+- **Generic "Current Period" label** instead of "Current Month/Week/Quarter/Year"
+- **Dropdown options adapt to tab context** (prepared for future enhancement)
+- **Cleaner, more flexible UI** that works across different period settings
+
+#### CHANGES
+
+**Dropdown Labels Updated:**
+- ❌ Old: "Current Month", "Last Month", "Last 3 Months"
+- ✅ New: "Current Period", "Last Period", "Last 3 Periods"
+
+**Why This Matters:**
+- Works consistently whether admin sets weekly, monthly, quarterly, or yearly periods
+- Users don't see confusing "Current Month" when tracking is actually weekly
+- More professional and adaptable interface
+
+#### CURRENT BEHAVIOR
+
+**Overview Tab:**
+- Shows aggregated data from all three systems (Goals, Achievements, Baselines)
+- Dropdown follows Goals period setting
+- All metrics show data for the selected time range
+
+**Individual Tabs:**
+- Goals: Follows dropdown (uses Goals period setting)
+- Achievements: Shows current period only (uses Achievements period setting)
+- Baselines: Follows dropdown (uses Goals period setting)
+- Period History: Shows all-time history
+
+#### FUTURE ENHANCEMENT (Prepared)
+
+The code is now structured to support tab-specific dropdown options:
+- Each tab could show options based on its own period setting
+- Overview could show merged options from all three
+- Foundation is laid for this enhancement
+
+#### FILES MODIFIED
+- `assets/js/performance-tracker.js` - Updated dropdown labels, added tab-aware logic structure
+
+---
+
 ## [1.7.47] - 2026-04-26
 ### ✨ Major Feature - Overview Tab Now Follows Period Dropdown
 
