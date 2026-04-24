@@ -56,42 +56,6 @@
     height: 18px;
 }
 
-/* Custom Field Edit Icon */
-.wc-tp-edit-custom-field {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 8px;
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    font-size: 14px;
-    line-height: 1;
-}
-
-.wc-tp-edit-custom-field:hover {
-    opacity: 1;
-}
-
-/* Show icon on parent hover */
-p:hover .wc-tp-edit-custom-field {
-    opacity: 1;
-}
-
-.wc-tp-edit-custom-field .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    color: #999;
-}
-
-.wc-tp-edit-custom-field:hover .dashicons {
-    color: #2271b1;
-}
-
 /* Modal Overlay */
 .wc-tp-modal-overlay {
     position: fixed;
