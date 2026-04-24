@@ -1,0 +1,410 @@
+/**
+ * Order Editor Styles
+ *
+ * @package WooCommerce Team Payroll
+ * @since 1.7.61
+ */
+
+/* Order Editor Wrapper */
+.wc-tp-order-editor-wrapper {
+    padding: 15px;
+    background: #fff;
+}
+
+.wc-tp-editor-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.wc-tp-editor-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wc-tp-editor-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Order Item Actions */
+.wc-tp-order-item-actions {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.wc-tp-order-item-actions a {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 5px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.wc-tp-order-item-actions a:hover {
+    background-color: #f0f0f0;
+}
+
+.wc-tp-order-item-actions .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Modal Overlay */
+.wc-tp-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal */
+.wc-tp-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+.wc-tp-modal-large {
+    max-width: 800px;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Modal Header */
+.wc-tp-modal-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f9f9f9;
+}
+
+.wc-tp-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.wc-tp-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.wc-tp-modal-close:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* Modal Body */
+.wc-tp-modal-body {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Modal Footer */
+.wc-tp-modal-footer {
+    padding: 15px 25px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    background: #f9f9f9;
+}
+
+/* Form Groups */
+.wc-tp-form-group {
+    margin-bottom: 20px;
+}
+
+.wc-tp-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.wc-tp-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.wc-tp-form-group input[type="text"],
+.wc-tp-form-group input[type="number"],
+.wc-tp-form-group select,
+.wc-tp-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.wc-tp-form-group input:focus,
+.wc-tp-form-group select:focus,
+.wc-tp-form-group textarea:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Meta Table */
+.wc-tp-meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.wc-tp-meta-table th,
+.wc-tp-meta-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.wc-tp-meta-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wc-tp-meta-table td {
+    font-size: 14px;
+}
+
+.wc-tp-meta-table input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.wc-tp-meta-table input[readonly] {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.wc-tp-meta-table .button {
+    margin-right: 5px;
+}
+
+/* Add Meta Section */
+.wc-tp-add-meta-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Editor Info Box */
+.wc-tp-editor-info {
+    border-radius: 4px;
+}
+
+.wc-tp-editor-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.wc-tp-editor-info ul {
+    font-size: 14px;
+    color: #666;
+}
+
+.wc-tp-editor-info li {
+    margin-bottom: 5px;
+}
+
+/* Notice Styles */
+.wc-tp-editor-notice {
+    border-radius: 4px;
+}
+
+.wc-tp-editor-notice p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.wc-tp-editor-notice .dashicons {
+    float: left;
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Floating Notice */
+.wc-tp-notice {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Product Search Select */
+.wc-tp-product-search {
+    min-height: 40px;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .wc-tp-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .wc-tp-modal-header,
+    .wc-tp-modal-body,
+    .wc-tp-modal-footer {
+        padding: 15px;
+    }
+
+    .wc-tp-editor-actions {
+        flex-direction: column;
+    }
+
+    .wc-tp-editor-actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .wc-tp-meta-table {
+        font-size: 12px;
+    }
+
+    .wc-tp-meta-table th,
+    .wc-tp-meta-table td {
+        padding: 8px;
+    }
+}
+
+/* Loading State */
+.wc-tp-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.wc-tp-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #2271b1;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Button States */
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Conflict Warning */
+.wc-tp-conflict-warning {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.wc-tp-conflict-warning p {
+    margin: 0;
+    color: #856404;
+    font-size: 14px;
+}
+
+/* Success State */
+.wc-tp-success-state {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.wc-tp-success-state p {
+    margin: 0;
+    color: #155724;
+    font-size: 14px;
+}

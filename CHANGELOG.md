@@ -1,3 +1,181 @@
+## [1.7.61] - 2026-04-26
+### ✨ Major Feature - Advanced Order Editor System
+
+#### WHAT'S NEW
+
+**Complete Order Editing System**
+- Professional order editing capabilities for specific order statuses
+- Edit orders that are normally locked in WooCommerce
+- Comprehensive editing options with automatic commission recalculation
+- Conflict detection with other order editing plugins/themes
+
+#### FEATURES
+
+**1. Product Management**
+- Add new products to existing orders
+- Edit item quantities, prices, subtotals, and totals
+- Remove items from orders
+- Edit icons (pencil/trash) on each order item
+
+**2. Shipping Management**
+- Add shipping methods to orders
+- Edit shipping costs and method names
+- Remove shipping methods
+- Support for multiple shipping methods
+
+**3. Fee Management**
+- Add custom fees to orders
+- Edit fee amounts and names
+- Set fees as taxable or non-taxable
+- Remove fees from orders
+
+**4. Coupon Management**
+- Apply existing coupons to orders
+- Remove coupons from orders
+- Validates coupon existence and applicability
+- Automatic discount calculation
+
+**5. Address Management**
+- Edit billing address (all fields including email/phone)
+- Edit shipping address (all fields)
+- Side-by-side address editor for easy comparison
+- Support for all WooCommerce address fields
+
+**6. Order Meta Management**
+- Add custom meta fields to orders
+- Update existing meta values
+- Delete meta fields
+- View all custom order meta in one place
+
+**7. Order Editor Meta Box**
+- Dedicated meta box on order edit page
+- Quick action buttons for all editing operations
+- Real-time order statistics display
+- Professional UI with modal dialogs
+
+#### CONFIGURATION
+
+**Settings Location:** Team Payroll > Settings > General > Order Editor Settings
+
+**Configuration Options:**
+- Enable/Disable order editor
+- Select which order statuses allow editing
+- Visual status selection with edit icons
+- Conflict warning display
+
+**Recommended Editable Statuses:**
+- Pending Payment
+- Processing
+- On Hold
+- Custom Statuses
+
+**Avoid Editing:**
+- Completed orders
+- Refunded orders
+- Cancelled orders
+
+#### HOW IT WORKS
+
+**Status-Based Editing:**
+- Only orders in configured statuses can be edited
+- Edit icons appear automatically on editable orders
+- Non-editable orders remain locked
+
+**Automatic Recalculation:**
+- Order totals recalculated after each change
+- Commissions automatically updated
+- Tax calculations preserved
+
+**Audit Trail:**
+- All changes logged in order notes
+- Includes what was changed and by whom
+- Timestamp for each modification
+
+**Security Features:**
+- Permission checks (edit_shop_orders capability)
+- Nonce verification on all AJAX requests
+- Status validation before editing
+- Input sanitization
+
+#### CONFLICT PREVENTION
+
+**Automatic Detection:**
+- Checks for WooCommerce Order Editor plugin
+- Checks for Advanced Order Export plugins
+- Detects theme-based order editing functions
+- Automatically disables if conflicts found
+
+**Safe Integration:**
+- Respects existing order editing functionality
+- Uses WooCommerce native methods
+- No core file modifications
+
+#### TECHNICAL DETAILS
+
+**New Files:**
+- `includes/class-order-editor.php` - Main order editor class
+- `assets/js/order-editor.js` - JavaScript functionality
+- `assets/css/order-editor.css` - Styling
+
+**New AJAX Endpoints:**
+- `wc_tp_get_order_edit_data` - Get order data
+- `wc_tp_update_order_item` - Update product items
+- `wc_tp_add_order_item` - Add products
+- `wc_tp_remove_order_item` - Remove items
+- `wc_tp_add_shipping` - Add shipping methods
+- `wc_tp_update_shipping` - Update shipping
+- `wc_tp_remove_shipping` - Remove shipping
+- `wc_tp_add_fee` - Add fees
+- `wc_tp_update_fee` - Update fees
+- `wc_tp_remove_fee` - Remove fees
+- `wc_tp_add_coupon` - Apply coupons
+- `wc_tp_remove_coupon` - Remove coupons
+- `wc_tp_update_addresses` - Update billing/shipping addresses
+- `wc_tp_update_order_meta` - Manage order meta
+- `wc_tp_update_order_status` - Change order status
+
+**New Hooks:**
+- `wc_team_payroll_order_edited` - Triggered after order edits
+
+**Database:**
+- Settings stored in `wc_team_payroll_order_editor` option
+- Structure: `array('enabled' => '1', 'editable_statuses' => array(...))`
+
+#### BENEFITS
+
+✅ **Complete Control**: Edit any aspect of orders in allowed statuses
+✅ **Time Saving**: Fix order errors without creating new orders
+✅ **Accurate Commissions**: Automatic recalculation after edits
+✅ **Audit Trail**: Complete history of all changes
+✅ **Safe**: Conflict detection and permission checks
+✅ **Professional**: Modal dialogs and smooth UX
+✅ **Flexible**: Configure which statuses allow editing
+
+#### USE CASES
+
+**Perfect For:**
+- Correcting order entry errors
+- Adding forgotten items
+- Adjusting quantities before fulfillment
+- Updating customer addresses
+- Adding fees or shipping charges
+- Applying missed coupons
+
+**Example Workflows:**
+1. Customer calls to add item → Open order → Add Product → Recalculate
+2. Wrong shipping cost → Edit Shipping → Update cost → Save
+3. Forgot to apply coupon → Add Coupon → Apply → Totals updated
+4. Address typo → Edit Addresses → Fix → Save
+
+#### FILES MODIFIED
+- `woocommerce-team-payroll.php` - Added order editor initialization
+- `includes/class-settings.php` - Added order editor settings section
+- `includes/class-order-editor.php` - New order editor class
+- `assets/js/order-editor.js` - New JavaScript file
+- `assets/css/order-editor.css` - New CSS file
+
+---
+
 ## [1.7.60] - 2026-04-26
 ### 🐛 Bug Fix - Data Clearing Buttons Now Working
 

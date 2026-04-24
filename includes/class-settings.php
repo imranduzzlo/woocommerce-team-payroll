@@ -110,6 +110,69 @@ class WC_Team_Payroll_Settings {
 							</td>
 						</tr>
 					</table>
+
+					<?php
+					// Get order editor settings
+					$order_editor_settings = get_option( 'wc_team_payroll_order_editor', array() );
+					$editor_enabled = isset( $order_editor_settings['enabled'] ) && $order_editor_settings['enabled'] === '1';
+					$editable_statuses = isset( $order_editor_settings['editable_statuses'] ) && is_array( $order_editor_settings['editable_statuses'] ) 
+						? $order_editor_settings['editable_statuses'] 
+						: array();
+					
+					// Get all order statuses
+					$all_statuses = wc_get_order_statuses();
+					?>
+
+					<h3>Order Editor Settings</h3>
+					<p>Enable order editing for specific order statuses. This allows you to modify order items, quantities, prices, and meta data.</p>
+					<table class="form-table">
+						<tr>
+							<th><label for="order_editor_enabled">Enable Order Editor</label></th>
+							<td>
+								<input type="checkbox" id="order_editor_enabled" name="wc_team_payroll_order_editor[enabled]" value="1" <?php checked( $editor_enabled, true ); ?> />
+								<p class="description">Enable advanced order editing capabilities for selected order statuses.</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label>Editable Order Statuses</label></th>
+							<td>
+								<fieldset>
+									<legend class="screen-reader-text"><span>Editable Order Statuses</span></legend>
+									<p class="description" style="margin-bottom: 10px;">Select which order statuses should allow editing. Orders in these statuses will have edit icons and additional editing options.</p>
+									<?php foreach ( $all_statuses as $status_key => $status_label ) : 
+										$status_slug = str_replace( 'wc-', '', $status_key );
+									?>
+										<label style="display: block; margin-bottom: 8px;">
+											<input type="checkbox" 
+												name="wc_team_payroll_order_editor[editable_statuses][]" 
+												value="<?php echo esc_attr( $status_slug ); ?>" 
+												<?php checked( in_array( $status_slug, $editable_statuses ), true ); ?> />
+											<span class="dashicons dashicons-edit" style="color: #2271b1; font-size: 16px; vertical-align: middle;"></span>
+											<?php echo esc_html( $status_label ); ?>
+										</label>
+									<?php endforeach; ?>
+								</fieldset>
+								<p class="description" style="margin-top: 10px;">
+									<strong>Note:</strong> This feature respects existing order editing plugins/themes. If conflicts are detected, the order editor will be automatically disabled.
+								</p>
+							</td>
+						</tr>
+					</table>
+
+					<div class="wc-tp-order-editor-info" style="background: #e7f7ff; border-left: 4px solid #2271b1; padding: 15px; margin-top: 20px; border-radius: 4px;">
+						<h4 style="margin-top: 0; color: #2271b1;">
+							<span class="dashicons dashicons-info" style="font-size: 20px; vertical-align: middle;"></span>
+							Order Editor Features
+						</h4>
+						<ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+							<li><strong>Add Products:</strong> Add new products to existing orders</li>
+							<li><strong>Edit Items:</strong> Modify quantities, prices, and totals</li>
+							<li><strong>Remove Items:</strong> Delete items from orders</li>
+							<li><strong>Edit Order Meta:</strong> Add, update, or delete custom order meta fields</li>
+							<li><strong>Recalculate Totals:</strong> Automatically recalculate order totals and commissions</li>
+							<li><strong>Audit Trail:</strong> All changes are logged in order notes</li>
+						</ul>
+					</div>
 				<?php endif; ?>
 
 				<?php if ( $current_tab === 'commission' ) : ?>
@@ -1607,6 +1670,23 @@ class WC_Team_Payroll_Settings {
 		update_option( 'wc_team_payroll_checkout_fields', $checkout_fields );
 		update_option( 'wc_team_payroll_acf_fields', $acf_fields );
 		update_option( 'wc_team_payroll_styling', $styling_settings );
+
+		// Save order editor settings
+		$order_editor_settings = array();
+		if ( isset( $_POST['wc_team_payroll_order_editor'] ) && is_array( $_POST['wc_team_payroll_order_editor'] ) ) {
+			$order_editor_settings['enabled'] = isset( $_POST['wc_team_payroll_order_editor']['enabled'] ) ? '1' : '0';
+			
+			if ( isset( $_POST['wc_team_payroll_order_editor']['editable_statuses'] ) && is_array( $_POST['wc_team_payroll_order_editor']['editable_statuses'] ) ) {
+				$order_editor_settings['editable_statuses'] = array_map( 'sanitize_text_field', $_POST['wc_team_payroll_order_editor']['editable_statuses'] );
+			} else {
+				$order_editor_settings['editable_statuses'] = array();
+			}
+		} else {
+			// If not set, disable it
+			$order_editor_settings['enabled'] = '0';
+			$order_editor_settings['editable_statuses'] = array();
+		}
+		update_option( 'wc_team_payroll_order_editor', $order_editor_settings );
 
 		if ( isset( $_POST['wc_tp_user_id_prefix'] ) ) {
 			$prefix = sanitize_text_field( $_POST['wc_tp_user_id_prefix'] );

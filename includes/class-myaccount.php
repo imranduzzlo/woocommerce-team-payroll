@@ -2612,7 +2612,7 @@ class WC_Team_Payroll_MyAccount {
 					border-color: {$button_background} !important;
 				}
 				
-				.pv-table-controls .btn-clear-filters.filters-active .ph, .pv-page-wrapper .reports-export-section .reports-export-btn {
+				.pv-table-controls .btn-clear-filters.filters-active .ph, .pv-page-wrapper .reports-export-section .reports-export-btn .ph{
 					color: {$button_text_color} !important;
 				}
 				
