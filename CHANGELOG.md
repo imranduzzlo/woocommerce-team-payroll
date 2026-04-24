@@ -1,3 +1,66 @@
+## [1.7.58] - 2026-04-26
+### 🐛 Bug Fix - Achievements Settings Changes Now Detected Automatically
+
+#### WHAT WAS FIXED
+
+**Problem:**
+- After changing achievements settings and saving, the first reload of my account pages still showed stale data
+- Required two reloads to see the updated achievements configuration
+- Affected achievements, goals, and leaderboard settings changes
+
+**Root Cause:**
+- Frontend cached configuration in sessionStorage
+- When settings were saved in admin, the version wasn't tracked
+- Frontend had no way to know settings had changed
+- Stale cached config was used until sessionStorage expired
+
+**Solution:**
+- Added `config_version` tracking to detect when settings change
+- When achievements/goals/leaderboard settings are saved, increment config_version
+- Frontend checks config_version on each load
+- If version changed, automatically clear sessionStorage
+- Fresh configuration loaded on first reload
+
+#### HOW IT WORKS NOW
+
+**Before:**
+1. Save achievements settings → Success
+2. Reload my account page → Shows old config (preloader hangs)
+3. Reload again → Works fine (cache expired)
+
+**After:**
+1. Save achievements settings → Success, config_version incremented
+2. Reload my account page → Detects version change, clears cache
+3. Fresh configuration loaded → Works immediately ✅
+
+#### TECHNICAL DETAILS
+
+**Backend Changes:**
+- Added `config_version` to AJAX config response
+- Increment `wc_tp_config_version` when saving:
+  - Achievements config
+  - Goals config
+  - Leaderboard config
+
+**Frontend Changes:**
+- Check `config_version` in loadConfiguration()
+- Compare stored version with current version
+- If different, clear sessionStorage
+- Store new version for next comparison
+
+**Benefits:**
+✅ **Automatic Detection**: No manual refresh needed
+✅ **Works for All Settings**: Achievements, Goals, Leaderboard
+✅ **Instant Fix**: First reload shows updated config
+✅ **No User Action**: Completely transparent to users
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker-ajax.php` - Added config_version to response
+- `includes/class-performance-settings.php` - Increment version on settings save
+- `assets/js/performance-tracker.js` - Check version and clear cache if changed
+
+---
+
 ## [1.7.57] - 2026-04-26
 ### 🐛 Bug Fix - Preloader Hanging After Settings Save
 
