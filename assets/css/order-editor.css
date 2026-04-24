@@ -105,7 +105,8 @@
     margin: 0;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    pointer-events: none;
+    transition: opacity 0.2s ease, pointer-events 0.2s ease;
     color: #666;
 }
 
@@ -115,6 +116,7 @@
 
 .wc-tp-custom-field-row:hover .wc-tp-edit-custom-field-btn {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .wc-tp-edit-custom-field-btn .dashicons {

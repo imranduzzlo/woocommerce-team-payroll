@@ -15,12 +15,13 @@
         },
 
         bindEvents: function() {
-            $(document).on('click', '.wc-tp-edit-item', this.handleEditItem);
-            $(document).on('click', '.wc-tp-remove-item', this.handleRemoveItem);
-            $(document).on('click', '.wc-tp-add-product', this.handleAddProduct);
-            $(document).on('click', '.wc-tp-edit-order-meta', this.handleEditOrderMeta);
-            $(document).on('click', '.wc-tp-recalculate-order', this.handleRecalculateOrder);
-            $(document).on('click', '.wc-tp-edit-custom-field-btn', this.handleEditCustomField);
+            var self = this;
+            $(document).on('click', '.wc-tp-edit-item', function(e) { self.handleEditItem.call(self, e); });
+            $(document).on('click', '.wc-tp-remove-item', function(e) { self.handleRemoveItem.call(self, e); });
+            $(document).on('click', '.wc-tp-add-product', function(e) { self.handleAddProduct.call(self, e); });
+            $(document).on('click', '.wc-tp-edit-order-meta', function(e) { self.handleEditOrderMeta.call(self, e); });
+            $(document).on('click', '.wc-tp-recalculate-order', function(e) { self.handleRecalculateOrder.call(self, e); });
+            $(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) { self.handleEditCustomField.call(self, e); });
         },
 
         handleEditItem: function(e) {
