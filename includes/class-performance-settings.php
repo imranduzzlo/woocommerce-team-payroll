@@ -38,6 +38,7 @@ class WC_Team_Payroll_Performance_Settings {
 		add_action( 'wp_ajax_wc_tp_get_role_achievements', array( $this, 'ajax_get_role_achievements' ) );
 		add_action( 'wp_ajax_wc_tp_save_achievements_config', array( $this, 'ajax_save_achievements_config' ) );
 		add_action( 'wp_ajax_wc_tp_clone_role_achievements', array( $this, 'ajax_clone_role_achievements' ) );
+		add_action( 'wp_ajax_wc_tp_refresh_current_period_achievements', array( $this, 'ajax_refresh_current_period_achievements' ) );
 		
 		// AJAX handlers - Baselines
 		add_action( 'wp_ajax_wc_tp_save_baselines_config', array( $this, 'ajax_save_baselines_config' ) );
@@ -96,6 +97,15 @@ class WC_Team_Payroll_Performance_Settings {
 			'wc-tp-performance-settings',
 			WC_TEAM_PAYROLL_URL . 'assets/js/performance-settings.js',
 			array( 'jquery' ),
+			WC_TEAM_PAYROLL_VERSION,
+			true
+		);
+
+		// Enqueue achievements refresh script
+		wp_enqueue_script(
+			'wc-tp-achievements-refresh',
+			WC_TEAM_PAYROLL_URL . 'assets/js/achievements-refresh.js',
+			array( 'jquery', 'wc-tp-performance-settings' ),
 			WC_TEAM_PAYROLL_VERSION,
 			true
 		);
@@ -514,6 +524,27 @@ class WC_Team_Payroll_Performance_Settings {
 							?>
 							<p class="description">
 								<?php esc_html_e( 'Note: Earnings achievements will always use commission calculation statuses configured in WooCommerce settings, regardless of this selection.', 'wc-team-payroll' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th><label><?php esc_html_e( 'Recalculate Current Period', 'wc-team-payroll' ); ?></label></th>
+						<td>
+							<button type="button" id="wc-tp-refresh-current-period-achievements" class="button button-secondary">
+								<span class="dashicons dashicons-update"></span>
+								<?php esc_html_e( 'Refresh Current Period Achievements', 'wc-team-payroll' ); ?>
+							</button>
+							<p class="description" style="margin-top: 10px;">
+								<strong><?php esc_html_e( 'Important:', 'wc-team-payroll' ); ?></strong>
+								<?php esc_html_e( 'Use this button ONLY if you want to recalculate already achieved achievements in the current period with the new status settings.', 'wc-team-payroll' ); ?>
+								<br>
+								<?php esc_html_e( '• Already achieved achievements will be recalculated with new settings', 'wc-team-payroll' ); ?>
+								<br>
+								<?php esc_html_e( '• Once recalculated, the NEW values will be locked (not affected by future setting changes)', 'wc-team-payroll' ); ?>
+								<br>
+								<?php esc_html_e( '• Previous period history remains unchanged', 'wc-team-payroll' ); ?>
+								<br>
+								<strong style="color: #d63638;"><?php esc_html_e( 'Warning: This action cannot be undone for the current period!', 'wc-team-payroll' ); ?></strong>
 							</p>
 						</td>
 					</tr>
@@ -2325,6 +2356,48 @@ class WC_Team_Payroll_Performance_Settings {
 		$this->clear_all_achievement_caches();
 
 		wp_send_json_success( array( 'message' => __( 'Achievements configuration saved successfully!', 'wc-team-payroll' ) ) );
+	}
+
+	/**
+	 * AJAX: Refresh current period achievements with new settings
+	 */
+	public function ajax_refresh_current_period_achievements() {
+		check_ajax_referer( 'wc_tp_performance_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		// Get all employees
+		$employee_roles = get_option( 'wc_tp_employee_roles', array() );
+		if ( empty( $employee_roles ) ) {
+			wp_send_json_error( array( 'message' => __( 'No employee roles configured', 'wc-team-payroll' ) ) );
+		}
+
+		$users = get_users( array( 'role__in' => $employee_roles ) );
+		$updated_count = 0;
+
+		$tracker = new WC_Team_Payroll_Performance_Tracker();
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+		$current_period_id = $tracker->get_current_period_id( $period_type );
+
+		foreach ( $users as $user ) {
+			// Delete current period achievements to force recalculation
+			delete_user_meta( $user->ID, '_wc_tp_period_achievements_' . $current_period_id );
+			delete_user_meta( $user->ID, '_wc_tp_period_achievements_stats_' . $current_period_id );
+			
+			// Recalculate with new settings
+			$tracker->update_achievements( $user->ID );
+			$updated_count++;
+		}
+
+		wp_send_json_success( array( 
+			'message' => sprintf( 
+				__( 'Successfully refreshed achievements for %d employees. Achievements have been recalculated with current settings.', 'wc-team-payroll' ),
+				$updated_count
+			)
+		) );
 	}
 
 	/**

@@ -1,3 +1,50 @@
+## [1.7.43] - 2026-04-26
+### 🔧 Fix + Feature - Historical Values + Refresh Button
+
+#### FIXED - Achievements Now Show Highest Tier Historical Value
+- **Problem**: When multiple tiers unlocked (bronze, silver, gold), showed first tier's value instead of highest
+- **Solution**: Now finds and displays the highest tier's `value_at_unlock`
+
+#### NEW - Refresh Current Period Button
+- **Feature**: Added button to recalculate current period achievements with new settings
+- **Location**: Performance Settings → Achievements → "Refresh Current Period Achievements"
+- **Use Case**: When you change status settings and want already achieved achievements to reflect new counts
+
+#### HOW IT WORKS
+
+**Display Logic (Fixed):**
+- Finds highest unlocked tier (Gold > Silver > Bronze)
+- Shows that tier's `value_at_unlock` (historical value)
+- If no achievements unlocked, shows current count
+
+**Refresh Button:**
+- Deletes current period achievement data
+- Recalculates with NEW settings
+- Locks NEW values (not affected by future changes)
+- Previous period history remains unchanged
+
+**Important Notes:**
+- ✅ Use refresh button ONLY for current period
+- ✅ Previous periods stay in history (unchanged)
+- ✅ After refresh, NEW values are locked
+- ⚠️ Action cannot be undone!
+
+**Example Workflow:**
+1. Achievement unlocked with 9 orders (old settings)
+2. Change settings to count only "completed" (2 orders)
+3. Display shows "9 orders" (historical) ✅
+4. Click "Refresh Current Period" button
+5. Achievement recalculated with 2 completed orders
+6. Display now shows "2 orders" (new locked value) ✅
+7. Future setting changes won't affect this "2 orders"
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker-ajax.php` - Fixed to find highest tier value
+- `includes/class-performance-settings.php` - Added refresh button and AJAX handler
+- `assets/js/achievements-refresh.js` - New file for refresh button functionality
+
+---
+
 ## [1.7.42] - 2026-04-26
 ### 🔧 Fix - Already Achieved Achievements Keep Historical Values
 

@@ -192,44 +192,45 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					// Add current period metrics to stats
 					$period_range = $tracker->get_period_date_range( $period_type );
 					
-					// Check if any orders/order_value achievements are already unlocked
+					// Check if any achievements are already unlocked and find the highest tier value
 					// If unlocked, use the value_at_unlock, otherwise use current count
-					$has_unlocked_orders = false;
-					$has_unlocked_order_value = false;
-					$has_unlocked_earnings = false;
-					$has_unlocked_aov = false;
+					$orders_value = null;
+					$order_value_value = null;
+					$earnings_value = null;
+					$aov_value = null;
+					
+					$tier_order = array( 'gold' => 3, 'silver' => 2, 'bronze' => 1 );
+					$highest_orders_tier = 0;
+					$highest_order_value_tier = 0;
+					$highest_earnings_tier = 0;
+					$highest_aov_tier = 0;
 					
 					foreach ( $achievements as $key => $achievement ) {
-						if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true ) {
-							if ( strpos( $key, 'orders_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
-								$has_unlocked_orders = true;
-								$stats['orders'] = $achievement['value_at_unlock'];
-							} elseif ( strpos( $key, 'order_value_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
-								$has_unlocked_order_value = true;
-								$stats['order_value'] = $achievement['value_at_unlock'];
-							} elseif ( strpos( $key, 'earnings_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
-								$has_unlocked_earnings = true;
-								$stats['earnings'] = $achievement['value_at_unlock'];
-							} elseif ( strpos( $key, 'aov_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
-								$has_unlocked_aov = true;
-								$stats['aov'] = $achievement['value_at_unlock'];
+						if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true && isset( $achievement['value_at_unlock'] ) ) {
+							$tier = isset( $achievement['tier'] ) ? $achievement['tier'] : 'bronze';
+							$tier_level = isset( $tier_order[ $tier ] ) ? $tier_order[ $tier ] : 1;
+							
+							if ( strpos( $key, 'orders_' ) === 0 && $tier_level > $highest_orders_tier ) {
+								$highest_orders_tier = $tier_level;
+								$orders_value = $achievement['value_at_unlock'];
+							} elseif ( strpos( $key, 'order_value_' ) === 0 && $tier_level > $highest_order_value_tier ) {
+								$highest_order_value_tier = $tier_level;
+								$order_value_value = $achievement['value_at_unlock'];
+							} elseif ( strpos( $key, 'earnings_' ) === 0 && $tier_level > $highest_earnings_tier ) {
+								$highest_earnings_tier = $tier_level;
+								$earnings_value = $achievement['value_at_unlock'];
+							} elseif ( strpos( $key, 'aov_' ) === 0 && $tier_level > $highest_aov_tier ) {
+								$highest_aov_tier = $tier_level;
+								$aov_value = $achievement['value_at_unlock'];
 							}
 						}
 					}
 					
-					// If no achievements unlocked yet, use current metrics
-					if ( ! $has_unlocked_orders ) {
-						$stats['orders'] = $tracker->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					}
-					if ( ! $has_unlocked_order_value ) {
-						$stats['order_value'] = $tracker->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					}
-					if ( ! $has_unlocked_earnings ) {
-						$stats['earnings'] = $tracker->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					}
-					if ( ! $has_unlocked_aov ) {
-						$stats['aov'] = $tracker->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					}
+					// Use historical values if achievements unlocked, otherwise use current metrics
+					$stats['orders'] = $orders_value !== null ? $orders_value : $tracker->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					$stats['order_value'] = $order_value_value !== null ? $order_value_value : $tracker->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					$stats['earnings'] = $earnings_value !== null ? $earnings_value : $tracker->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					$stats['aov'] = $aov_value !== null ? $aov_value : $tracker->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
 					
 					$data['stats'] = $stats;
 					$data['tier_categories'] = isset( $stats['tier_categories'] ) ? $stats['tier_categories'] : array();
