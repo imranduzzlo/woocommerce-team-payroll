@@ -1,3 +1,92 @@
+## [1.7.51] - 2026-04-26
+### 🔧 Critical Fix - Achievements Now Filter by Unlock Date
+
+#### THE REAL PROBLEM
+- **Previous approach**: Tried to match period IDs (failed)
+- **Real issue**: Should filter by when achievements were UNLOCKED, not by period format
+- **Impact**: All calendar-based views showed 0 achievements
+
+#### THE CORRECT SOLUTION
+
+**Old Logic (WRONG):**
+1. Calculate date range (e.g., Last 30 Days = April 1-30)
+2. Find period IDs in that range (e.g., 2026-04, 2026-W14, etc.)
+3. Look for meta keys matching those period IDs
+4. Problem: Period ID format mismatch caused failures
+
+**New Logic (CORRECT):**
+1. Calculate date range (e.g., Last 30 Days = April 1-30)
+2. Get ALL achievement meta keys from database
+3. Loop through each achievement
+4. Check if `unlocked_date` falls within date range
+5. Include achievement if unlocked in that range
+
+#### HOW IT WORKS NOW
+
+**Example: "Last 30 Days"**
+- Date range: April 1-30, 2026
+- Finds ALL achievements where `unlocked_date` is between April 1-30
+- Doesn't matter if achievement is weekly, monthly, or quarterly
+- Just checks: Was it unlocked in this date range? Yes/No
+
+**Example: "All Time"**
+- Date range: From first order to today
+- Shows ALL achievements ever unlocked
+- Complete historical view
+
+#### DATE RANGES USED
+
+```
+Current Period: Based on admin settings (weekly/monthly/quarterly/yearly)
+Last 7 Days: Today - 6 days to today
+Last 30 Days: Today - 29 days to today
+Last 90 Days: Today - 89 days to today
+Last 6 Months: Today - 6 months to today
+Last 1 Year: Today - 12 months to today
+Year to Date: January 1 to today
+All Time: First order date to today
+```
+
+#### WHAT THIS FIXES
+
+✅ **Last 7 Days**: Shows achievements unlocked in last 7 days
+✅ **Last 30 Days**: Shows achievements unlocked in last 30 days
+✅ **Last 90 Days**: Shows achievements unlocked in last 90 days
+✅ **Last 6 Months**: Shows achievements unlocked in last 6 months
+✅ **Last 1 Year**: Shows achievements unlocked in last year
+✅ **Year to Date**: Shows achievements unlocked this year
+✅ **All Time**: Shows ALL achievements ever unlocked
+
+#### TECHNICAL DETAILS
+
+**Database Query:**
+```sql
+SELECT DISTINCT meta_key 
+FROM wp_usermeta 
+WHERE user_id = X 
+AND meta_key LIKE '_wc_tp_period_achievements_%'
+AND meta_key NOT LIKE '_wc_tp_period_achievements_stats_%'
+```
+
+**Filter Logic:**
+```php
+if ( $unlocked_date >= $date_range['start'] && $unlocked_date <= $date_range['end'] ) {
+    // Include this achievement
+}
+```
+
+#### BENEFITS
+
+✅ **Works with any period type**: Weekly, monthly, quarterly, yearly
+✅ **Accurate filtering**: Based on actual unlock date
+✅ **No period ID matching**: Avoids format mismatch issues
+✅ **Complete history**: "All Time" shows everything
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Rewrote get_achievements_for_view_mode() to filter by unlocked_date
+
+---
+
 ## [1.7.50] - 2026-04-26
 ### 🔧 Critical Fix - Achievements Not Showing for Calendar-Based Views
 

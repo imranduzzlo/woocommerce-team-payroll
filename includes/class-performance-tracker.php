@@ -1081,24 +1081,42 @@ class WC_Team_Payroll_Performance_Tracker {
 		$tier_counts = array( 'bronze' => 0, 'silver' => 0, 'gold' => 0 );
 		$total_unlocked = 0;
 		
-		// Get period IDs that fall within the date range (using achievements period type)
-		$period_ids = $this->get_period_ids_in_range( $date_range['start'], $date_range['end'], $period_type );
+		// Get ALL user meta keys that contain period achievements
+		global $wpdb;
+		$meta_keys = $wpdb->get_col( $wpdb->prepare(
+			"SELECT DISTINCT meta_key 
+			FROM {$wpdb->usermeta} 
+			WHERE user_id = %d 
+			AND meta_key LIKE '_wc_tp_period_achievements_%%'
+			AND meta_key NOT LIKE '_wc_tp_period_achievements_stats_%%'",
+			$user_id
+		) );
 		
-		foreach ( $period_ids as $period_id ) {
-			$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $period_id, true );
+		// Loop through all period achievement meta keys
+		foreach ( $meta_keys as $meta_key ) {
+			$period_achievements = get_user_meta( $user_id, $meta_key, true );
 			
 			if ( is_array( $period_achievements ) ) {
 				foreach ( $period_achievements as $key => $achievement ) {
-					if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true ) {
-						$tier = isset( $achievement['tier'] ) ? $achievement['tier'] : 'bronze';
-						$tier_counts[ $tier ]++;
-						$total_unlocked++;
+					// Check if achievement is unlocked and has an unlock date
+					if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true && isset( $achievement['unlocked_date'] ) ) {
+						// Check if unlocked_date falls within the date range
+						$unlocked_date = date( 'Y-m-d', strtotime( $achievement['unlocked_date'] ) );
 						
-						// Store achievement with period info
-						$all_period_achievements[] = array_merge( $achievement, array(
-							'key' => $key,
-							'period_id' => $period_id
-						) );
+						if ( $unlocked_date >= $date_range['start'] && $unlocked_date <= $date_range['end'] ) {
+							$tier = isset( $achievement['tier'] ) ? $achievement['tier'] : 'bronze';
+							$tier_counts[ $tier ]++;
+							$total_unlocked++;
+							
+							// Extract period_id from meta_key
+							$period_id = str_replace( '_wc_tp_period_achievements_', '', $meta_key );
+							
+							// Store achievement with period info
+							$all_period_achievements[] = array_merge( $achievement, array(
+								'key' => $key,
+								'period_id' => $period_id
+							) );
+						}
 					}
 				}
 			}
