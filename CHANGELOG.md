@@ -1,3 +1,32 @@
+## [1.7.37] - 2026-04-24
+### 🔧 Fix - Performance Metrics Now Respect Status Filter
+
+#### FIXED - Performance Metrics Used Hardcoded Statuses
+- **Problem**: Performance Metrics section was using hardcoded commission statuses instead of respecting the user's filter selection
+- **Impact**: When filtering by specific status (e.g., "Completed"), Performance Metrics still showed data from all commission statuses
+- **Solution**: Updated Performance Metrics to use the same filtered statuses as other sections
+
+#### WHAT WAS CHANGED
+
+**Performance Metrics - Status Filtering:**
+- **Attributed Order Total**: Now uses filtered statuses instead of hardcoded commission statuses
+- **Total Orders Count**: Now uses filtered statuses instead of 'any' status
+- **Highest/Lowest Order**: Now calculated based on filtered statuses
+- All metrics now consistently respect the status filter selection
+
+**Before:**
+- Attributed Total: Always used commission calculation statuses
+- Total Orders: Used 'any' status (all orders)
+
+**After:**
+- Attributed Total: Uses filtered statuses (respects user selection)
+- Total Orders: Uses filtered statuses (respects user selection)
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php` - Updated `ajax_get_filtered_performance_data()` method
+
+---
+
 ## [1.7.36] - 2026-04-24
 ### 🔧 Fix - Status Filter Shows Only Commission Calculation Statuses
 

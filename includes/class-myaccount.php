@@ -4806,15 +4806,8 @@ class WC_Team_Payroll_MyAccount {
 		// This correctly handles cases where user is both agent and processor
 		$attributed_order_total = 0;
 		
-		// Get commission calculation statuses
-		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
-		
-		// Determine which statuses to query for attributed total
-		if ( $status_filter !== 'all' ) {
-			$statuses_for_attributed = in_array( $status_filter, $commission_statuses ) ? array( $status_filter ) : $commission_statuses;
-		} else {
-			$statuses_for_attributed = $commission_statuses;
-		}
+		// Use the same filtered statuses for attributed total calculation
+		$statuses_for_attributed = $order_statuses;
 		
 		// Query args for attributed total
 		$attributed_args = array(
@@ -4964,19 +4957,15 @@ class WC_Team_Payroll_MyAccount {
 			}
 		}
 		
-		// Count ALL orders (any status) for Total Orders metric
-		$all_statuses = 'any'; // Count all order statuses
-		
-		// Apply status filter if specified
-		if ( $status_filter !== 'all' ) {
-			$all_statuses = array( 'wc-' . $status_filter );
-		}
+		// Count orders based on filtered statuses for Total Orders metric
+		// Use the same filtered statuses as the rest of the metrics
+		$total_orders_statuses = $order_statuses;
 		
 		// Query for total orders count
 		$total_orders_args = array(
 			'limit'        => -1,
 			'date_created' => $start_date . ' 00:00:00...' . $end_date . ' 23:59:59',
-			'status'       => $all_statuses,
+			'status'       => $total_orders_statuses,
 			'return'       => 'ids',
 		);
 		
