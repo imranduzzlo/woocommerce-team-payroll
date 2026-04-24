@@ -4802,10 +4802,8 @@ class WC_Team_Payroll_MyAccount {
 			}
 		}
 		
-		// Count ALL orders (excluding draft and failed) for Total Orders metric
-		$all_statuses = array_keys( wc_get_order_statuses() );
-		// Remove draft and failed statuses
-		$all_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed', 'wc-cancelled', 'wc-trash' ) );
+		// Count ALL orders (any status) for Total Orders metric
+		$all_statuses = 'any'; // Count all order statuses
 		
 		// Apply status filter if specified
 		if ( $status_filter !== 'all' ) {
@@ -4820,17 +4818,33 @@ class WC_Team_Payroll_MyAccount {
 			'return'       => 'ids',
 		);
 		
-		// Get orders where user is agent
-		$agent_orders_count = count( wc_get_orders( array_merge( $total_orders_args, array(
+		// Get orders where user is agent (check both old and new meta keys)
+		$agent_order_ids_old = wc_get_orders( array_merge( $total_orders_args, array(
 			'meta_key'   => '_primary_agent_id',
 			'meta_value' => $user_id,
-		) ) ) );
+		) ) );
 		
-		// Get orders where user is processor
-		$processor_orders_count = count( wc_get_orders( array_merge( $total_orders_args, array(
+		$agent_order_ids_new = wc_get_orders( array_merge( $total_orders_args, array(
+			'meta_key'   => '_wc_tp_agent_id',
+			'meta_value' => $user_id,
+		) ) );
+		
+		$agent_order_ids = array_unique( array_merge( $agent_order_ids_old, $agent_order_ids_new ) );
+		$agent_orders_count = count( $agent_order_ids );
+		
+		// Get orders where user is processor (check both old and new meta keys)
+		$processor_order_ids_old = wc_get_orders( array_merge( $total_orders_args, array(
 			'meta_key'   => '_processor_user_id',
 			'meta_value' => $user_id,
-		) ) ) );
+		) ) );
+		
+		$processor_order_ids_new = wc_get_orders( array_merge( $total_orders_args, array(
+			'meta_key'   => '_wc_tp_processor_id',
+			'meta_value' => $user_id,
+		) ) );
+		
+		$processor_order_ids = array_unique( array_merge( $processor_order_ids_old, $processor_order_ids_new ) );
+		$processor_orders_count = count( $processor_order_ids );
 		
 		// Apply role filter to count
 		if ( $role_filter === 'agent' ) {
@@ -4839,14 +4853,6 @@ class WC_Team_Payroll_MyAccount {
 			$total_orders = $processor_orders_count;
 		} else {
 			// Remove duplicates (orders where user is both agent and processor)
-			$agent_order_ids = wc_get_orders( array_merge( $total_orders_args, array(
-				'meta_key'   => '_primary_agent_id',
-				'meta_value' => $user_id,
-			) ) );
-			$processor_order_ids = wc_get_orders( array_merge( $total_orders_args, array(
-				'meta_key'   => '_processor_user_id',
-				'meta_value' => $user_id,
-			) ) );
 			$unique_orders = array_unique( array_merge( $agent_order_ids, $processor_order_ids ) );
 			$total_orders = count( $unique_orders );
 		}

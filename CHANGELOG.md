@@ -1,3 +1,41 @@
+## [1.7.27] - 2026-04-24
+### 🔧 Fix - Performance Metrics Total Orders Now Counts All Statuses
+
+#### FIXED - Total Orders Count in Performance Metrics
+- **Problem**: Total Orders in Performance Metrics was excluding some order statuses (draft, failed, cancelled, trash)
+- **Solution**: Changed to count ALL order statuses using `'status' => 'any'`
+- **Consistency**: Now matches the behavior of Order Count in Earnings History
+
+#### ENHANCED - Meta Key Compatibility
+- **Improvement**: Now checks both old and new meta keys for agent and processor assignments
+- **Old Keys**: `_primary_agent_id`, `_processor_user_id`
+- **New Keys**: `_wc_tp_agent_id`, `_wc_tp_processor_id`
+- **Result**: More accurate order counts across all orders in the system
+
+#### WHAT WAS CHANGED
+
+**Total Orders Calculation:**
+```php
+// Before: Excluded certain statuses
+$all_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed', 'wc-cancelled', 'wc-trash' ) );
+
+// After: Counts all statuses
+$all_statuses = 'any'; // Count all order statuses
+```
+
+**Meta Key Queries:**
+- Agent orders: Queries both `_primary_agent_id` AND `_wc_tp_agent_id`
+- Processor orders: Queries both `_processor_user_id` AND `_wc_tp_processor_id`
+- Merges results and removes duplicates for accurate count
+
+**Benefits:**
+- Total Orders shows actual number of orders placed (including failed, cancelled, etc.)
+- Employees can see complete order activity
+- Consistent with Earnings History order count behavior
+- Works with both old and new order meta key formats
+
+---
+
 ## [1.7.26] - 2026-04-24
 ### ✨ Enhancement - Improved Order Details Modal UI & Comprehensive Changelog
 
