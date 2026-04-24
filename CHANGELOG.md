@@ -1,3 +1,56 @@
+## [1.7.34] - 2026-04-24
+### 🔧 Fix - Core Engine Now Returns ALL Orders, Not Just Those With Commission
+
+#### FIXED - Missing Orders Without Commission Data
+- **Problem**: Orders without commission data (cancelled, pending, etc.) were being excluded from reports
+- **Root Cause**: Core Engine's `get_user_earnings()` had `if ( ! $commission_data ) { continue; }` which skipped orders
+- **Solution**: Modified to include ALL orders where user is assigned, with commission data as optional
+
+#### WHAT WAS CHANGED
+
+**Core Engine - get_user_earnings():**
+```php
+// Before: Skipped orders without commission
+if ( ! $commission_data ) {
+    continue;
+}
+
+// After: Includes all orders, handles missing commission gracefully
+if ( ! $role ) {
+    continue; // Only skip if user not involved
+}
+
+// Get commission if available
+if ( $commission_data ) {
+    $total_commission = $commission_data['total_commission'];
+    $total_earnings += $user_earnings;
+}
+
+// Include all orders where user is involved
+$orders_data[] = array(
+    'order_id'  => $order->get_id(),
+    'commission' => $total_commission, // 0 if no commission
+    'earnings'  => $user_earnings,     // 0 if no commission
+    'status'    => $order->get_status(), // Added status
+);
+```
+
+**Additional Improvements:**
+- Added check for both old and new meta keys (`_primary_agent_id` / `_wc_tp_agent_id`)
+- Added `status` field to returned order data
+- Orders without commission show $0 for commission/earnings instead of being hidden
+- Only skips orders where user is not assigned (not agent or processor)
+
+**Benefits:**
+- Complete order visibility in all reports
+- Cancelled orders now visible
+- Pending orders now visible  
+- Completed orders without commission now visible
+- Failed orders excluded (as per status filter)
+- Consistent order counts across all pages
+
+---
+
 ## [1.7.33] - 2026-04-24
 ### 🔧 Fix - Reports Tables Now Show All Statuses Except Draft and Failed
 

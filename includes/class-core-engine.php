@@ -310,42 +310,61 @@ class WC_Team_Payroll_Core_Engine {
 		$orders_data = array();
 
 		foreach ( $orders as $order ) {
+			// Check both old and new meta keys
 			$agent_id = $order->get_meta( '_primary_agent_id' );
-			$processor_id = $order->get_meta( '_processor_user_id' );
-			$commission_data = $order->get_meta( '_commission_data' );
-
-			if ( ! $commission_data ) {
-				continue;
+			if ( ! $agent_id ) {
+				$agent_id = $order->get_meta( '_wc_tp_agent_id' );
 			}
+			
+			$processor_id = $order->get_meta( '_processor_user_id' );
+			if ( ! $processor_id ) {
+				$processor_id = $order->get_meta( '_wc_tp_processor_id' );
+			}
+			
+			$commission_data = $order->get_meta( '_commission_data' );
 
 			$user_earnings = 0;
 			$role = null;
 			$attributed_value = 0;
+			$total_commission = 0;
 
+			// Determine user role
 			if ( intval( $agent_id ) === intval( $user_id ) ) {
-				$user_earnings = $commission_data['agent_earnings'];
 				$role = 'agent';
-				// Get agent's attributed order value (their % of order total)
-				$attributed_value = isset( $commission_data['agent_order_value'] ) ? $commission_data['agent_order_value'] : 0;
+				if ( $commission_data ) {
+					$user_earnings = $commission_data['agent_earnings'];
+					$attributed_value = isset( $commission_data['agent_order_value'] ) ? $commission_data['agent_order_value'] : 0;
+				}
 			} elseif ( intval( $processor_id ) === intval( $user_id ) ) {
-				$user_earnings = $commission_data['processor_earnings'];
 				$role = 'processor';
-				// Get processor's attributed order value (their % of order total)
-				$attributed_value = isset( $commission_data['processor_order_value'] ) ? $commission_data['processor_order_value'] : 0;
+				if ( $commission_data ) {
+					$user_earnings = $commission_data['processor_earnings'];
+					$attributed_value = isset( $commission_data['processor_order_value'] ) ? $commission_data['processor_order_value'] : 0;
+				}
 			}
 
-			if ( $user_earnings > 0 || $attributed_value > 0 ) {
-				$total_earnings += $user_earnings;
-				$orders_data[] = array(
-					'order_id'  => $order->get_id(),
-					'date'      => $order->get_date_created()->format( 'Y-m-d' ),
-					'total'     => $order->get_total(),
-					'commission' => $commission_data['total_commission'],
-					'earnings'  => $user_earnings,
-					'role'      => $role,
-					'attributed_value' => $attributed_value, // User's attributed portion of commission
-				);
+			// Skip if user is not involved in this order
+			if ( ! $role ) {
+				continue;
 			}
+
+			// Get total commission if available
+			if ( $commission_data ) {
+				$total_commission = $commission_data['total_commission'];
+				$total_earnings += $user_earnings;
+			}
+
+			// Include all orders where user is involved, even without commission
+			$orders_data[] = array(
+				'order_id'  => $order->get_id(),
+				'date'      => $order->get_date_created()->format( 'Y-m-d' ),
+				'total'     => $order->get_total(),
+				'commission' => $total_commission,
+				'earnings'  => $user_earnings,
+				'role'      => $role,
+				'attributed_value' => $attributed_value,
+				'status'    => $order->get_status(),
+			);
 		}
 
 		return array(

@@ -2593,10 +2593,10 @@ class WC_Team_Payroll_MyAccount {
 					background-color: rgba(" . implode(',', sscanf($primary_color, "#%02x%02x%02x")) . ", 0.1) !important;
 				}
 				.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab.active{
-					border-bottom-color:{$button_background} !important;
+					border-bottom:3px solid {$button_background} !important;
 					color:{$button_background} !important;
 				}
-				.pv-page-wrapper .performance-tab.active .ph{
+				.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab.active .ph{
 					color:{$button_background} !important;
 				}
 				/* Clear button active state (when filters are changed) */
