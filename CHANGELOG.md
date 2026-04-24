@@ -1,3 +1,31 @@
+## [1.7.69] - 2026-04-26
+### 🐛 Critical Fix - Event Handler Context & Button Visibility
+
+#### FIXES
+
+**Click Handler Not Working**
+- Fixed JavaScript context issue in event handlers
+- Changed from direct method references to proper context binding with `.call(self, e)`
+- Click on edit button now properly triggers the edit mode
+
+**Button Not Hidden Initially**
+- Added `pointer-events: none` when button is hidden (opacity: 0)
+- Button is now completely invisible and non-interactive until hover
+- Smooth transition for both opacity and pointer-events
+
+**Proper Hover Behavior**
+- Button only appears on hover with opacity transition
+- Pointer events enabled only when visible
+- Clean, professional UX with no initial button visibility
+
+#### TECHNICAL CHANGES
+
+- Fixed `this` context binding in `bindEvents()` method
+- Added `pointer-events` CSS property for complete button hiding
+- Proper event delegation with correct context preservation
+
+---
+
 ## [1.7.68] - 2026-04-26
 ### 🐛 Bug Fixes - Custom Field Editing
 
