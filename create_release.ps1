@@ -1,10 +1,27 @@
 # GitHub Release Creation Script for WooCommerce Team Payroll
-# Version: 1.7.10
 # Uses GitHub API to automatically create releases
 
 param(
-    [string]$Version = "1.7.10"
+    [string]$Version = ""
 )
+
+# Auto-detect version from plugin file if not provided
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    $pluginFile = "woocommerce-team-payroll.php"
+    if (Test-Path $pluginFile) {
+        $content = Get-Content $pluginFile -Raw
+        if ($content -match 'Version:\s*(\d+\.\d+\.\d+)') {
+            $Version = $Matches[1]
+            Write-Host "Auto-detected version: $Version" -ForegroundColor Cyan
+        } else {
+            Write-Host "ERROR: Could not detect version from $pluginFile" -ForegroundColor Red
+            exit 1
+        }
+    } else {
+        Write-Host "ERROR: Plugin file not found: $pluginFile" -ForegroundColor Red
+        exit 1
+    }
+}
 
 # Configuration
 $RepoOwner = "imranduzzlo"
@@ -12,7 +29,7 @@ $RepoName = "woocommerce-team-payroll"
 $Branch = "main"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "GitHub Release Creator v1.7.10" -ForegroundColor Cyan
+Write-Host "GitHub Release Creator v$Version" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -53,7 +70,17 @@ git add .
 
 Write-Host ""
 Write-Host "Step 3: Creating commit..." -ForegroundColor Yellow
-$commitMessage = "Release v$Version - Cache Clearing Fix"
+
+# Extract first line of changelog for this version as commit message
+$changelogFile = "CHANGELOG.md"
+$commitMessage = "Release v$Version"
+if (Test-Path $changelogFile) {
+    $changelogContent = Get-Content $changelogFile -Raw
+    if ($changelogContent -match "## \[$Version\][^\n]*\n### ([^\n]+)") {
+        $commitMessage = "Release v$Version - $($Matches[1])"
+    }
+}
+
 git commit -m $commitMessage
 
 if ($LASTEXITCODE -ne 0) {
