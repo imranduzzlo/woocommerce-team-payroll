@@ -1,3 +1,25 @@
+## [1.7.71] - 2026-04-26
+### 🐛 Critical Fix - Button Element Context
+
+#### FIXES
+
+**Click Handler Not Executing**
+- Fixed button element context passing in event handler
+- Now properly passes `btnElement` parameter to handler function
+- Button click now correctly triggers edit mode
+
+**Debug Logging**
+- Added console logging to track edit button clicks
+- Helps identify if handler is being called
+
+#### TECHNICAL CHANGES
+
+- Modified `bindEvents()` to pass button element: `self.handleEditCustomField.call(self, e, this)`
+- Updated `handleEditCustomField()` signature to accept `btnElement` parameter
+- Proper jQuery wrapping of button element: `var $btn = $(btnElement)`
+
+---
+
 ## [1.7.70] - 2026-04-26
 ### ✅ Stable Release - Custom Field Inline Editing
 
