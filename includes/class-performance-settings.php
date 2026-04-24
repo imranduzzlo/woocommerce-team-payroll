@@ -51,6 +51,8 @@ class WC_Team_Payroll_Performance_Settings {
 		// AJAX handlers - System Configuration
 		add_action( 'wp_ajax_wc_tp_save_system_config', array( $this, 'ajax_save_system_config' ) );
 		add_action( 'wp_ajax_wc_tp_reset_all_data', array( $this, 'ajax_reset_all_data' ) );
+		add_action( 'wp_ajax_wc_tp_clear_frontend_data', array( $this, 'ajax_clear_frontend_data' ) );
+		add_action( 'wp_ajax_wc_tp_clear_all_data', array( $this, 'ajax_clear_all_data' ) );
 		
 		// AJAX handlers - Bonus Configuration (Phase 2 Part 2)
 		add_action( 'wp_ajax_wc_tp_save_bonus_config', array( $this, 'ajax_save_bonus_config' ) );
@@ -1953,13 +1955,33 @@ class WC_Team_Payroll_Performance_Settings {
 					</tr>
 					
 					<tr>
-						<th><label><?php esc_html_e( 'Reset All Data', 'wc-team-payroll' ); ?></label></th>
+						<th><label><?php esc_html_e( 'Data Management', 'wc-team-payroll' ); ?></label></th>
 						<td>
-							<button type="button" class="button button-secondary" id="wc-tp-reset-all-data">
-								<span class="dashicons dashicons-warning"></span>
-								<?php esc_html_e( 'Reset All Performance Data', 'wc-team-payroll' ); ?>
-							</button>
-							<p class="description" style="color: #d63638;"><?php esc_html_e( 'WARNING: This will delete all performance configurations, scores, goals, achievements, and baselines. This action cannot be undone!', 'wc-team-payroll' ); ?></p>
+							<div style="display: flex; gap: 10px; margin-bottom: 15px;">
+								<button type="button" class="button button-secondary" id="wc-tp-clear-frontend-data">
+									<span class="dashicons dashicons-trash"></span>
+									<?php esc_html_e( 'Clear Frontend Data Only', 'wc-team-payroll' ); ?>
+								</button>
+								<button type="button" class="button button-secondary" id="wc-tp-clear-all-data">
+									<span class="dashicons dashicons-warning"></span>
+									<?php esc_html_e( 'Clear All Data', 'wc-team-payroll' ); ?>
+								</button>
+							</div>
+							<p class="description"><?php esc_html_e( 'Frontend Data: Clears only user-related performance data (achievements, goals, baselines). Backend Data: Clears all configurations and settings.', 'wc-team-payroll' ); ?></p>
+						</td>
+					</tr>
+					
+					<tr>
+						<th><label for="system_clear_on_uninstall"><?php esc_html_e( 'Clear Data on Uninstall', 'wc-team-payroll' ); ?></label></th>
+						<td>
+							<input type="checkbox" 
+								   id="system_clear_on_uninstall" 
+								   name="system_clear_on_uninstall" 
+								   value="1" 
+								   class="wc-tp-system-setting" 
+								   <?php checked( isset( $system_config['clear_on_uninstall'] ) ? $system_config['clear_on_uninstall'] : 0, 1 ); ?> />
+							<label for="system_clear_on_uninstall"><?php esc_html_e( 'Automatically clear all plugin data when uninstalling', 'wc-team-payroll' ); ?></label>
+							<p class="description" style="color: #d63638;"><strong><?php esc_html_e( 'WARNING:', 'wc-team-payroll' ); ?></strong> <?php esc_html_e( 'If checked, all plugin data will be permanently deleted when the plugin is uninstalled. If unchecked, data will be preserved and restored if the plugin is reinstalled.', 'wc-team-payroll' ); ?></p>
 						</td>
 					</tr>
 				</table>

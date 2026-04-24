@@ -721,6 +721,38 @@ class WC_Team_Payroll_Settings {
 						</tr>
 					</table>
 
+					<h3>Data Management</h3>
+					<table class="form-table">
+						<tr>
+							<th><label>Clear Plugin Data</label></th>
+							<td>
+								<div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+									<button type="button" class="button button-secondary" id="wc-tp-clear-frontend-data-btn">
+										<span class="dashicons dashicons-trash"></span>
+										Clear Frontend Data Only
+									</button>
+									<button type="button" class="button button-secondary" id="wc-tp-clear-all-data-btn">
+										<span class="dashicons dashicons-warning"></span>
+										Clear All Data
+									</button>
+								</div>
+								<p class="description">
+									<strong>Frontend Data:</strong> Clears only user-related data (achievements, goals, baselines, bonuses).<br>
+									<strong>All Data:</strong> Clears all configurations, settings, and user data.
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label for="wc_tp_clear_on_uninstall">Clear Data on Uninstall</label></th>
+							<td>
+								<input type="hidden" name="wc_team_payroll_settings[clear_on_uninstall]" value="0" />
+								<input type="checkbox" id="wc_tp_clear_on_uninstall" name="wc_team_payroll_settings[clear_on_uninstall]" value="1" <?php checked( isset( $settings['clear_on_uninstall'] ) ? $settings['clear_on_uninstall'] : 0, 1 ); ?> />
+								<label for="wc_tp_clear_on_uninstall">Automatically clear all plugin data when uninstalling</label>
+								<p class="description" style="color: #d63638;"><strong>⚠️ WARNING:</strong> If checked, all plugin data will be permanently deleted when the plugin is uninstalled. If unchecked, data will be preserved and restored if the plugin is reinstalled.</p>
+							</td>
+						</tr>
+					</table>
+
 					<script>
 						jQuery(document).ready(function($) {
 							const checkbox = $('#enable_salary_debug');
@@ -745,6 +777,84 @@ class WC_Team_Payroll_Settings {
 							checkbox.on('change', function() {
 								updateInstructions();
 							});
+
+							// Clear Frontend Data button
+							$('#wc-tp-clear-frontend-data-btn').on('click', function(e) {
+								e.preventDefault();
+								showClearDataDialog('frontend');
+							});
+
+							// Clear All Data button
+							$('#wc-tp-clear-all-data-btn').on('click', function(e) {
+								e.preventDefault();
+								showClearDataDialog('all');
+							});
+
+							// Show clear data confirmation dialog
+							function showClearDataDialog(type) {
+								const title = type === 'frontend' ? 'Clear Frontend Data Only' : 'Clear All Data';
+								const message = type === 'frontend' 
+									? 'This will delete all user achievements, goals, baselines, and bonuses. Configurations will be preserved.'
+									: 'This will delete ALL plugin data including configurations, settings, and user data. This action cannot be undone!';
+								
+								// Create dialog HTML
+								const dialogHtml = `
+									<div id="wc-tp-clear-data-dialog" style="display: none;">
+										<p>${message}</p>
+										<p style="margin-top: 15px;"><strong>Type "CLEAR" to confirm:</strong></p>
+										<input type="text" id="wc-tp-clear-confirmation" placeholder="Type CLEAR here" style="width: 100%; padding: 8px; margin-top: 10px; box-sizing: border-box;" />
+									</div>
+								`;
+
+								// Remove existing dialog if any
+								$('#wc-tp-clear-data-dialog').remove();
+								$('body').append(dialogHtml);
+
+								// Show dialog
+								$('#wc-tp-clear-data-dialog').dialog({
+									title: title,
+									modal: true,
+									width: 400,
+									buttons: {
+										'Cancel': function() {
+											$(this).dialog('close');
+											$(this).remove();
+										},
+										'Clear': function() {
+											const confirmation = $('#wc-tp-clear-confirmation').val();
+											if (confirmation !== 'CLEAR') {
+												alert('Please type "CLEAR" to confirm.');
+												return;
+											}
+
+											$(this).dialog('close');
+											$(this).remove();
+
+											// Send AJAX request
+											$.ajax({
+												url: ajaxurl,
+												type: 'POST',
+												data: {
+													action: type === 'frontend' ? 'wc_tp_clear_frontend_data' : 'wc_tp_clear_all_data',
+													nonce: '<?php echo wp_create_nonce( 'wc_team_payroll_settings_nonce' ); ?>',
+													confirmation: 'CLEAR'
+												},
+												success: function(response) {
+													if (response.success) {
+														alert(response.data.message);
+														location.reload();
+													} else {
+														alert('Error: ' + response.data.message);
+													}
+												},
+												error: function() {
+													alert('AJAX error occurred');
+												}
+											});
+										}
+									}
+								});
+							}
 						});
 					</script>
 				<?php endif; ?>

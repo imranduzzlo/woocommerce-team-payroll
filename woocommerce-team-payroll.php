@@ -1912,6 +1912,100 @@ add_action( 'admin_menu', function() {
 			}
 		}
 	);
+
+	// AJAX handlers for data clearing
+	add_action( 'wp_ajax_wc_tp_clear_frontend_data', function() {
+		check_ajax_referer( 'wc_team_payroll_settings_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		// Verify confirmation
+		$confirmation = isset( $_POST['confirmation'] ) ? sanitize_text_field( $_POST['confirmation'] ) : '';
+		if ( $confirmation !== 'CLEAR' ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid confirmation. Please type "CLEAR" to confirm.', 'wc-team-payroll' ) ) );
+		}
+
+		// Get all users
+		$users = get_users( array( 'fields' => 'ID' ) );
+		$deleted_count = 0;
+
+		foreach ( $users as $user_id ) {
+			// Delete user achievement data
+			delete_user_meta( $user_id, '_wc_tp_period_achievements_history' );
+			delete_user_meta( $user_id, '_wc_tp_achieved_bonuses' );
+			delete_user_meta( $user_id, '_wc_tp_badge_streaks' );
+			delete_user_meta( $user_id, '_wc_tp_bonus_history' );
+			delete_user_meta( $user_id, '_wc_tp_current_baselines' );
+			delete_user_meta( $user_id, '_wc_tp_baseline_history' );
+			delete_user_meta( $user_id, '_wc_tp_goal_history' );
+
+			// Delete all period-based achievements and goals
+			$meta_keys = get_user_meta( $user_id );
+			foreach ( $meta_keys as $key => $value ) {
+				if ( strpos( $key, '_wc_tp_period_achievements_' ) === 0 || strpos( $key, '_wc_tp_period_goals_' ) === 0 ) {
+					delete_user_meta( $user_id, $key );
+				}
+			}
+
+			$deleted_count++;
+		}
+
+		wp_send_json_success( array( 
+			'message' => sprintf( __( 'Frontend data cleared for %d users!', 'wc-team-payroll' ), $deleted_count )
+		) );
+	} );
+
+	add_action( 'wp_ajax_wc_tp_clear_all_data', function() {
+		check_ajax_referer( 'wc_team_payroll_settings_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		// Verify confirmation
+		$confirmation = isset( $_POST['confirmation'] ) ? sanitize_text_field( $_POST['confirmation'] ) : '';
+		if ( $confirmation !== 'CLEAR' ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid confirmation. Please type "CLEAR" to confirm.', 'wc-team-payroll' ) ) );
+		}
+
+		// Clear all frontend data first
+		$users = get_users( array( 'fields' => 'ID' ) );
+		foreach ( $users as $user_id ) {
+			// Delete user achievement data
+			delete_user_meta( $user_id, '_wc_tp_period_achievements_history' );
+			delete_user_meta( $user_id, '_wc_tp_achieved_bonuses' );
+			delete_user_meta( $user_id, '_wc_tp_badge_streaks' );
+			delete_user_meta( $user_id, '_wc_tp_bonus_history' );
+			delete_user_meta( $user_id, '_wc_tp_current_baselines' );
+			delete_user_meta( $user_id, '_wc_tp_baseline_history' );
+			delete_user_meta( $user_id, '_wc_tp_goal_history' );
+
+			// Delete all period-based achievements and goals
+			$meta_keys = get_user_meta( $user_id );
+			foreach ( $meta_keys as $key => $value ) {
+				if ( strpos( $key, '_wc_tp_period_achievements_' ) === 0 || strpos( $key, '_wc_tp_period_goals_' ) === 0 ) {
+					delete_user_meta( $user_id, $key );
+				}
+			}
+		}
+
+		// Clear all backend configurations
+		delete_option( 'wc_tp_performance_config' );
+		delete_option( 'wc_tp_goals_config' );
+		delete_option( 'wc_tp_achievements_config' );
+		delete_option( 'wc_tp_baselines_config' );
+		delete_option( 'wc_tp_calculation_config' );
+		delete_option( 'wc_tp_system_config' );
+		delete_option( 'wc_tp_achievement_bonuses' );
+		delete_option( 'wc_tp_leaderboard_config' );
+		delete_option( 'wc_tp_config_version' );
+
+		wp_send_json_success( array( 
+			'message' => __( 'All plugin data has been cleared!', 'wc-team-payroll' )
+		) );
+	} );
 }, 10 );
 
 // ============================================================================
