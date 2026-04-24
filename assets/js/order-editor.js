@@ -21,7 +21,7 @@
             $(document).on('click', '.wc-tp-add-product', function(e) { self.handleAddProduct.call(self, e); });
             $(document).on('click', '.wc-tp-edit-order-meta', function(e) { self.handleEditOrderMeta.call(self, e); });
             $(document).on('click', '.wc-tp-recalculate-order', function(e) { self.handleRecalculateOrder.call(self, e); });
-            $(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) { self.handleEditCustomField.call(self, e); });
+            $(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) { self.handleEditCustomField.call(self, e, this); });
         },
 
         handleEditItem: function(e) {
@@ -49,11 +49,11 @@
             OrderEditor.showNotice('info', 'Order recalculation coming soon.');
         },
 
-        handleEditCustomField: function(e) {
+        handleEditCustomField: function(e, btnElement) {
             e.preventDefault();
             e.stopPropagation();
             
-            var $btn = $(this);
+            var $btn = $(btnElement);
             var $row = $btn.closest('.wc-tp-custom-field-row');
             
             // Prevent multiple edits on same row
@@ -66,6 +66,8 @@
             var value = $btn.data('value');
             var fieldType = $row.data('field-type');
             var orderId = $row.data('order-id');
+            
+            console.log('Edit clicked:', { metaKey, label, value, fieldType, orderId });
             
             // Hide display and button
             $row.find('.wc-tp-field-display').hide();
