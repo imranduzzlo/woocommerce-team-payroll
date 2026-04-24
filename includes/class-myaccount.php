@@ -2568,7 +2568,7 @@ class WC_Team_Payroll_MyAccount {
 					border-radius: {$button_border_radius}px !important;
 				}
 				.pv-page-wrapper .btn-action .ph{
-					color:{$button_color} !important;
+					color:{$button_text_color} !important;
 				}
 				.pv-table-controls .filter-button:hover,
 				.pv-filter-container .filter-button:hover,
@@ -2592,7 +2592,7 @@ class WC_Team_Payroll_MyAccount {
 				.pv-table-controls .btn-clear-filters:hover, .pv-page-wrapper .performance-tab:hover {
 					background-color: rgba(" . implode(',', sscanf($primary_color, "#%02x%02x%02x")) . ", 0.1) !important;
 				}
-				.pv-page-wrapper .performance-tab.active{
+				.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab.active{
 					border-bottom-color:{$button_background} !important;
 					color:{$button_background} !important;
 				}
@@ -4510,7 +4510,7 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = null;
+		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
 			$order_statuses = array( $status_filter );
 		}
@@ -4742,7 +4742,7 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = null;
+		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
 			$order_statuses = array( $status_filter );
 		}
@@ -5202,7 +5202,7 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = null;
+		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
 			$order_statuses = array( $status_filter );
 		}
@@ -5695,7 +5695,7 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = null;
+		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
 			$order_statuses = array( $status_filter );
 		}

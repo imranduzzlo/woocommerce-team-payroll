@@ -258,19 +258,19 @@
    INFO GRID
    ============================================================================ */
 
-.info-grid {
+.order-info-tab .info-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 	gap: 16px;
 }
 
-.info-item {
+.order-info-tab .info-item {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
 
-.info-item .label {
+.order-info-tab .info-item .label {
 	font-size: 13px;
 	font-weight: 600;
 	color: #637381;
@@ -281,18 +281,18 @@
 	gap: 6px;
 }
 
-.info-item .label i {
+.order-info-tab .info-item .label i {
 	font-size: 16px;
 	color: #919EAB;
 }
 
-.info-item .value {
+.order-info-tab .info-item .value {
 	font-size: 16px;
 	font-weight: 600;
 	color: #212B36;
 }
 
-.info-item .value.amount {
+.order-info-tab .info-item .value.amount {
 	color: #28a745;
 	font-size: 18px;
 }

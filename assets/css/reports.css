@@ -1423,6 +1423,7 @@
 .reports-export-section::after {
 	content: 'Generated on ' attr(data-date) ' - WooCommerce Team Payroll';
 	display: block;
+	width:100%;
 	margin-top: 30px;
 	padding-top: 20px;
 	border-top: 1px solid #dee2e6;
@@ -1573,7 +1574,9 @@ a {
 	gap: 6px;
 	white-space: nowrap;
 }
-
+.pv-page-wrappper .reports-export-btn .ph{
+	color:#fff !important;
+}
 .reports-export-btn:hover, .reports-export-btn:focus {
 	background: #f8f9fa;
 	border-color: #0073aa;

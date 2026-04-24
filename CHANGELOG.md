@@ -1,3 +1,60 @@
+## [1.7.33] - 2026-04-24
+### 🔧 Fix - Reports Tables Now Show All Statuses Except Draft and Failed
+
+#### FIXED - Limited Status Display in Reports Tables
+- **Problem**: Tables were only showing completed, processing, and refunded orders
+- **Root Cause**: When status filter was 'all', it passed `null` to Core Engine which defaulted to limited statuses
+- **Solution**: Changed to explicitly get all WooCommerce order statuses except draft and failed
+
+#### WHAT WAS CHANGED
+
+**Status Query Logic:**
+```php
+// Before: Passed null which defaulted to ['completed', 'processing', 'refunded']
+$order_statuses = null;
+if ( $status_filter !== 'all' ) {
+    $order_statuses = array( $status_filter );
+}
+
+// After: Gets all statuses except draft and failed
+if ( $status_filter !== 'all' ) {
+    $order_statuses = array( $status_filter );
+} else {
+    // Get all order statuses except draft and failed
+    $all_statuses = array_keys( wc_get_order_statuses() );
+    $order_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed' ) );
+    // Remove 'wc-' prefix for the query
+    $order_statuses = array_map( function( $status ) {
+        return str_replace( 'wc-', '', $status );
+    }, $order_statuses );
+}
+```
+
+**Affected Tables:**
+- My Commission History
+- My Order Processing
+- Performance Metrics calculations
+- Analytics data
+
+**Statuses Now Shown:**
+- ✅ Completed
+- ✅ Processing
+- ✅ Pending
+- ✅ On-Hold
+- ✅ Cancelled
+- ✅ Refunded
+- ✅ Any custom statuses
+- ❌ Draft (excluded)
+- ❌ Failed (excluded)
+
+**Benefits:**
+- Complete order visibility across all meaningful statuses
+- Employees can see pending, cancelled, and on-hold orders
+- Consistent with My Orders page behavior
+- Excludes only draft and failed orders which are not relevant
+
+---
+
 ## [1.7.32] - 2026-04-24
 ### 🔧 Fix - My Order Processing Table Array Key Mismatch
 
