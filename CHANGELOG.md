@@ -1,3 +1,55 @@
+## [1.7.29] - 2026-04-24
+### 🔧 Fix - Reports Page Order Processing Table Status & Modal
+
+#### FIXED - Order Status Display
+- **Problem**: Status column always showed "completed" instead of actual order status
+- **Solution**: Changed to use actual order status from order object if not set in array
+- **Result**: Now displays correct status for each order (pending, processing, completed, etc.)
+
+#### ENHANCED - Order Details Modal
+- **Added**: Same order details modal as My Orders page
+- **Replaced**: Admin edit page link with modal popup
+- **Features**: 
+  - Order Information tab with complete details
+  - Order Changelog tab with comprehensive change tracking
+  - Proper button styling matching My Orders page
+  - Event delegation for dynamic table updates
+
+#### WHAT WAS CHANGED
+
+**Status Display Fix:**
+```php
+// Before: Hardcoded default
+$status = isset( $order['status'] ) ? $order['status'] : 'completed';
+
+// After: Uses actual order status
+$status = isset( $order['status'] ) ? $order['status'] : ( $order_obj ? $order_obj->get_status() : 'unknown' );
+```
+
+**Action Button:**
+```php
+// Before: Opens admin edit page
+<button onclick="window.open('admin/post.php?post=...', '_blank')">
+
+// After: Opens modal
+<button class="btn-action btn-view" data-order-id="<?php echo $order_id; ?>">
+```
+
+**Added Features:**
+- Enqueued order details modal CSS on reports page
+- Added modal JavaScript with event delegation
+- Tab switching functionality for Order Information and Changelog
+- ESC key and click-outside-to-close functionality
+- Smooth fade animations for modal open/close
+
+**Benefits:**
+- Employees see actual order statuses in reports
+- Quick access to order details without leaving the page
+- Consistent UI/UX across My Orders and Reports pages
+- Better user experience with modal instead of new tab
+
+---
+
 ## [1.7.28] - 2026-04-24
 ### 🔧 Fix - My Order Processing Table Now Checks New Meta Keys
 

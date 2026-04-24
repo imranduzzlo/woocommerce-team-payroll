@@ -2091,6 +2091,108 @@ class WC_Team_Payroll_MyAccount {
 				to { transform: rotate(360deg); }
 			}
 		</style>
+
+		<script>
+			jQuery(document).ready(function($) {
+				// Event delegation for order details button in reports page
+				$(document).on('click', '.reports-table .btn-action.btn-view', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					const orderId = $(this).attr('data-order-id');
+					console.log('Reports page: Button clicked for order:', orderId);
+					showOrderDetailsModal(orderId);
+				});
+
+				// Show order details modal
+				function showOrderDetailsModal(orderId) {
+					console.log('showOrderDetailsModal called with order ID:', orderId);
+					
+					// Remove any existing modal
+					$('#order-details-modal').remove();
+					
+					// Create modal structure
+					const modal = $('<div id="order-details-modal" class="wc-tp-modal"></div>');
+					const modalContent = $('<div class="wc-tp-modal-content order-details-modal-content"></div>');
+					const modalHeader = $('<div class="wc-tp-modal-header"></div>')
+						.append($('<h3></h3>').html('<i class="ph ph-package"></i> <?php esc_html_e( 'Order Details', 'wc-team-payroll' ); ?>'))
+						.append($('<button class="wc-tp-modal-close"></button>').html('<i class="ph ph-x"></i>'));
+					
+					const modalBody = $('<div class="wc-tp-modal-body"></div>')
+						.html('<div class="loading-state"><i class="ph ph-spinner ph-spin"></i><p><?php esc_html_e( 'Loading order details...', 'wc-team-payroll' ); ?></p></div>');
+					
+					modalContent.append(modalHeader, modalBody);
+					modal.append(modalContent);
+					
+					// Append to body
+					$('body').append(modal);
+					console.log('Modal appended to body');
+					
+					// Close modal handlers
+					modal.on('click', function(e) {
+						if ($(e.target).is('#order-details-modal')) {
+							modal.fadeOut(200, function() {
+								modal.remove();
+							});
+						}
+					});
+					
+					modalHeader.find('.wc-tp-modal-close').on('click', function() {
+						modal.fadeOut(200, function() {
+							modal.remove();
+						});
+					});
+					
+					// ESC key to close
+					$(document).on('keydown.orderModal', function(e) {
+						if (e.key === 'Escape') {
+							modal.fadeOut(200, function() {
+								modal.remove();
+							});
+							$(document).off('keydown.orderModal');
+						}
+					});
+					
+					// Load order details via AJAX
+					$.ajax({
+						url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
+						type: 'POST',
+						data: {
+							action: 'wc_tp_get_order_details',
+							order_id: orderId,
+							nonce: '<?php echo esc_attr( wp_create_nonce( 'wc_team_payroll_nonce' ) ); ?>'
+						},
+						success: function(response) {
+							if (response.success) {
+								modalBody.html(response.data.html);
+								
+								// Initialize changelog tab switching
+								initializeOrderTabs();
+							} else {
+								modalBody.html('<div class="error-state"><i class="ph ph-warning"></i><p>' + response.data + '</p></div>');
+							}
+						},
+						error: function() {
+							modalBody.html('<div class="error-state"><i class="ph ph-warning"></i><p><?php esc_html_e( 'Error loading order details', 'wc-team-payroll' ); ?></p></div>');
+						}
+					});
+				}
+
+				// Initialize order details tabs
+				function initializeOrderTabs() {
+					$('.order-detail-tabs .tab-button').on('click', function() {
+						const tabId = $(this).data('tab');
+						
+						// Update active tab button
+						$('.order-detail-tabs .tab-button').removeClass('active');
+						$(this).addClass('active');
+						
+						// Update active tab content
+						$('.order-tab-content').removeClass('active');
+						$('#' + tabId).addClass('active');
+					});
+				}
+			});
+		</script>
 		<?php
 	}
 
@@ -2823,6 +2925,14 @@ class WC_Team_Payroll_MyAccount {
 				array( 'jquery' ),
 				WC_TEAM_PAYROLL_VERSION . '-' . time(),
 				true
+			);
+
+			// Enqueue Order Details Modal CSS
+			wp_enqueue_style(
+				'wc-tp-order-details-modal',
+				WC_TEAM_PAYROLL_URL . 'assets/css/order-details-modal.css',
+				array(),
+				WC_TEAM_PAYROLL_VERSION
 			);
 
 			// Enqueue Performance Tracker CSS
@@ -5421,7 +5531,7 @@ class WC_Team_Payroll_MyAccount {
 								
 								// Check if this order status calculates commission
 								$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
-								$status = isset( $order['status'] ) ? $order['status'] : 'completed';
+								$status = isset( $order['status'] ) ? $order['status'] : ( $order_obj ? $order_obj->get_status() : 'unknown' );
 								$has_commission = in_array( $status, $commission_statuses, true );
 							?>
 								<tr>
@@ -5484,7 +5594,7 @@ class WC_Team_Payroll_MyAccount {
 										</span>
 									</td>
 									<td>
-										<button class="btn-action btn-view" onclick="window.open('<?php echo esc_url( admin_url( 'post.php?post=' . $order['order_id'] . '&action=edit' ) ); ?>', '_blank')">
+										<button class="btn-action btn-view" data-order-id="<?php echo esc_attr( $order['order_id'] ); ?>">
 											<i class="ph ph-eye"></i>
 										</button>
 									</td>
