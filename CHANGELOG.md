@@ -1,3 +1,57 @@
+## [1.7.39] - 2026-04-24
+### 🔧 Fix - Achievements Now Use Correct Metrics for Each Type
+
+#### FIXED - Achievement Calculations Now Differentiate Between Metrics
+- **Problem**: All achievement types (earnings, orders, order_value) were using the same metric (order value from completed orders)
+- **Solution**: Each achievement type now uses the appropriate metric with correct order status filtering
+
+#### WHAT WAS CHANGED
+
+**Achievement Metric Calculations:**
+
+1. **Earnings Achievements** (`earnings_bronze`, `earnings_silver`, `earnings_gold`)
+   - Now uses: Commission (from ALL commission calculation statuses) + Salary
+   - Includes: completed, processing, refunded, etc. (as configured in settings)
+   - Reason: Earnings should reflect all commission-earning orders, not just completed
+
+2. **Orders Count Achievements** (`orders_bronze`, `orders_silver`, `orders_gold`)
+   - Now uses: Only COMPLETED orders
+   - Reason: Order count should reflect finalized orders only
+
+3. **Order Value Achievements** (`order_value_bronze`, `order_value_silver`, `order_value_gold`)
+   - Now uses: Only COMPLETED orders
+   - Reason: Order value should reflect finalized order totals only
+
+4. **AOV Achievements** (`aov_bronze`, `aov_silver`, `aov_gold`)
+   - Now uses: Only COMPLETED orders
+   - Reason: Average order value should be based on finalized orders
+
+**New Method Added:**
+- `get_total_earnings()`: Calculates commission (from commission statuses) + salary for earnings achievements
+
+**Before:**
+```php
+// All achievements used the same metric
+if ( strpos( $achievement_key, 'earnings' ) !== false || strpos( $achievement_key, 'order_value' ) !== false ) {
+    $current_value = $period_order_value; // Only completed orders
+}
+```
+
+**After:**
+```php
+// Each achievement type uses appropriate metric
+if ( strpos( $achievement_key, 'earnings' ) !== false ) {
+    $current_value = $period_earnings; // Commission (all statuses) + Salary
+} elseif ( strpos( $achievement_key, 'order_value' ) !== false ) {
+    $current_value = $period_order_value; // Only completed orders
+}
+```
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Added `get_total_earnings()` method and updated achievement calculation logic
+
+---
+
 ## [1.7.38] - 2026-04-24
 ### 🔧 Fix - Performance Tracker Now Counts Only Completed Orders
 

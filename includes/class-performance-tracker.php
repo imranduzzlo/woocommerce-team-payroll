@@ -219,6 +219,64 @@ class WC_Team_Payroll_Performance_Tracker {
 	}
 
 	/**
+	 * Get total earnings (commission + salary) for user in a date range
+	 * Uses commission calculation statuses for commission, not just completed orders
+	 *
+	 * @param int $user_id User ID
+	 * @param string $start_date Start date (Y-m-d)
+	 * @param string $end_date End date (Y-m-d)
+	 * @param string $role_filter Role filter (agent, processor, all)
+	 * @return float Total earnings (commission + salary)
+	 */
+	private function get_total_earnings( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
+		// Get commission from commission calculation statuses (not just completed)
+		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+		
+		$engine = new WC_Team_Payroll_Core_Engine();
+		$earnings_data = $engine->get_user_earnings( $user_id, $start_date, $end_date, $commission_statuses );
+		
+		// Filter by role if needed
+		$filtered_orders = $earnings_data['orders'];
+		if ( $role_filter !== 'all' ) {
+			$filtered_orders = array_filter( $filtered_orders, function( $order ) use ( $role_filter ) {
+				return $order['role'] === $role_filter;
+			});
+		}
+		
+		// Calculate commission from filtered orders
+		$total_commission = 0;
+		foreach ( $filtered_orders as $order_data ) {
+			$total_commission += $order_data['earnings'];
+		}
+		
+		// Get salary for the period
+		$salary_for_period = 0;
+		$is_fixed_salary = get_user_meta( $user_id, '_wc_tp_fixed_salary', true );
+		$is_combined_salary = get_user_meta( $user_id, '_wc_tp_combined_salary', true );
+		
+		if ( $is_fixed_salary || $is_combined_salary ) {
+			$transactions = get_user_meta( $user_id, '_wc_tp_salary_transactions', true );
+			if ( is_array( $transactions ) ) {
+				foreach ( $transactions as $transaction ) {
+					if ( ! isset( $transaction['date'] ) ) {
+						continue;
+					}
+					
+					$trans_date = date( 'Y-m-d', strtotime( $transaction['date'] ) );
+					if ( $trans_date >= $start_date && $trans_date <= $end_date ) {
+						// Check for transfer types
+						if ( isset( $transaction['type'] ) && strpos( $transaction['type'], 'transfer' ) !== false ) {
+							$salary_for_period += floatval( $transaction['amount'] ?? 0 );
+						}
+					}
+				}
+			}
+		}
+		
+		return $total_commission + $salary_for_period;
+	}
+
+	/**
 	 * Get date range based on view mode
 	 *
 	 * @param string $view_mode View mode (current, last, last_3, last_6, last_12, ytd)
@@ -953,9 +1011,15 @@ class WC_Team_Payroll_Performance_Tracker {
 		}
 
 		// Calculate period totals
+		// For achievements:
+		// - Orders count: Only completed orders
+		// - Order value (total): Only completed orders
+		// - Earnings: Commission (from commission statuses) + Salary
+		// - AOV: Only completed orders
 		$period_order_value = $this->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
 		$period_orders = $this->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
 		$period_aov = $this->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
+		$period_earnings = $this->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
 
 		$newly_unlocked = array();
 
@@ -966,11 +1030,17 @@ class WC_Team_Payroll_Performance_Tracker {
 
 			// Determine which metric to check
 			$current_value = 0;
-			if ( strpos( $achievement_key, 'earnings' ) !== false || strpos( $achievement_key, 'order_value' ) !== false ) {
+			if ( strpos( $achievement_key, 'earnings' ) !== false ) {
+				// Earnings = Commission (from commission statuses) + Salary
+				$current_value = $period_earnings;
+			} elseif ( strpos( $achievement_key, 'order_value' ) !== false ) {
+				// Order value = Only completed orders
 				$current_value = $period_order_value;
 			} elseif ( strpos( $achievement_key, 'orders' ) !== false ) {
+				// Orders count = Only completed orders
 				$current_value = $period_orders;
 			} elseif ( strpos( $achievement_key, 'aov' ) !== false ) {
+				// AOV = Only completed orders
 				$current_value = $period_aov;
 			}
 
