@@ -1,3 +1,28 @@
+## [1.7.36] - 2026-04-24
+### 🔧 Fix - Status Filter Shows Only Commission Calculation Statuses
+
+#### REVERTED - Back to Original Filter Behavior
+- **Change**: Status filter dropdown now shows only commission calculation statuses (as configured in settings)
+- **Reason**: User requested to keep original behavior - only show statuses that calculate commission
+- **"All Statuses" option**: Shows all commission calculation statuses (e.g., completed, processing, refunded)
+- **Specific status option**: Shows only that specific status
+
+#### WHAT WAS CHANGED
+
+**Reports Page - Status Filter Dropdown:**
+- Reverted to show only commission calculation statuses from plugin settings
+- Removed non-commission statuses (cancelled, pending, on-hold, etc.) from dropdown
+
+**AJAX Handlers - Status Query Logic:**
+- When "All Statuses" selected: uses `WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses()`
+- When specific status selected: shows only that status
+- Simplified logic - removed array_diff and array_map operations
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php` - Updated status filter dropdown and all 4 AJAX handlers
+
+---
+
 ## [1.7.35] - 2026-04-24
 ### 🔧 Fix - Restored Status Filter Functionality in Reports Page
 
