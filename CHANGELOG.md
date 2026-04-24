@@ -1,3 +1,35 @@
+## [1.7.70] - 2026-04-26
+### ✅ Stable Release - Custom Field Inline Editing
+
+#### FEATURES
+
+**Inline Custom Field Editing**
+- Edit custom fields directly without modals
+- Hover over field to reveal edit button
+- Click edit button to make field editable
+- Save or cancel changes inline
+
+**Smart Field Type Detection**
+- Automatically detects field types from values
+- Renders appropriate input types (text, email, date, number, checkbox, textarea, URL)
+- Pre-fills values when opening edit mode
+
+**Clean UX**
+- Edit button only visible on hover
+- Icon-only button design (no text, no background)
+- Smooth transitions and professional styling
+- Proper error handling and feedback
+
+#### TECHNICAL IMPROVEMENTS
+
+- Consolidated custom field editing into single JavaScript handler
+- Fixed event handler context binding
+- Proper pointer-events management for hidden elements
+- Consistent AJAX data construction
+- Works with custom fields from any plugin/theme
+
+---
+
 ## [1.7.69] - 2026-04-26
 ### 🐛 Critical Fix - Event Handler Context & Button Visibility
 
