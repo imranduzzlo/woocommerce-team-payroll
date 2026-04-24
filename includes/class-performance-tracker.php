@@ -1073,19 +1073,15 @@ class WC_Team_Payroll_Performance_Tracker {
 		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
 		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
 		
-		// Get goals configuration to determine the view mode period type
-		$goals_config = get_option( 'wc_tp_goals_config', array() );
-		$goals_period_type = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
-		
-		// Get date range for the view mode (using goals period type for consistency)
-		$date_range = $this->get_view_mode_dates( $view_mode, $goals_period_type );
+		// Get date range for the view mode (using achievements period type)
+		$date_range = $this->get_view_mode_dates( $view_mode, $period_type );
 		
 		// Get all achievement periods that fall within this date range
 		$all_period_achievements = array();
 		$tier_counts = array( 'bronze' => 0, 'silver' => 0, 'gold' => 0 );
 		$total_unlocked = 0;
 		
-		// Get period IDs that fall within the date range
+		// Get period IDs that fall within the date range (using achievements period type)
 		$period_ids = $this->get_period_ids_in_range( $date_range['start'], $date_range['end'], $period_type );
 		
 		foreach ( $period_ids as $period_id ) {

@@ -1,3 +1,59 @@
+## [1.7.50] - 2026-04-26
+### 🔧 Critical Fix - Achievements Not Showing for Calendar-Based Views
+
+#### THE PROBLEM
+- **Issue**: Last 30 Days, Last 90 Days, and All Time showed 0 achievements in Overview
+- **Root Cause**: Period type mismatch when aggregating achievements
+- **Impact**: Users couldn't see historical achievements in calendar-based views
+
+#### THE BUG EXPLAINED
+
+The `get_achievements_for_view_mode()` method had a mismatch:
+1. Line 1081: Got date range using **Goals period type** (e.g., monthly)
+2. Line 1091: Got period IDs using **Achievements period type** (e.g., weekly)
+
+**Example of the problem:**
+- Goals period: Monthly
+- Achievements period: Weekly
+- View mode: "Last 30 Days"
+- Date range calculated: April 1-30 (using monthly)
+- Period IDs searched: Weekly periods (2026-W14, 2026-W15, etc.)
+- But stored achievements use: Weekly format (2026-W14)
+- Result: Mismatch caused 0 achievements found
+
+#### THE FIX
+
+Now uses **achievements period type consistently**:
+- Date range: Calculated using achievements period type
+- Period IDs: Found using achievements period type
+- Both match the stored achievement data format
+
+#### WHAT THIS FIXES
+
+✅ **Last 7 Days**: Now shows achievements from last 7 days
+✅ **Last 30 Days**: Now shows achievements from last 30 days
+✅ **Last 90 Days**: Now shows achievements from last 90 days
+✅ **Last 6 Months**: Now shows achievements from last 6 months
+✅ **Last 1 Year**: Now shows achievements from last year
+✅ **All Time**: Now shows all achievements ever unlocked
+
+#### EXAMPLE
+
+**Before (v1.7.49):**
+- Achievements period: Weekly
+- View: "Last 30 Days"
+- Result: 0 achievements (mismatch)
+
+**After (v1.7.50):**
+- Achievements period: Weekly
+- View: "Last 30 Days"
+- Result: Shows all achievements from last ~4 weeks ✅
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Fixed period type consistency in get_achievements_for_view_mode()
+
+---
+
 ## [1.7.49] - 2026-04-26
 ### ✨ Major Feature - Unified Calendar-Based View Mode for ALL Tabs
 
