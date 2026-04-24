@@ -1,3 +1,42 @@
+## [1.7.60] - 2026-04-26
+### 🐛 Bug Fix - Data Clearing Buttons Now Working
+
+#### WHAT WAS FIXED
+
+**Problem:**
+- Clear Frontend Data and Clear All Data buttons were not responding to clicks
+- Modal dialog was not appearing
+
+**Root Cause:**
+- Code was using jQuery UI dialog which may not be loaded in WordPress admin
+- jQuery UI dialog dependency was not guaranteed
+
+**Solution:**
+- Replaced jQuery UI dialog with custom CSS modal
+- No external dependencies required
+- Better error handling and user feedback
+- Improved styling and animations
+
+#### HOW IT WORKS NOW
+
+**Custom Modal:**
+- Professional-looking modal with overlay
+- Fade animations for smooth appearance/disappearance
+- Input field auto-focuses for better UX
+- Clear error messages from AJAX responses
+- Loading state on button during processing
+
+**Benefits:**
+✅ **Works Reliably**: No jQuery UI dependency
+✅ **Better UX**: Auto-focus, animations, loading state
+✅ **Better Errors**: Clear error messages
+✅ **Professional Look**: Custom styled modal
+
+#### FILES MODIFIED
+- `includes/class-settings.php` - Replaced jQuery UI dialog with custom modal
+
+---
+
 ## [1.7.59] - 2026-04-26
 ### ✨ Feature - Data Management Tools & Frontend Styling Improvements
 
