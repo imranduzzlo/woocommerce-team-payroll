@@ -1,3 +1,94 @@
+## [1.7.49] - 2026-04-26
+### ✨ Major Feature - Unified Calendar-Based View Mode for ALL Tabs
+
+#### WHAT'S NEW
+- **Unified Dropdown**: Same options work for ALL tabs (Overview, Goals, Achievements, Baselines, History, Leaderboard, Bonus Achieved)
+- **Calendar-Based Ranges**: Simple, clear date ranges everyone understands
+- **All Time View**: New option to see complete historical data
+- **Consistent Experience**: All tabs now respect the view mode selection
+
+#### NEW DROPDOWN OPTIONS
+
+```
+1. Current Period (default) - Respects admin settings (weekly/monthly/quarterly/yearly)
+2. Last 7 Days - Rolling 7-day window
+3. Last 30 Days - Rolling 30-day window
+4. Last 90 Days - Rolling 90-day window (quarterly view)
+5. Last 6 Months - Rolling 6-month window
+6. Last 1 Year - Rolling 12-month window
+7. Year to Date - January 1st to today
+8. All Time - From first order to today
+```
+
+#### HOW IT WORKS
+
+**"Current Period" (Default):**
+- Weekly setting → Shows current week
+- Monthly setting → Shows current month
+- Quarterly setting → Shows current quarter
+- Yearly setting → Shows current year
+
+**All Other Options:**
+- Fixed calendar ranges (7 days, 30 days, etc.)
+- Work regardless of admin period settings
+- Backend aggregates data from multiple periods if needed
+
+#### TABS NOW RESPECTING VIEW MODE
+
+✅ **Overview** - All three metrics (Goals, Achievements, Baselines) follow dropdown
+✅ **Goals** - Shows goals for selected time range
+✅ **Achievements** - Shows achievements unlocked in selected time range
+✅ **Baselines** - Calculates baselines for selected time range
+✅ **Period History** - Filters history to selected time range
+✅ **Bonus Achieved** - Shows bonuses earned in selected time range
+✅ **Leaderboard** - Already followed dropdown (unchanged)
+
+#### BENEFITS
+
+✅ **Simple**: Users understand "Last 30 Days" better than "Last 3 Periods"
+✅ **Consistent**: Same dropdown works everywhere
+✅ **Flexible**: Admin sets weekly tracking, users view monthly summaries
+✅ **Complete**: "All Time" option for full historical view
+✅ **Smart**: "Current Period" adapts to admin settings
+
+#### EXAMPLES
+
+**Example 1: Weekly Tracking, Monthly View**
+- Admin sets: Achievements tracked weekly
+- User selects: "Last 30 Days"
+- System shows: All achievements from last ~4 weeks aggregated
+
+**Example 2: Monthly Tracking, Quarterly View**
+- Admin sets: Goals tracked monthly
+- User selects: "Last 90 Days"
+- System shows: Goals data from last ~3 months
+
+**Example 3: All Time Analysis**
+- User selects: "All Time"
+- System shows: Complete history from first order to today
+- Perfect for annual reviews or lifetime stats
+
+#### TECHNICAL DETAILS
+
+**New View Modes:**
+- `last_7` - Last 7 days
+- `last_30` - Last 30 days
+- `last_90` - Last 90 days
+- `last_6_months` - Last 6 months
+- `last_12_months` - Last 12 months
+- `all_time` - All time (from earliest order)
+
+**Backend Changes:**
+- Updated `get_view_mode_dates()` to handle calendar-based ranges
+- All AJAX handlers now support view_mode parameter
+- Achievements, History, Bonus tabs now pass view_mode
+
+#### FILES MODIFIED
+- `assets/js/performance-tracker.js` - Updated dropdown options, all load methods pass view_mode
+- `includes/class-performance-tracker.php` - Updated get_view_mode_dates() with new ranges
+
+---
+
 ## [1.7.48] - 2026-04-26
 ### ✨ UX Improvement - Dynamic Period Dropdown Labels
 

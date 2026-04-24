@@ -307,113 +307,66 @@ class WC_Team_Payroll_Performance_Tracker {
 
 		switch ( $view_mode ) {
 			case 'current':
-				// Current period
+				// Current period (respects admin settings)
 				return $this->get_period_dates( $period_type );
 
-			case 'last':
-				// Last period
-				if ( $period_type === 'weekly' ) {
-					$start = clone $now;
-					$start->modify( 'monday last week' );
-					$end = clone $start;
-					$end->modify( '+6 days' );
-				} elseif ( $period_type === 'monthly' ) {
-					$start = clone $now;
-					$start->modify( 'first day of last month' );
-					$end = clone $start;
-					$end->modify( 'last day of this month' );
-				} elseif ( $period_type === 'quarterly' ) {
-					$month = (int) $now->format( 'n' );
-					$current_quarter_start = ( ceil( $month / 3 ) - 1 ) * 3 + 1;
-					$last_quarter_start = $current_quarter_start - 3;
-					if ( $last_quarter_start < 1 ) {
-						$last_quarter_start += 12;
-						$year = (int) $now->format( 'Y' ) - 1;
-					} else {
-						$year = (int) $now->format( 'Y' );
-					}
-					$start = new DateTime( $year . '-' . str_pad( $last_quarter_start, 2, '0', STR_PAD_LEFT ) . '-01', $timezone );
-					$end = clone $start;
-					$end->modify( '+2 months' );
-					$end->modify( 'last day of this month' );
-				} else { // yearly
-					$start = new DateTime( ( (int) $now->format( 'Y' ) - 1 ) . '-01-01', $timezone );
-					$end = new DateTime( ( (int) $now->format( 'Y' ) - 1 ) . '-12-31', $timezone );
-				}
+			case 'last_7':
+				// Last 7 days (calendar-based)
+				$start = clone $now;
+				$start->modify( '-6 days' );
+				$end = clone $now;
 				break;
 
-			case 'last_3':
-				// Last 3 periods
-				if ( $period_type === 'weekly' ) {
-					$start = clone $now;
-					$start->modify( '-3 weeks monday' );
-					$end = clone $now;
-					$end->modify( 'sunday this week' );
-				} elseif ( $period_type === 'monthly' ) {
-					$start = clone $now;
-					$start->modify( '-2 months first day of this month' );
-					$end = clone $now;
-					$end->modify( 'last day of this month' );
-				} elseif ( $period_type === 'quarterly' ) {
-					$start = clone $now;
-					$start->modify( '-9 months first day of this month' );
-					$end = clone $now;
-					$end->modify( 'last day of this month' );
-				} else { // yearly
-					$start = new DateTime( ( (int) $now->format( 'Y' ) - 2 ) . '-01-01', $timezone );
-					$end = new DateTime( $now->format( 'Y' ) . '-12-31', $timezone );
-				}
+			case 'last_30':
+				// Last 30 days (calendar-based)
+				$start = clone $now;
+				$start->modify( '-29 days' );
+				$end = clone $now;
 				break;
 
-			case 'last_6':
-				// Last 6 periods
-				if ( $period_type === 'weekly' ) {
-					$start = clone $now;
-					$start->modify( '-6 weeks monday' );
-					$end = clone $now;
-					$end->modify( 'sunday this week' );
-				} elseif ( $period_type === 'monthly' ) {
-					$start = clone $now;
-					$start->modify( '-5 months first day of this month' );
-					$end = clone $now;
-					$end->modify( 'last day of this month' );
-				} elseif ( $period_type === 'quarterly' ) {
-					$start = clone $now;
-					$start->modify( '-18 months first day of this month' );
-					$end = clone $now;
-					$end->modify( 'last day of this month' );
-				} else { // yearly
-					$start = new DateTime( ( (int) $now->format( 'Y' ) - 5 ) . '-01-01', $timezone );
-					$end = new DateTime( $now->format( 'Y' ) . '-12-31', $timezone );
-				}
+			case 'last_90':
+				// Last 90 days (calendar-based)
+				$start = clone $now;
+				$start->modify( '-89 days' );
+				$end = clone $now;
 				break;
 
-			case 'last_12':
-				// Last 12 periods
-				if ( $period_type === 'weekly' ) {
-					$start = clone $now;
-					$start->modify( '-12 weeks monday' );
-					$end = clone $now;
-					$end->modify( 'sunday this week' );
-				} elseif ( $period_type === 'monthly' ) {
-					$start = clone $now;
-					$start->modify( '-11 months first day of this month' );
-					$end = clone $now;
-					$end->modify( 'last day of this month' );
-				} elseif ( $period_type === 'quarterly' ) {
-					$start = clone $now;
-					$start->modify( '-36 months first day of this month' );
-					$end = clone $now;
-					$end->modify( 'last day of this month' );
-				} else { // yearly
-					$start = new DateTime( ( (int) $now->format( 'Y' ) - 11 ) . '-01-01', $timezone );
-					$end = new DateTime( $now->format( 'Y' ) . '-12-31', $timezone );
-				}
+			case 'last_6_months':
+				// Last 6 months (calendar-based)
+				$start = clone $now;
+				$start->modify( '-6 months' );
+				$end = clone $now;
+				break;
+
+			case 'last_12_months':
+				// Last 12 months / 1 year (calendar-based)
+				$start = clone $now;
+				$start->modify( '-12 months' );
+				$end = clone $now;
 				break;
 
 			case 'ytd':
 				// Year to date
 				$start = new DateTime( $now->format( 'Y' ) . '-01-01', $timezone );
+				$end = clone $now;
+				break;
+
+			case 'all_time':
+				// All time - get earliest order date
+				global $wpdb;
+				$earliest = $wpdb->get_var( "
+					SELECT MIN(post_date) 
+					FROM {$wpdb->posts} 
+					WHERE post_type = 'shop_order'
+				" );
+				
+				if ( $earliest ) {
+					$start = new DateTime( $earliest, $timezone );
+				} else {
+					// Fallback to 5 years ago if no orders found
+					$start = clone $now;
+					$start->modify( '-5 years' );
+				}
 				$end = clone $now;
 				break;
 
@@ -425,7 +378,7 @@ class WC_Team_Payroll_Performance_Tracker {
 		return array(
 			'start' => $start->format( 'Y-m-d' ),
 			'end'   => $end->format( 'Y-m-d' ),
-			'period_id' => $start->format( 'Y-m' ),
+			'period_id' => $start->format( 'Y-m' ) . '_to_' . $end->format( 'Y-m' ),
 		);
 	}
 

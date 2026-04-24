@@ -136,66 +136,27 @@
 		 * Get view options based on period type
 		 */
 		getViewOptions(periodType) {
-			// Handle merged options for overview tab
-			if (periodType === 'merged') {
-				return this.getMergedViewOptions();
-			}
-			
-			const optionsMap = {
-				'weekly': [
-					{ value: 'current', label: 'Current Period' },
-					{ value: 'last', label: 'Last Period' },
-					{ value: 'last_4', label: 'Last 4 Periods' },
-					{ value: 'last_12', label: 'Last 12 Periods' },
-					{ value: 'ytd', label: 'Year to Date' }
-				],
-				'monthly': [
-					{ value: 'current', label: 'Current Period' },
-					{ value: 'last', label: 'Last Period' },
-					{ value: 'last_3', label: 'Last 3 Periods' },
-					{ value: 'last_6', label: 'Last 6 Periods' },
-					{ value: 'last_12', label: 'Last 12 Periods' },
-					{ value: 'ytd', label: 'Year to Date' }
-				],
-				'quarterly': [
-					{ value: 'current', label: 'Current Period' },
-					{ value: 'last', label: 'Last Period' },
-					{ value: 'last_4', label: 'Last 4 Periods' },
-					{ value: 'ytd', label: 'Year to Date' }
-				],
-				'yearly': [
-					{ value: 'current', label: 'Current Period' },
-					{ value: 'last', label: 'Last Period' },
-					{ value: 'last_3', label: 'Last 3 Periods' }
-				]
-			};
-
-			return optionsMap[periodType] || optionsMap['monthly'];
+			// Unified calendar-based options that work for all tabs
+			// "Current Period" respects the admin settings (weekly/monthly/quarterly/yearly)
+			// All other options are fixed calendar ranges
+			return [
+				{ value: 'current', label: 'Current Period' },
+				{ value: 'last_7', label: 'Last 7 Days' },
+				{ value: 'last_30', label: 'Last 30 Days' },
+				{ value: 'last_90', label: 'Last 90 Days' },
+				{ value: 'last_6_months', label: 'Last 6 Months' },
+				{ value: 'last_12_months', label: 'Last 1 Year' },
+				{ value: 'ytd', label: 'Year to Date' },
+				{ value: 'all_time', label: 'All Time' }
+			];
 		},
 
 		/**
 		 * Get merged view options for overview tab
-		 * Combines options from all three period types (goals, achievements, baselines)
+		 * Now returns the same unified options
 		 */
 		getMergedViewOptions() {
-			// Get all unique period types
-			const periodTypes = [this.periodType, this.achievementsPeriod, this.baselinesPeriod];
-			const uniquePeriods = [...new Set(periodTypes)];
-			
-			// If all same, just use that period's options
-			if (uniquePeriods.length === 1) {
-				return this.getViewOptions(uniquePeriods[0]);
-			}
-			
-			// Otherwise, provide common options that work for all
-			return [
-				{ value: 'current', label: 'Current Period' },
-				{ value: 'last', label: 'Last Period' },
-				{ value: 'last_3', label: 'Last 3 Periods' },
-				{ value: 'last_6', label: 'Last 6 Periods' },
-				{ value: 'last_12', label: 'Last 12 Periods' },
-				{ value: 'ytd', label: 'Year to Date' }
-			];
+			return this.getViewOptions('monthly');
 		},
 
 		/**
@@ -299,7 +260,7 @@
 				this.renderPeriodAchievements(data);
 				// Check and show notification for new period achievements
 				this.checkAndShowPeriodNotification(data);
-			});
+			}, { view_mode: this.currentView });
 		},
 
 		/**
@@ -310,7 +271,7 @@
 			
 			this.fetchData('period_achievements', (data) => {
 				this.renderPeriodHistory(data);
-			});
+			}, { view_mode: this.currentView });
 		},
 
 		/**
@@ -321,7 +282,7 @@
 			
 			this.fetchData('bonus_achieved', (data) => {
 				this.renderBonusAchieved(data);
-			});
+			}, { view_mode: this.currentView });
 		},
 
 		/**
