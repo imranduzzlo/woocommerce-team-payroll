@@ -1,3 +1,39 @@
+## [1.7.31] - 2026-04-24
+### 🔧 Fix - My Commission History Status Now Dynamic
+
+#### FIXED - Static Status Display
+- **Problem**: Status column in My Commission History table always showed "completed" instead of actual order status
+- **Solution**: Changed to fetch actual order status from order object if not present in array
+- **Result**: Now displays correct status for each order (pending, processing, completed, cancelled, etc.)
+
+#### WHAT WAS CHANGED
+
+**Status Display:**
+```php
+// Before: Hardcoded default
+$status = isset( $order['status'] ) ? $order['status'] : 'completed';
+
+// After: Gets actual status from order object
+$order_obj = wc_get_order( $order['order_id'] );
+$status = isset( $order['status'] ) ? $order['status'] : ( $order_obj ? $order_obj->get_status() : 'unknown' );
+```
+
+**Benefits:**
+- Shows actual order status with correct badge colors
+- Consistent with My Order Processing table
+- Employees can see real-time order status
+- Proper status icons for each status type
+
+**Status Icons:**
+- Completed: Green check circle
+- Processing: Orange hourglass
+- Pending: Yellow clock
+- On-Hold: Blue pause circle
+- Cancelled: Red X circle
+- Refunded: Purple counter-clockwise arrow
+
+---
+
 ## [1.7.30] - 2026-04-24
 ### 🔧 Fix - My Order Processing Table Now Shows ALL Orders
 

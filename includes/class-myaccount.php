@@ -5325,7 +5325,9 @@ class WC_Team_Payroll_MyAccount {
 									</td>
 									<td>
 										<?php 
-										$status = isset( $order['status'] ) ? $order['status'] : 'completed';
+										// Get actual order status
+										$order_obj = wc_get_order( $order['order_id'] );
+										$status = isset( $order['status'] ) ? $order['status'] : ( $order_obj ? $order_obj->get_status() : 'unknown' );
 										$status_label = wc_get_order_status_name( 'wc-' . $status );
 										?>
 										<span class="status-badge status-<?php echo esc_attr( $status ); ?>">

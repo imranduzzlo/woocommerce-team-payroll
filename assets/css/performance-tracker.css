@@ -3369,10 +3369,10 @@
  */
 .pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab {
 	/* Reset all global button styles */
-	background: transparent !important;
+	background: transparent;
 	color: inherit !important;
 	border: none !important;
-	border-bottom: 3px solid transparent !important;
+	border-bottom: 3px solid transparent;
 	border-radius: 6px 6px 0 0 !important;
 	padding: 12px 24px !important;
 	font-size: 15px !important;
