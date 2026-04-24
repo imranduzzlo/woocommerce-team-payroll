@@ -487,17 +487,33 @@ class WC_Team_Payroll_Performance_Tracker {
 		$order_count = $this->get_order_count( $user_id, $period_dates['start'], $period_dates['end'] );
 		$aov = $this->get_average_order_value( $user_id, $period_dates['start'], $period_dates['end'] );
 
-		// Build progress data
-		$progress_data = array(
-			'period' => $period_dates['period_id'],
-			'period_type' => $period_type,
-			'period_start' => $period_dates['start'],
-			'period_end' => $period_dates['end'],
-			'view_mode' => $view_mode,
-			'order_value' => $this->calculate_goal_status( $attributed_total, $role_goals['earnings'] ?? array() ),
-			'orders' => $this->calculate_goal_status( $order_count, $role_goals['orders'] ?? array() ),
-			'aov' => $this->calculate_goal_status( $aov, $role_goals['aov'] ?? array() ),
-		);
+		// For non-current views, calculate aggregated thresholds from historical periods
+		if ( $view_mode !== 'current' ) {
+			$aggregated_thresholds = $this->get_aggregated_thresholds( $user_id, $period_dates['start'], $period_dates['end'], $period_type, $role_goals );
+			
+			$progress_data = array(
+				'period' => $period_dates['period_id'],
+				'period_type' => $period_type,
+				'period_start' => $period_dates['start'],
+				'period_end' => $period_dates['end'],
+				'view_mode' => $view_mode,
+				'order_value' => $this->calculate_goal_status( $attributed_total, $aggregated_thresholds['earnings'] ),
+				'orders' => $this->calculate_goal_status( $order_count, $aggregated_thresholds['orders'] ),
+				'aov' => $this->calculate_goal_status( $aov, $aggregated_thresholds['aov'] ),
+			);
+		} else {
+			// For current view, use current settings
+			$progress_data = array(
+				'period' => $period_dates['period_id'],
+				'period_type' => $period_type,
+				'period_start' => $period_dates['start'],
+				'period_end' => $period_dates['end'],
+				'view_mode' => $view_mode,
+				'order_value' => $this->calculate_goal_status( $attributed_total, $role_goals['earnings'] ?? array() ),
+				'orders' => $this->calculate_goal_status( $order_count, $role_goals['orders'] ?? array() ),
+				'aov' => $this->calculate_goal_status( $aov, $role_goals['aov'] ?? array() ),
+			);
+		}
 
 		// Save to user meta only if current view
 		if ( $view_mode === 'current' ) {
@@ -505,6 +521,122 @@ class WC_Team_Payroll_Performance_Tracker {
 		}
 
 		return $progress_data;
+	}
+
+	/**
+	 * Get aggregated thresholds from historical periods within a date range
+	 *
+	 * @param int $user_id User ID
+	 * @param string $start_date Start date (Y-m-d)
+	 * @param string $end_date End date (Y-m-d)
+	 * @param string $period_type Period type
+	 * @param array $current_goals Current goal settings (fallback)
+	 * @return array Aggregated thresholds
+	 */
+	private function get_aggregated_thresholds( $user_id, $start_date, $end_date, $period_type, $current_goals ) {
+		// Get goal history
+		$goal_history = get_user_meta( $user_id, '_wc_tp_goal_history', true );
+		if ( ! is_array( $goal_history ) ) {
+			$goal_history = array();
+		}
+
+		// Initialize aggregated thresholds
+		$aggregated = array(
+			'earnings' => array( 'minimum' => 0, 'target' => 0, 'stretch' => 0 ),
+			'orders' => array( 'minimum' => 0, 'target' => 0, 'stretch' => 0 ),
+			'aov' => array( 'minimum' => 0, 'target' => 0, 'stretch' => 0 ),
+		);
+
+		$periods_found = 0;
+
+		// Loop through history and sum thresholds for periods within date range
+		foreach ( $goal_history as $period_data ) {
+			if ( ! isset( $period_data['period_start'] ) || ! isset( $period_data['period_end'] ) ) {
+				continue;
+			}
+
+			// Check if this period overlaps with our date range
+			if ( $period_data['period_end'] >= $start_date && $period_data['period_start'] <= $end_date ) {
+				$periods_found++;
+
+				// Add order value thresholds
+				if ( isset( $period_data['order_value'] ) ) {
+					$aggregated['earnings']['minimum'] += isset( $period_data['order_value']['minimum'] ) ? floatval( $period_data['order_value']['minimum'] ) : 0;
+					$aggregated['earnings']['target'] += isset( $period_data['order_value']['target'] ) ? floatval( $period_data['order_value']['target'] ) : 0;
+					$aggregated['earnings']['stretch'] += isset( $period_data['order_value']['stretch'] ) ? floatval( $period_data['order_value']['stretch'] ) : 0;
+				}
+
+				// Add orders thresholds
+				if ( isset( $period_data['orders'] ) ) {
+					$aggregated['orders']['minimum'] += isset( $period_data['orders']['minimum'] ) ? floatval( $period_data['orders']['minimum'] ) : 0;
+					$aggregated['orders']['target'] += isset( $period_data['orders']['target'] ) ? floatval( $period_data['orders']['target'] ) : 0;
+					$aggregated['orders']['stretch'] += isset( $period_data['orders']['stretch'] ) ? floatval( $period_data['orders']['stretch'] ) : 0;
+				}
+
+				// For AOV, take average (not sum)
+				if ( isset( $period_data['aov'] ) ) {
+					$aggregated['aov']['minimum'] += isset( $period_data['aov']['minimum'] ) ? floatval( $period_data['aov']['minimum'] ) : 0;
+					$aggregated['aov']['target'] += isset( $period_data['aov']['target'] ) ? floatval( $period_data['aov']['target'] ) : 0;
+					$aggregated['aov']['stretch'] += isset( $period_data['aov']['stretch'] ) ? floatval( $period_data['aov']['stretch'] ) : 0;
+				}
+			}
+		}
+
+		// If no historical periods found, estimate based on date range and current settings
+		if ( $periods_found === 0 ) {
+			$estimated_periods = $this->estimate_periods_in_range( $start_date, $end_date, $period_type );
+			
+			$aggregated['earnings']['minimum'] = ( isset( $current_goals['earnings']['minimum'] ) ? floatval( $current_goals['earnings']['minimum'] ) : 0 ) * $estimated_periods;
+			$aggregated['earnings']['target'] = ( isset( $current_goals['earnings']['target'] ) ? floatval( $current_goals['earnings']['target'] ) : 0 ) * $estimated_periods;
+			$aggregated['earnings']['stretch'] = ( isset( $current_goals['earnings']['stretch'] ) ? floatval( $current_goals['earnings']['stretch'] ) : 0 ) * $estimated_periods;
+
+			$aggregated['orders']['minimum'] = ( isset( $current_goals['orders']['minimum'] ) ? floatval( $current_goals['orders']['minimum'] ) : 0 ) * $estimated_periods;
+			$aggregated['orders']['target'] = ( isset( $current_goals['orders']['target'] ) ? floatval( $current_goals['orders']['target'] ) : 0 ) * $estimated_periods;
+			$aggregated['orders']['stretch'] = ( isset( $current_goals['orders']['stretch'] ) ? floatval( $current_goals['orders']['stretch'] ) : 0 ) * $estimated_periods;
+
+			// For AOV, use current settings (not multiplied)
+			$aggregated['aov']['minimum'] = isset( $current_goals['aov']['minimum'] ) ? floatval( $current_goals['aov']['minimum'] ) : 0;
+			$aggregated['aov']['target'] = isset( $current_goals['aov']['target'] ) ? floatval( $current_goals['aov']['target'] ) : 0;
+			$aggregated['aov']['stretch'] = isset( $current_goals['aov']['stretch'] ) ? floatval( $current_goals['aov']['stretch'] ) : 0;
+
+			$periods_found = $estimated_periods;
+		} else {
+			// For AOV, calculate average (divide by number of periods)
+			if ( $periods_found > 0 ) {
+				$aggregated['aov']['minimum'] = $aggregated['aov']['minimum'] / $periods_found;
+				$aggregated['aov']['target'] = $aggregated['aov']['target'] / $periods_found;
+				$aggregated['aov']['stretch'] = $aggregated['aov']['stretch'] / $periods_found;
+			}
+		}
+
+		return $aggregated;
+	}
+
+	/**
+	 * Estimate number of periods in a date range
+	 *
+	 * @param string $start_date Start date (Y-m-d)
+	 * @param string $end_date End date (Y-m-d)
+	 * @param string $period_type Period type
+	 * @return int Estimated number of periods
+	 */
+	private function estimate_periods_in_range( $start_date, $end_date, $period_type ) {
+		$start = new DateTime( $start_date );
+		$end = new DateTime( $end_date );
+		$diff = $start->diff( $end );
+
+		switch ( $period_type ) {
+			case 'weekly':
+				return max( 1, ceil( $diff->days / 7 ) );
+			case 'monthly':
+				return max( 1, ceil( $diff->days / 30 ) );
+			case 'quarterly':
+				return max( 1, ceil( $diff->days / 90 ) );
+			case 'yearly':
+				return max( 1, ceil( $diff->days / 365 ) );
+			default:
+				return 1;
+		}
 	}
 
 	/**

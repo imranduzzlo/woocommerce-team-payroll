@@ -1,3 +1,119 @@
+## [1.7.52] - 2026-04-26
+### ✨ Major Feature - Goals Now Use Aggregated Thresholds for Multi-Period Views
+
+#### WHAT'S NEW
+- **Smart Threshold Aggregation**: Goals now sum thresholds from historical periods
+- **Meaningful Percentages**: Comparisons make sense for multi-period views
+- **Historical Accuracy**: Uses actual thresholds from each period
+
+#### THE PROBLEM BEFORE
+
+**Old Behavior:**
+- View: "Last 90 Days" (~3 months)
+- Actual: $25,000
+- Target: $10,000 (single month target)
+- Percentage: 250% ❌ (misleading!)
+
+**Why It Was Wrong:**
+Comparing 3 months of performance to 1 month's target doesn't make sense.
+
+#### THE SOLUTION
+
+**New Behavior:**
+- View: "Last 90 Days" (~3 months)
+- Actual: $25,000
+- Target: $10,000 + $10,000 + $10,000 = $30,000 (3 months of targets)
+- Percentage: 83% ✅ (meaningful!)
+
+#### HOW IT WORKS
+
+**For Multi-Period Views (Last 7/30/90 Days, All Time, etc.):**
+
+1. **Gets historical periods** within the date range
+2. **Sums thresholds** from those periods:
+   - Order Value: Sum of all period targets
+   - Orders Count: Sum of all period targets
+   - AOV: Average of all period targets (not sum)
+3. **Compares** total actual vs total thresholds
+4. **Shows meaningful percentage**
+
+**For Current Period:**
+- Uses current settings (unchanged)
+
+#### EXAMPLES
+
+**Example 1: Last 90 Days (3 Months)**
+```
+Historical Data:
+- April: Target $10,000, Actual $8,000
+- May: Target $12,000, Actual $11,000
+- June: Target $10,000, Actual $6,000
+
+View "Last 90 Days":
+- Actual: $25,000 (sum of 3 months)
+- Target: $32,000 (sum of 3 month targets)
+- Percentage: 78% ✅
+```
+
+**Example 2: All Time (2 Years = 24 Months)**
+```
+Historical Data:
+- 24 months of history with varying targets
+
+View "All Time":
+- Actual: $250,000 (all orders ever)
+- Target: Sum of all 24 month targets
+- Percentage: Meaningful comparison ✅
+```
+
+**Example 3: Settings Changed Mid-Year**
+```
+Jan-Jun: Target was $10,000/month
+Jul-Dec: Target changed to $15,000/month
+
+View "Year to Date":
+- Actual: $150,000
+- Target: ($10k × 6) + ($15k × 6) = $150,000
+- Percentage: 100% ✅ (uses actual historical targets!)
+```
+
+#### SPECIAL HANDLING
+
+**AOV (Average Order Value):**
+- Uses **average** of period targets, not sum
+- Makes sense: AOV is an average metric
+
+**No Historical Data:**
+- Estimates periods in date range
+- Multiplies current settings by estimated periods
+- Fallback ensures it always works
+
+#### BENEFITS
+
+✅ **Meaningful Comparisons**: Percentages make sense
+✅ **Historical Accuracy**: Uses actual thresholds from each period
+✅ **Settings Changes**: Handled correctly (uses historical values)
+✅ **Works for All Views**: 7 days, 30 days, 90 days, All Time
+✅ **Smart Fallback**: Estimates if no historical data
+
+#### TECHNICAL DETAILS
+
+**New Methods:**
+- `get_aggregated_thresholds()` - Sums thresholds from historical periods
+- `estimate_periods_in_range()` - Estimates period count for fallback
+
+**Data Flow:**
+1. Get date range for view mode
+2. Get goal history from database
+3. Find periods within date range
+4. Sum thresholds from those periods
+5. Compare actual vs aggregated thresholds
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Added threshold aggregation logic
+
+---
+
 ## [1.7.51] - 2026-04-26
 ### 🔧 Critical Fix - Achievements Now Filter by Unlock Date
 
