@@ -61,24 +61,35 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-left: 5px;
-    text-decoration: none;
+    margin-left: 8px;
+    padding: 0;
     border: none;
     background: none;
-    padding: 0;
     cursor: pointer;
-    transition: all 0.2s ease;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 14px;
+    line-height: 1;
 }
 
 .wc-tp-edit-custom-field:hover {
-    opacity: 0.8;
+    opacity: 1;
+}
+
+/* Show icon on parent hover */
+p:hover .wc-tp-edit-custom-field {
+    opacity: 1;
 }
 
 .wc-tp-edit-custom-field .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    color: inherit;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #999;
+}
+
+.wc-tp-edit-custom-field:hover .dashicons {
+    color: #2271b1;
 }
 
 /* Modal Overlay */

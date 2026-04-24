@@ -813,8 +813,8 @@ class WC_Team_Payroll_Order_Editor {
 						return;
 					}
 					
-					// Create editable field
-					var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></a>');
+					// Create editable field - use button instead of link to avoid # behavior
+					var $editIcon = $('<button type="button" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></button>');
 					$strong.after($editIcon);
 				}
 			});
@@ -855,7 +855,7 @@ class WC_Team_Payroll_Order_Editor {
 						var value = $p.clone().children().remove().end().text().trim();
 						var metaKey = '_billing_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_');
 						
-						var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></a>');
+						var $editIcon = $('<button type="button" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></button>');
 						$strong.after($editIcon);
 					}
 				}
@@ -897,7 +897,7 @@ class WC_Team_Payroll_Order_Editor {
 						var value = $p.clone().children().remove().end().text().trim();
 						var metaKey = '_shipping_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_');
 						
-						var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></a>');
+						var $editIcon = $('<button type="button" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></button>');
 						$strong.after($editIcon);
 					}
 				}
