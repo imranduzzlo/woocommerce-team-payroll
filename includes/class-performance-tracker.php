@@ -1130,13 +1130,13 @@ class WC_Team_Payroll_Performance_Tracker {
 
 		// Calculate period totals
 		// For achievements:
-		// - Orders count: Only completed orders
-		// - Order value (total): Only completed orders
+		// - Orders count: Use achievements config statuses
+		// - Order value (total): Use achievements config statuses
 		// - Earnings: Commission (from commission statuses) + Salary
-		// - AOV: Only completed orders
-		$period_order_value = $this->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
-		$period_orders = $this->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
-		$period_aov = $this->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
+		// - AOV: Use achievements config statuses
+		$period_order_value = $this->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'], 'all', 'all', 'achievements' );
+		$period_orders = $this->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'], 'all', 'achievements' );
+		$period_aov = $this->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'], 'all', 'achievements' );
 		$period_earnings = $this->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
 
 		$newly_unlocked = array();
@@ -1152,44 +1152,51 @@ class WC_Team_Payroll_Performance_Tracker {
 				// Earnings = Commission (from commission statuses) + Salary
 				$current_value = $period_earnings;
 			} elseif ( strpos( $achievement_key, 'order_value' ) !== false ) {
-				// Order value = Only completed orders
+				// Order value = Use achievements config statuses
 				$current_value = $period_order_value;
 			} elseif ( strpos( $achievement_key, 'orders' ) !== false ) {
-				// Orders count = Only completed orders
+				// Orders count = Use achievements config statuses
 				$current_value = $period_orders;
 			} elseif ( strpos( $achievement_key, 'aov' ) !== false ) {
-				// AOV = Only completed orders
+				// AOV = Use achievements config statuses
 				$current_value = $period_aov;
 			}
 
-			// Check if already unlocked in this period
-			$is_unlocked = isset( $period_achievements[ $achievement_key ] ) && $period_achievements[ $achievement_key ]['unlocked'] === true;
+			// Check if this achievement was previously unlocked
+			$was_unlocked = isset( $period_achievements[ $achievement_key ] ) && $period_achievements[ $achievement_key ]['unlocked'] === true;
+			
+			// Check if currently meets threshold (always recalculate during current period)
+			$is_unlocked = $current_value >= $threshold;
 
-			if ( ! $is_unlocked && $current_value >= $threshold ) {
-				// Achievement unlocked in this period!
-				$period_achievements[ $achievement_key ] = array(
+			if ( $is_unlocked ) {
+				// Achievement is unlocked (or still unlocked)
+				$achievement_data_to_save = array(
 					'unlocked' => true,
-					'unlocked_date' => current_time( 'Y-m-d H:i:s' ),
-					'value_at_unlock' => $current_value,
+					'current_value' => $current_value, // Always update current value
 					'threshold' => $threshold,
 					'tier' => $tier,
+					'percentage' => 100,
 				);
-
-				$newly_unlocked[] = $achievement_key;
-			} elseif ( ! $is_unlocked ) {
-				// Not yet unlocked in this period, track progress
+				
+				// Preserve unlocked_date if it was already unlocked before
+				if ( $was_unlocked && isset( $period_achievements[ $achievement_key ]['unlocked_date'] ) ) {
+					$achievement_data_to_save['unlocked_date'] = $period_achievements[ $achievement_key ]['unlocked_date'];
+				} else {
+					// First time unlocking in this period
+					$achievement_data_to_save['unlocked_date'] = current_time( 'Y-m-d H:i:s' );
+					$newly_unlocked[] = $achievement_key;
+				}
+				
+				$period_achievements[ $achievement_key ] = $achievement_data_to_save;
+			} else {
+				// Not unlocked (or no longer unlocked due to threshold change)
 				$period_achievements[ $achievement_key ] = array(
 					'unlocked' => false,
-					'current_progress' => $current_value,
+					'current_value' => $current_value,
 					'threshold' => $threshold,
 					'percentage' => $threshold > 0 ? round( ( $current_value / $threshold ) * 100, 2 ) : 0,
 					'tier' => $tier,
 				);
-			} else {
-				// Already unlocked - preserve existing data, only update threshold if changed
-				// NEVER recalculate value_at_unlock for already unlocked achievements
-				$period_achievements[ $achievement_key ]['threshold'] = $threshold;
-				$period_achievements[ $achievement_key ]['tier'] = $tier;
 			}
 		}
 
@@ -1295,9 +1302,9 @@ class WC_Team_Payroll_Performance_Tracker {
 		// Get date range for the view mode
 		$date_range = $this->get_view_mode_dates( $view_mode, $goals_period_type );
 		
-		// Calculate metrics for this date range
-		$order_value = $this->get_attributed_order_total( $user_id, $date_range['start'], $date_range['end'] );
-		$order_count = $this->get_order_count( $user_id, $date_range['start'], $date_range['end'] );
+		// Calculate metrics for this date range (use goals context for consistency with goals tab)
+		$order_value = $this->get_attributed_order_total( $user_id, $date_range['start'], $date_range['end'], 'all', 'all', 'goals' );
+		$order_count = $this->get_order_count( $user_id, $date_range['start'], $date_range['end'], 'all', 'goals' );
 		$aov = $order_count > 0 ? ( $order_value / $order_count ) : 0;
 		
 		// Get current baselines for comparison
@@ -2538,10 +2545,10 @@ class WC_Team_Payroll_Performance_Tracker {
 
 			$period_dates = $this->get_period_dates( $period_type, $period_date->format( 'Y-m-d' ) );
 
-			// Get data for this period
-			$order_value = $this->get_attributed_order_total( $user_id, $period_dates['start'], $period_dates['end'] );
-			$orders = $this->get_order_count( $user_id, $period_dates['start'], $period_dates['end'] );
-			$aov = $this->get_average_order_value( $user_id, $period_dates['start'], $period_dates['end'] );
+			// Get data for this period (use goals context for historical threshold aggregation)
+			$order_value = $this->get_attributed_order_total( $user_id, $period_dates['start'], $period_dates['end'], 'all', 'all', 'goals' );
+			$orders = $this->get_order_count( $user_id, $period_dates['start'], $period_dates['end'], 'all', 'goals' );
+			$aov = $this->get_average_order_value( $user_id, $period_dates['start'], $period_dates['end'], 'all', 'goals' );
 
 			// Only include periods with data
 			if ( $order_value > 0 || $orders > 0 ) {

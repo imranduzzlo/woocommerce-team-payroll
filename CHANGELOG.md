@@ -1,3 +1,120 @@
+## [1.7.56] - 2026-04-26
+### 🎯 Major Update - Complete Order Status Independence & Live Achievement Calculation
+
+#### WHAT'S NEW
+
+**1. Date Range Display in Performance Tracker**
+- Added date range display to the left of view mode dropdown
+- Shows current period dates (e.g., "2026-04-01 - 2026-04-30")
+- Removed redundant period labels from tab titles
+- Clean, unified interface across all tabs
+
+**2. Leaderboard Order Status Settings**
+- Leaderboard now has independent order status configuration
+- Configure which statuses count for Orders and Order Value
+- Settings in Performance Settings → Leaderboard → Leaderboard Status
+- Earnings always use commission calculation statuses
+
+**3. Achievements Live Calculation (MAJOR CHANGE)**
+- Achievements now ALWAYS reflect current settings during active period
+- Real-time recalculation based on current thresholds and order statuses
+- Achievement status can change if settings change (unlock/lock dynamically)
+- Historical periods remain locked with final values from period end
+- Earnings always use commission calculation statuses
+
+**4. Professional Goal Achievement Badge**
+- New stunning design with gradient background
+- Animated pulse, shine, and bounce effects
+- Separate styling from Achievement tab badges
+- Modern pill shape with glass effect
+
+**5. All Metrics Use Correct Contexts**
+- Goals: Use goals config order statuses
+- Achievements: Use achievements config order statuses
+- Leaderboard: Use leaderboard config order statuses
+- Baselines: Use goals config for consistency
+- Earnings: Always use commission statuses (all contexts)
+
+#### HOW ACHIEVEMENTS WORK NOW
+
+**During Current Period (Live):**
+```
+Example Timeline:
+- Threshold: 10 orders, Current: 9 orders → Not unlocked
+- Settings change threshold to 15 → Need 6 more (not 1)
+- Reach 15 orders → Unlocked!
+- Settings change threshold to 20 → Back to locked (need 5 more)
+- Add "processing" status to count → 10 processing orders counted
+- Total now 25 → Unlocked again!
+- Period continues, final count: 40 orders
+```
+
+**When Period Ends:**
+- Final value locks at 40 orders (not 25 when first unlocked)
+- Goes to history with final count
+- Never changes again in history
+
+**Historical Periods:**
+- Show final values from when period ended
+- Completely locked, never recalculate
+- Preserve exact state at period finalization
+
+#### TECHNICAL DETAILS
+
+**Context Parameters Added:**
+- `get_attributed_order_total($user_id, $start, $end, $role, $status, $context)`
+- `get_order_count($user_id, $start, $end, $role, $context)`
+- `get_average_order_value($user_id, $start, $end, $role, $context)`
+- Context values: 'goals', 'achievements', 'leaderboard', 'default'
+
+**Achievement Data Structure:**
+```php
+// Current Period (live calculation)
+array(
+    'unlocked' => true/false,  // Recalculated every time
+    'current_value' => 40,      // Always updated
+    'threshold' => 20,          // Current threshold
+    'unlocked_date' => '...',   // First unlock time
+    'tier' => 'gold'
+)
+
+// Historical Period (locked)
+array(
+    'unlocked' => true,
+    'current_value' => 40,      // Locked at period end
+    'threshold' => 20,          // Threshold at period end
+    'finalized_at' => '...',    // Period end timestamp
+    'tier' => 'gold'
+)
+```
+
+**UI Updates:**
+- Date range: Gray background, bold text, rounded corners
+- Responsive: Stacks vertically on mobile
+- Goal badge: Gradient green, animated effects
+- Achievement cards: Use `current_value` for display
+
+#### BENEFITS
+
+✅ **Full Independence**: Goals, Achievements, and Leaderboard have separate order status configs
+✅ **Live Updates**: Achievements reflect current settings in real-time
+✅ **Historical Accuracy**: Past periods remain locked with final values
+✅ **Flexible Business Rules**: Different counting rules for different purposes
+✅ **Better UX**: Clear date ranges, professional badges, clean interface
+✅ **Consistent Earnings**: Always use commission statuses across all contexts
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Live achievement calculation, context parameters
+- `includes/class-leaderboard-engine.php` - Leaderboard order status support
+- `includes/class-performance-settings.php` - Leaderboard status settings UI
+- `includes/class-myaccount.php` - Date range display HTML
+- `includes/class-employee-detail.php` - Date range display HTML
+- `assets/js/performance-tracker.js` - Date range updates, achievement display
+- `assets/js/performance-settings.js` - Leaderboard config collection
+- `assets/css/performance-tracker.css` - Date range styling, goal badge animations
+
+---
+
 ## [1.7.55] - 2026-04-26
 ### 🐛 Bug Fix - Goals Order Status Settings Not Saving
 

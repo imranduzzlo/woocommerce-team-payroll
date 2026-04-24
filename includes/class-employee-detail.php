@@ -3576,9 +3576,12 @@ class WC_Team_Payroll_Employee_Detail {
 				<!-- Performance Header -->
 				<div class="performance-header">
 					<h3><?php esc_html_e( 'Performance Tracker', 'wc-team-payroll' ); ?></h3>
-					<select id="performance-view-selector">
-						<option value="current"><?php esc_html_e( 'Current Period', 'wc-team-payroll' ); ?></option>
-					</select>
+					<div class="performance-header-controls">
+						<span id="performance-date-range" class="performance-date-range"></span>
+						<select id="performance-view-selector">
+							<option value="current"><?php esc_html_e( 'Current Period', 'wc-team-payroll' ); ?></option>
+						</select>
+					</div>
 				</div>
 
 				<!-- Performance Tabs -->

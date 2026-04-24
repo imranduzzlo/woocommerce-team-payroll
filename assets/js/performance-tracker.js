@@ -264,6 +264,20 @@
 		},
 
 		/**
+		 * Update date range display
+		 */
+		updateDateRangeDisplay(startDate, endDate) {
+			const $dateRange = $('#performance-date-range');
+			if ($dateRange.length) {
+				if (startDate && endDate) {
+					$dateRange.text(`${startDate} - ${endDate}`).show();
+				} else {
+					$dateRange.text('').hide();
+				}
+			}
+		},
+
+		/**
 		 * Load period history data
 		 */
 		loadPeriodHistory() {
@@ -389,7 +403,6 @@
 				<div class="performance-overview">
 					<div class="overview-header">
 						<h3><i class="ph ph-chart-line"></i> Performance Overview</h3>
-						<span class="period-label">${this.getPeriodLabel()}</span>
 					</div>
 
 					${allAchieved ? `
@@ -416,6 +429,11 @@
 			`;
 
 			$('#performance-content').html(html);
+			
+			// Update date range display from goals data
+			if (data.goals_summary && data.goals_summary.period_start && data.goals_summary.period_end) {
+				this.updateDateRangeDisplay(data.goals_summary.period_start, data.goals_summary.period_end);
+			}
 		},
 
 		/**
@@ -483,7 +501,6 @@
 				<div class="performance-goals">
 					<div class="goals-header">
 						<h3><i class="ph ph-target"></i> Goals & Progress</h3>
-						<span class="period-label">${goals.period_start} - ${goals.period_end}</span>
 					</div>
 
 					<div class="goals-grid">
@@ -497,6 +514,9 @@
 			`;
 
 			$('#performance-content').html(html);
+			
+			// Update date range display
+			this.updateDateRangeDisplay(goals.period_start, goals.period_end);
 		},
 
 		/**
@@ -517,7 +537,7 @@
 						</div>
 						<div class="goal-title">
 							<h4>${label}</h4>
-							${achievedClass ? '<span class="achievement-badge"><i class="ph ph-check-circle"></i> Achieved!</span>' : ''}
+							${achievedClass ? '<span class="goal-achievement-badge"><i class="ph ph-check-circle"></i> Achieved!</span>' : ''}
 						</div>
 					</div>
 
@@ -643,6 +663,11 @@
 			`;
 
 			$('#performance-content').html(html);
+			
+			// Update date range display from achievements data
+			if (data.period_range && data.period_range.start_date && data.period_range.end_date) {
+				this.updateDateRangeDisplay(data.period_range.start_date, data.period_range.end_date);
+			}
 		},
 
 		/**
@@ -659,6 +684,8 @@
 			const achievementDesc = roleAchievementInfo.description || '';
 
 			if (isUnlocked) {
+				// Use current_value for both unlocked and display
+				const displayValue = achievement.current_value || achievement.value_at_unlock || 0;
 				return `
 					<div class="achievement-card unlocked tier-${tier}">
 						<div class="achievement-badge">${tierEmoji}</div>
@@ -667,12 +694,14 @@
 						<p class="achievement-threshold">Threshold: ${this.formatValue(achievement.threshold, key)}</p>
 						<div class="achievement-meta">
 							<span class="unlock-date">Unlocked: ${achievement.unlocked_date}</span>
-							<span class="unlock-value">Value: ${this.formatValue(achievement.value_at_unlock, key)}</span>
+							<span class="unlock-value">Value: ${this.formatValue(displayValue, key)}</span>
 						</div>
 					</div>
 				`;
 			} else {
 				const percentage = achievement.percentage || 0;
+				const currentValue = achievement.current_value || achievement.current_progress || 0;
+				const remaining = achievement.threshold - currentValue;
 				return `
 					<div class="achievement-card locked tier-${tier}">
 						<div class="achievement-badge locked-badge">🔒</div>
@@ -686,8 +715,8 @@
 							<span class="progress-text">${percentage.toFixed(0)}%</span>
 						</div>
 						<div class="achievement-meta">
-							<span>Current: ${this.formatValue(achievement.current_progress, key)}</span>
-							<span>Remaining: ${this.formatValue(achievement.threshold - achievement.current_progress, key)}</span>
+							<span>Current: ${this.formatValue(currentValue, key)}</span>
+							<span>Remaining: ${this.formatValue(remaining, key)}</span>
 						</div>
 					</div>
 				`;
@@ -1118,6 +1147,9 @@
 					</div>
 				`;
 				$('#performance-content').html(html);
+				
+				// Clear date range for history view
+				this.updateDateRangeDisplay('', '');
 				return;
 			}
 

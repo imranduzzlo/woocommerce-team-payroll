@@ -831,6 +831,35 @@ class WC_Team_Payroll_Performance_Settings {
 							<p class="description"><?php esc_html_e( 'Shows how employees rank compared to teammates based on selected criteria', 'wc-team-payroll' ); ?></p>
 						</td>
 					</tr>
+					<tr>
+						<th><label><?php esc_html_e( 'Order Statuses for Leaderboard', 'wc-team-payroll' ); ?></label></th>
+						<td>
+							<?php
+							$leaderboard_statuses = isset( $leaderboard_config['order_statuses'] ) && is_array( $leaderboard_config['order_statuses'] ) && ! empty( $leaderboard_config['order_statuses'] ) 
+								? $leaderboard_config['order_statuses'] 
+								: array( 'completed' );
+							
+							$all_statuses = wc_get_order_statuses();
+							?>
+							<div class="wc-tp-status-checkboxes">
+								<?php foreach ( $all_statuses as $status_key => $status_label ) : 
+									$status_slug = str_replace( 'wc-', '', $status_key );
+								?>
+									<label style="display: block; margin-bottom: 8px;">
+										<input type="checkbox" 
+											name="leaderboard_order_statuses[]" 
+											value="<?php echo esc_attr( $status_slug ); ?>" 
+											class="wc-tp-leaderboard-setting"
+											<?php checked( in_array( $status_slug, $leaderboard_statuses ), true ); ?> />
+										<?php echo esc_html( $status_label ); ?>
+									</label>
+								<?php endforeach; ?>
+							</div>
+							<p class="description">
+								<?php esc_html_e( 'Select which order statuses should count towards Orders Count and Order Value in leaderboard rankings. Earnings always use commission calculation statuses.', 'wc-team-payroll' ); ?>
+							</p>
+						</td>
+					</tr>
 				</table>
 			</div>
 
@@ -3964,6 +3993,13 @@ class WC_Team_Payroll_Performance_Settings {
 			'show_metrics' => isset( $leaderboard_config['show_metrics'] ) && $leaderboard_config['show_metrics'] == 1 ? 1 : 0,
 			'last_updated' => current_time( 'mysql' ),
 		);
+		
+		// Handle order statuses
+		if ( isset( $leaderboard_config['order_statuses'] ) && is_array( $leaderboard_config['order_statuses'] ) ) {
+			$sanitized_config['order_statuses'] = array_map( 'sanitize_text_field', $leaderboard_config['order_statuses'] );
+		} else {
+			$sanitized_config['order_statuses'] = array( 'completed' );
+		}
 
 		// Save to database
 		update_option( 'wc_tp_leaderboard_config', $sanitized_config );

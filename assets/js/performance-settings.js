@@ -498,6 +498,12 @@ jQuery(document).ready(function($) {
 
 	// Collect leaderboard configuration data
 	function collectLeaderboardConfigurationData() {
+		// Collect order statuses
+		const orderStatuses = [];
+		$('input[name="leaderboard_order_statuses[]"]:checked').each(function() {
+			orderStatuses.push($(this).val());
+		});
+		
 		const config = {
 			enabled: $('#leaderboard_enabled').is(':checked') ? 1 : 0,
 			criteria: $('#leaderboard_criteria').val(),
@@ -509,7 +515,8 @@ jQuery(document).ready(function($) {
 			show_user_rank: $('#leaderboard_show_user_rank').is(':checked') ? 1 : 0,
 			anonymize: $('#leaderboard_anonymize').is(':checked') ? 1 : 0,
 			show_scores: $('#leaderboard_show_scores').is(':checked') ? 1 : 0,
-			show_metrics: $('#leaderboard_show_metrics').is(':checked') ? 1 : 0
+			show_metrics: $('#leaderboard_show_metrics').is(':checked') ? 1 : 0,
+			order_statuses: orderStatuses
 		};
 		
 		return config;

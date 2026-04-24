@@ -281,9 +281,14 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	 * Get order count for employee
 	 */
 	private function get_order_count( $employee_id, $start_date, $end_date ) {
-		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+		// Get configured order statuses for leaderboard, default to completed only
+		$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
+		$configured_statuses = isset( $leaderboard_config['order_statuses'] ) && is_array( $leaderboard_config['order_statuses'] ) && ! empty( $leaderboard_config['order_statuses'] ) 
+			? $leaderboard_config['order_statuses'] 
+			: array( 'completed' );
+		
 		$statuses_to_query = array();
-		foreach ( $commission_statuses as $status ) {
+		foreach ( $configured_statuses as $status ) {
 			$statuses_to_query[] = 'wc-' . $status;
 		}
 
@@ -342,9 +347,14 @@ class WC_Team_Payroll_Leaderboard_Engine {
 	 * Get attributed order total for employee
 	 */
 	private function get_attributed_order_total( $employee_id, $start_date, $end_date ) {
-		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+		// Get configured order statuses for leaderboard, default to completed only
+		$leaderboard_config = get_option( 'wc_tp_leaderboard_config', array() );
+		$configured_statuses = isset( $leaderboard_config['order_statuses'] ) && is_array( $leaderboard_config['order_statuses'] ) && ! empty( $leaderboard_config['order_statuses'] ) 
+			? $leaderboard_config['order_statuses'] 
+			: array( 'completed' );
+		
 		$statuses_to_query = array();
-		foreach ( $commission_statuses as $status ) {
+		foreach ( $configured_statuses as $status ) {
 			$statuses_to_query[] = 'wc-' . $status;
 		}
 
