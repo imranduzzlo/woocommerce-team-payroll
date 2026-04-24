@@ -1,3 +1,195 @@
+## [1.7.62] - 2026-04-26
+### 🚀 Enhancement - Universal Custom Field Editor
+
+#### WHAT'S NEW
+
+**Truly Dynamic Custom Field Detection**
+- Auto-detects ALL custom fields from ANY plugin or theme
+- No hardcoding - works universally with any WooCommerce setup
+- Intelligent field type detection
+- Edit icons appear automatically on all custom fields
+
+#### THE PROBLEM BEFORE
+
+Version 1.7.61 had hardcoded field definitions which meant:
+- Only worked with predefined fields
+- Wouldn't work on other sites with different custom fields
+- Required manual configuration for each field type
+- Limited to specific field names
+
+#### THE SOLUTION
+
+**Universal Auto-Detection System:**
+- Scans order page for ALL custom fields automatically
+- Detects field types from values (checkbox, text, email, URL, date, textarea, number, select)
+- Works with ANY custom field from ANY source
+- No configuration needed
+
+#### HOW IT WORKS
+
+**1. Automatic Field Discovery**
+```
+System scans for patterns:
+- <p><strong>Label:</strong> Value</p>
+- Custom meta fields in order data
+- Billing/shipping custom fields
+- Additional information sections
+```
+
+**2. Intelligent Type Detection**
+```
+Auto-detects from value:
+- "1" or "0" → Checkbox
+- "email@domain.com" → Email field
+- "https://..." → URL field
+- "25/04/2026" → Date field
+- Long text → Textarea
+- Numbers → Number field
+- Default → Text field
+```
+
+**3. Dynamic UI Rendering**
+```
+Creates appropriate input:
+- Checkbox → <input type="checkbox">
+- Email → <input type="email">
+- URL → <input type="url">
+- Date → <input type="date">
+- Textarea → <textarea>
+- Select → <select> (for known fields)
+```
+
+#### FEATURES
+
+**Universal Compatibility:**
+- ✅ Works with ANY WooCommerce custom field plugin
+- ✅ Works with ANY theme's custom fields
+- ✅ Works with checkout field editors
+- ✅ Works with custom meta boxes
+- ✅ No configuration required
+
+**Smart Detection:**
+- ✅ Auto-detects field types from values
+- ✅ Handles checkboxes (1/0, yes/no)
+- ✅ Detects emails, URLs, dates
+- ✅ Recognizes long text for textareas
+- ✅ Identifies numeric fields
+
+**Edit Locations:**
+- ✅ Additional Information section
+- ✅ Billing address custom fields
+- ✅ Shipping address custom fields
+- ✅ Order meta fields
+- ✅ Any custom section
+
+**User Experience:**
+- ✅ Edit icons appear next to all custom fields
+- ✅ Click to edit in modal dialog
+- ✅ Appropriate input type rendered
+- ✅ Save and reload to see changes
+- ✅ All changes logged in order notes
+
+#### TECHNICAL DETAILS
+
+**New Methods:**
+- `make_custom_fields_editable()` - Makes Additional Information fields editable
+- `make_billing_custom_fields_editable()` - Makes billing custom fields editable
+- `make_shipping_custom_fields_editable()` - Makes shipping custom fields editable
+- `detect_field_type()` - Auto-detects field type from value
+- `get_field_options()` - Gets options for select fields
+- `format_label()` - Formats meta key to readable label
+- `ajax_get_all_custom_fields()` - Returns all custom fields dynamically
+
+**JavaScript Auto-Detection:**
+```javascript
+// Scans all <p> tags with <strong> labels
+$('.order_data_column p').each(function() {
+    // Adds edit icon to each custom field
+    // Detects field type from value
+    // Creates appropriate modal editor
+});
+```
+
+**Field Type Detection Logic:**
+```php
+private function detect_field_type( $value ) {
+    if ( is_bool( $value ) || $value === '1' || $value === '0' ) {
+        return 'checkbox';
+    }
+    if ( filter_var( $value, FILTER_VALIDATE_EMAIL ) ) {
+        return 'email';
+    }
+    if ( filter_var( $value, FILTER_VALIDATE_URL ) ) {
+        return 'url';
+    }
+    if ( preg_match( '/^\d{2}\/\d{2}\/\d{4}$/', $value ) ) {
+        return 'date';
+    }
+    if ( strlen( $value ) > 100 ) {
+        return 'textarea';
+    }
+    return 'text';
+}
+```
+
+#### EXAMPLES
+
+**Example 1: Custom Checkout Fields**
+```
+Site has custom fields:
+- Customer Type (dropdown)
+- Delivery Instructions (textarea)
+- Gift Message (text)
+- Is Gift? (checkbox)
+
+Result: All automatically editable with correct input types
+```
+
+**Example 2: Plugin-Added Fields**
+```
+Plugin adds:
+- Social Media Profile (URL)
+- WhatsApp Number (text)
+- Preferred Delivery Date (date)
+
+Result: All automatically detected and editable
+```
+
+**Example 3: Theme Custom Fields**
+```
+Theme adds:
+- Order Priority (select)
+- Internal Notes (textarea)
+- Reference Number (text)
+
+Result: All automatically editable
+```
+
+#### BENEFITS
+
+✅ **Universal**: Works on ANY WooCommerce site
+✅ **Zero Configuration**: No setup required
+✅ **Intelligent**: Auto-detects field types
+✅ **Flexible**: Handles any custom field
+✅ **Future-Proof**: Works with fields added later
+✅ **Theme/Plugin Agnostic**: No dependencies
+
+#### USE CASES
+
+**Perfect For:**
+- Sites with custom checkout fields
+- Multi-vendor setups
+- B2B stores with custom fields
+- Sites using field editor plugins
+- Custom theme implementations
+- Any WooCommerce customization
+
+#### FILES MODIFIED
+- `includes/class-order-editor.php` - Added universal field detection
+- `woocommerce-team-payroll.php` - Version bump to 1.7.62
+
+---
+
 ## [1.7.61] - 2026-04-26
 ### ✨ Major Feature - Advanced Order Editor System
 

@@ -47,6 +47,11 @@ class WC_Team_Payroll_Order_Editor {
 		// Add custom meta box for order editing
 		add_action( 'add_meta_boxes', array( $this, 'add_order_editor_meta_box' ) );
 		
+		// Make custom meta fields editable
+		add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'make_custom_fields_editable' ) );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'make_billing_custom_fields_editable' ) );
+		add_action( 'woocommerce_admin_order_data_after_shipping_address', array( $this, 'make_shipping_custom_fields_editable' ) );
+		
 		// AJAX handlers
 		add_action( 'wp_ajax_wc_tp_update_order_item', array( $this, 'ajax_update_order_item' ) );
 		add_action( 'wp_ajax_wc_tp_add_order_item', array( $this, 'ajax_add_order_item' ) );
@@ -63,6 +68,7 @@ class WC_Team_Payroll_Order_Editor {
 		add_action( 'wp_ajax_wc_tp_remove_coupon', array( $this, 'ajax_remove_coupon' ) );
 		add_action( 'wp_ajax_wc_tp_update_addresses', array( $this, 'ajax_update_addresses' ) );
 		add_action( 'wp_ajax_wc_tp_update_order_status', array( $this, 'ajax_update_order_status' ) );
+		add_action( 'wp_ajax_wc_tp_get_all_custom_fields', array( $this, 'ajax_get_all_custom_fields' ) );
 		
 		// Enqueue scripts
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -343,19 +349,97 @@ class WC_Team_Payroll_Order_Editor {
 			);
 		}
 
-		// Get order meta (custom fields)
+		// Get ALL order meta dynamically
 		$meta_data = array();
-		foreach ( $order->get_meta_data() as $meta ) {
+		$all_meta = $order->get_meta_data();
+		
+		foreach ( $all_meta as $meta ) {
+			$key = $meta->key;
+			$value = $meta->value;
+			
+			// Auto-detect field type
+			$field_type = $this->detect_field_type( $value );
+			$field_options = $this->get_field_options( $key, $value );
+			$field_label = $this->format_label( $key );
+			
 			$meta_data[] = array(
 				'id' => $meta->id,
-				'key' => $meta->key,
-				'value' => $meta->value,
+				'key' => $key,
+				'value' => $value,
+				'type' => $field_type,
+				'label' => $field_label,
+				'options' => $field_options,
+				'is_internal' => strpos( $key, '_' ) === 0,
 			);
 		}
+
+		// Get shipping methods
+		$shipping_items = array();
+		foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {
+			$shipping_items[] = array(
+				'item_id' => $item_id,
+				'method_title' => $item->get_method_title(),
+				'method_id' => $item->get_method_id(),
+				'total' => $item->get_total(),
+			);
+		}
+
+		// Get fees
+		$fee_items = array();
+		foreach ( $order->get_items( 'fee' ) as $item_id => $item ) {
+			$fee_items[] = array(
+				'item_id' => $item_id,
+				'name' => $item->get_name(),
+				'total' => $item->get_total(),
+				'tax_status' => $item->get_tax_status(),
+			);
+		}
+
+		// Get coupons
+		$coupon_items = array();
+		foreach ( $order->get_items( 'coupon' ) as $item_id => $item ) {
+			$coupon_items[] = array(
+				'item_id' => $item_id,
+				'code' => $item->get_code(),
+				'discount' => $item->get_discount(),
+			);
+		}
+
+		// Get addresses
+		$billing_address = array(
+			'first_name' => $order->get_billing_first_name(),
+			'last_name' => $order->get_billing_last_name(),
+			'company' => $order->get_billing_company(),
+			'address_1' => $order->get_billing_address_1(),
+			'address_2' => $order->get_billing_address_2(),
+			'city' => $order->get_billing_city(),
+			'state' => $order->get_billing_state(),
+			'postcode' => $order->get_billing_postcode(),
+			'country' => $order->get_billing_country(),
+			'email' => $order->get_billing_email(),
+			'phone' => $order->get_billing_phone(),
+		);
+
+		$shipping_address = array(
+			'first_name' => $order->get_shipping_first_name(),
+			'last_name' => $order->get_shipping_last_name(),
+			'company' => $order->get_shipping_company(),
+			'address_1' => $order->get_shipping_address_1(),
+			'address_2' => $order->get_shipping_address_2(),
+			'city' => $order->get_shipping_city(),
+			'state' => $order->get_shipping_state(),
+			'postcode' => $order->get_shipping_postcode(),
+			'country' => $order->get_shipping_country(),
+		);
 
 		wp_send_json_success( array(
 			'items' => $items,
 			'meta' => $meta_data,
+			'shipping' => $shipping_items,
+			'fees' => $fee_items,
+			'coupons' => $coupon_items,
+			'billing_address' => $billing_address,
+			'shipping_address' => $shipping_address,
 			'order_total' => $order->get_total(),
 			'order_status' => $order->get_status(),
 		) );
@@ -685,6 +769,310 @@ class WC_Team_Payroll_Order_Editor {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Make custom fields in "Additional Information" section editable
+	 */
+	public function make_custom_fields_editable( $order ) {
+		if ( ! $this->is_order_editable_by_status( $order ) ) {
+			return;
+		}
+
+		?>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			// Make all <p> tags with <strong> labels editable
+			$('.order_data_column p').each(function() {
+				var $p = $(this);
+				var $strong = $p.find('strong');
+				
+				if ($strong.length > 0 && !$p.hasClass('form-field')) {
+					var label = $strong.text().replace(':', '').trim();
+					var value = $p.clone().children().remove().end().text().trim();
+					var metaKey = '_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_');
+					
+					// Create editable field
+					var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" style="margin-left: 10px; color: #2271b1;" title="Edit"><span class="dashicons dashicons-edit"></span></a>');
+					$strong.after($editIcon);
+					
+					$editIcon.on('click', function(e) {
+						e.preventDefault();
+						
+						// Detect field type from value
+						var fieldType = 'text';
+						if (value === '1' || value === '0' || value.toLowerCase() === 'yes' || value.toLowerCase() === 'no') {
+							fieldType = 'checkbox';
+						} else if (value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+							fieldType = 'email';
+						} else if (value.match(/^https?:\/\//)) {
+							fieldType = 'url';
+						} else if (value.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+							fieldType = 'date';
+						} else if (value.length > 100 || value.includes(';') || value.includes(',')) {
+							fieldType = 'textarea';
+						}
+						
+						var modalHtml = '<div class="wc-tp-modal-overlay">' +
+							'<div class="wc-tp-modal">' +
+							'<div class="wc-tp-modal-header">' +
+							'<h2>Edit: ' + label + '</h2>' +
+							'<button class="wc-tp-modal-close">&times;</button>' +
+							'</div>' +
+							'<div class="wc-tp-modal-body">' +
+							'<div class="wc-tp-form-group">' +
+							'<label>' + label + ':</label>';
+						
+						if (fieldType === 'textarea') {
+							modalHtml += '<textarea class="wc-tp-field-value" rows="4">' + value + '</textarea>';
+						} else if (fieldType === 'checkbox') {
+							var checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
+							modalHtml += '<label><input type="checkbox" class="wc-tp-field-value" ' + checked + '> Yes</label>';
+						} else {
+							modalHtml += '<input type="' + fieldType + '" class="wc-tp-field-value" value="' + value + '">';
+						}
+						
+						modalHtml += '</div>' +
+							'<input type="hidden" class="wc-tp-field-key" value="' + metaKey + '">' +
+							'</div>' +
+							'<div class="wc-tp-modal-footer">' +
+							'<button class="button button-secondary wc-tp-modal-close">Cancel</button>' +
+							'<button class="button button-primary wc-tp-save-custom-field">Save</button>' +
+							'</div>' +
+							'</div>' +
+							'</div>';
+						
+						$('body').append(modalHtml);
+						
+						$('.wc-tp-modal-close').on('click', function() {
+							$('.wc-tp-modal-overlay').remove();
+						});
+						
+						$('.wc-tp-save-custom-field').on('click', function() {
+							var newValue = $('.wc-tp-field-value').is(':checkbox') ? 
+								($('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
+								$('.wc-tp-field-value').val();
+							var key = $('.wc-tp-field-key').val();
+							
+							$.ajax({
+								url: ajaxurl,
+								type: 'POST',
+								data: {
+									action: 'wc_tp_update_order_meta',
+									nonce: '<?php echo wp_create_nonce( 'wc-tp-order-editor' ); ?>',
+									order_id: <?php echo $order->get_id(); ?>,
+									meta_key: key,
+									meta_value: newValue,
+									action_type: 'update'
+								},
+								success: function(response) {
+									if (response.success) {
+										$('.wc-tp-modal-overlay').remove();
+										location.reload();
+									} else {
+										alert(response.data.message);
+									}
+								}
+							});
+						});
+					});
+				}
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Make billing custom fields editable
+	 */
+	public function make_billing_custom_fields_editable( $order ) {
+		if ( ! $this->is_order_editable_by_status( $order ) ) {
+			return;
+		}
+
+		?>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			// Find billing address section and make custom fields editable
+			$('.order_data_column:first p').each(function() {
+				var $p = $(this);
+				if ($p.find('strong').length > 0 && !$p.hasClass('form-field') && !$p.find('a').length) {
+					var $strong = $p.find('strong');
+					var label = $strong.text().replace(':', '').trim();
+					
+					// Skip standard WooCommerce fields
+					if (['Email', 'Phone', 'Payment method'].indexOf(label) === -1) {
+						var $editIcon = $('<a href="#" class="wc-tp-edit-billing-field" style="margin-left: 10px; color: #2271b1;" title="Edit"><span class="dashicons dashicons-edit"></span></a>');
+						$strong.after($editIcon);
+					}
+				}
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Make shipping custom fields editable
+	 */
+	public function make_shipping_custom_fields_editable( $order ) {
+		if ( ! $this->is_order_editable_by_status( $order ) ) {
+			return;
+		}
+
+		?>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			// Find shipping address section and make custom fields editable
+			$('.order_data_column:eq(1) p').each(function() {
+				var $p = $(this);
+				if ($p.find('strong').length > 0 && !$p.hasClass('form-field')) {
+					var $strong = $p.find('strong');
+					var label = $strong.text().replace(':', '').trim();
+					
+					var $editIcon = $('<a href="#" class="wc-tp-edit-shipping-field" style="margin-left: 10px; color: #2271b1;" title="Edit"><span class="dashicons dashicons-edit"></span></a>');
+					$strong.after($editIcon);
+				}
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * AJAX: Get all custom fields dynamically
+	 */
+	public function ajax_get_all_custom_fields() {
+		check_ajax_referer( 'wc-tp-order-editor', 'nonce' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'wc-team-payroll' ) ) );
+		}
+
+		$order_id = isset( $_POST['order_id'] ) ? intval( $_POST['order_id'] ) : 0;
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			wp_send_json_error( array( 'message' => __( 'Order not found', 'wc-team-payroll' ) ) );
+		}
+
+		// Get ALL meta data
+		$all_meta = $order->get_meta_data();
+		$custom_fields = array();
+
+		foreach ( $all_meta as $meta ) {
+			$key = $meta->key;
+			$value = $meta->value;
+
+			// Auto-detect field type
+			$field_type = $this->detect_field_type( $value );
+			$field_options = $this->get_field_options( $key, $value );
+
+			$custom_fields[] = array(
+				'key' => $key,
+				'value' => $value,
+				'type' => $field_type,
+				'label' => $this->format_label( $key ),
+				'options' => $field_options,
+			);
+		}
+
+		wp_send_json_success( array(
+			'fields' => $custom_fields,
+		) );
+	}
+
+	/**
+	 * Auto-detect field type from value
+	 */
+	private function detect_field_type( $value ) {
+		if ( is_array( $value ) ) {
+			return 'select'; // or multiselect
+		}
+
+		if ( is_bool( $value ) || $value === '1' || $value === '0' ) {
+			return 'checkbox';
+		}
+
+		if ( is_numeric( $value ) && strlen( $value ) < 10 ) {
+			return 'number';
+		}
+
+		if ( filter_var( $value, FILTER_VALIDATE_EMAIL ) ) {
+			return 'email';
+		}
+
+		if ( filter_var( $value, FILTER_VALIDATE_URL ) ) {
+			return 'url';
+		}
+
+		if ( preg_match( '/^\d{2}\/\d{2}\/\d{4}$/', $value ) || preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+			return 'date';
+		}
+
+		if ( strlen( $value ) > 100 || strpos( $value, "\n" ) !== false ) {
+			return 'textarea';
+		}
+
+		return 'text';
+	}
+
+	/**
+	 * Get field options for select fields
+	 */
+	private function get_field_options( $key, $value ) {
+		// Check if this is a known select field
+		$select_fields = array(
+			'_order_source' => array( 'Facebook', 'WhatsApp', 'Website', 'Phone', 'Instagram', 'Other' ),
+			'_order_priority' => array( 'Low', 'Medium', 'High', 'Urgent' ),
+			'_payment_method' => array( 'bKash', 'Nagad', 'Rocket', 'Cash', 'Bank Transfer' ),
+		);
+
+		if ( isset( $select_fields[ $key ] ) ) {
+			return array_combine( $select_fields[ $key ], $select_fields[ $key ] );
+		}
+
+		// Check if it's an agent/user field
+		if ( strpos( $key, 'agent' ) !== false || strpos( $key, 'user' ) !== false ) {
+			return $this->get_agent_options();
+		}
+
+		return array();
+	}
+
+	/**
+	 * Format meta key to readable label
+	 */
+	private function format_label( $key ) {
+		// Remove leading underscore
+		$label = ltrim( $key, '_' );
+		
+		// Replace underscores with spaces
+		$label = str_replace( '_', ' ', $label );
+		
+		// Capitalize words
+		$label = ucwords( $label );
+		
+		return $label;
+	}
+
+	/**
+	 * Get agent options for dropdown
+	 */
+	private function get_agent_options() {
+		$agents = get_users( array(
+			'role__in' => array( 'shop_employee', 'shop_manager', 'administrator' ),
+			'orderby' => 'display_name',
+			'order' => 'ASC',
+		) );
+
+		$options = array( '' => '-- Select Agent --' );
+		foreach ( $agents as $agent ) {
+			$options[ $agent->ID ] = $agent->display_name . ' (#' . $agent->ID . ')';
+		}
+
+		return $options;
 	}
 
 	/**
