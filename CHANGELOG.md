@@ -1,3 +1,29 @@
+## [1.7.24] - 2026-04-24
+### 🐛 Debug - Enhanced Logging for Button Creation
+
+#### ADDED - More Detailed Console Logging
+- **Purpose**: Track button creation and event binding process
+- **Added Logs**:
+  - Row creation log for each order
+  - Button creation log before event binding
+  - Separated button creation from event binding for better debugging
+
+#### WHAT WAS CHANGED
+
+**Button Creation:**
+- Split button creation into separate variable for clearer debugging
+- Added log when creating button: `console.log('Creating button for order:', order.order_id)`
+- Added log when creating row: `console.log('Creating row for order:', order.order_id)`
+- Event handler attached after button creation
+
+**Debugging Steps:**
+1. Hard refresh page (Ctrl + Shift + R)
+2. Check console for "Creating row" and "Creating button" logs
+3. Click button and check for "Button clicked" log
+4. Check for "showOrderDetailsModal called" log
+
+---
+
 ## [1.7.23] - 2026-04-24
 ### 🐛 Debug - Modal Not Opening Issue
 

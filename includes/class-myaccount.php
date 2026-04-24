@@ -1346,6 +1346,8 @@ class WC_Team_Payroll_MyAccount {
 				function createTableRow(order) {
 					const row = $('<tr></tr>');
 					
+					console.log('Creating row for order:', order.order_id);
+					
 					// Order ID
 					const orderIdCell = $('<td></td>').attr('data-sort-value', order.order_id)
 						.append($('<a href="#" class="order-link"></a>').text('#' + order.order_id).on('click', function(e) {
@@ -1402,16 +1404,21 @@ class WC_Team_Payroll_MyAccount {
 							.append(' ' + order.status_label));
 					
 					// Actions
-					const actionsCell = $('<td></td>')
-						.append($('<button class="btn-action btn-view"></button>')
-							.attr('data-order-id', order.order_id)
-							.append($('<i class="ph ph-eye"></i>'))
-							.on('click', function(e) {
-								e.preventDefault();
-								e.stopPropagation();
-								console.log('Button clicked for order:', order.order_id);
-								showOrderDetailsModal(order.order_id);
-							}));
+					const actionsCell = $('<td></td>');
+					const viewButton = $('<button class="btn-action btn-view"></button>')
+						.attr('data-order-id', order.order_id)
+						.append($('<i class="ph ph-eye"></i>'));
+					
+					console.log('Creating button for order:', order.order_id);
+					
+					viewButton.on('click', function(e) {
+						console.log('Button clicked for order:', order.order_id);
+						e.preventDefault();
+						e.stopPropagation();
+						showOrderDetailsModal(order.order_id);
+					});
+					
+					actionsCell.append(viewButton);
 					
 					row.append(orderIdCell, dateCell, customerCell, roleCell, totalCell, attributedCell, commissionCell, earningCell, statusCell, actionsCell);
 					return row;
