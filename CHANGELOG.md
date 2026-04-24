@@ -1,3 +1,27 @@
+## [1.7.22] - 2026-04-24
+### 🔧 Fix - Modal Not Opening on Button Click
+
+#### FIXED - Modal Display Issue
+- **Problem**: Modal was not appearing when clicking the order details button
+- **Root Cause**: Modal was appended with `display: flex` from CSS but `show()` wasn't triggering properly
+- **Solution**: Changed modal to start with `display: none` inline style and use `fadeIn()` for smooth appearance
+
+#### WHAT WAS FIXED
+
+**Modal Display:**
+- Added `style="display: none;"` to initial modal creation
+- Changed `modal.show()` to `modal.fadeIn(200)` for smooth fade-in effect
+- Maintains consistent fade effects for both opening and closing
+- Modal now properly appears with 200ms fade animation
+
+**User Experience:**
+- Smooth fade-in animation when opening modal
+- Smooth fade-out animation when closing modal
+- Consistent animation timing (200ms)
+- Better visual feedback for user interactions
+
+---
+
 ## [1.7.21] - 2026-04-24
 ### 🔧 Fix - Order Details Modal Loading Error
 

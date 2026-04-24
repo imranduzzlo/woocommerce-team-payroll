@@ -1422,7 +1422,7 @@ class WC_Team_Payroll_MyAccount {
 					$('#order-details-modal').remove();
 					
 					// Create modal structure
-					const modal = $('<div id="order-details-modal" class="wc-tp-modal"></div>');
+					const modal = $('<div id="order-details-modal" class="wc-tp-modal" style="display: none;"></div>');
 					const modalContent = $('<div class="wc-tp-modal-content order-details-modal-content"></div>');
 					const modalHeader = $('<div class="wc-tp-modal-header"></div>')
 						.append($('<h3></h3>').html('<i class="ph ph-package"></i> <?php esc_html_e( 'Order Details', 'wc-team-payroll' ); ?>'))
@@ -1434,9 +1434,9 @@ class WC_Team_Payroll_MyAccount {
 					modalContent.append(modalHeader, modalBody);
 					modal.append(modalContent);
 					
-					// Append to body and show
+					// Append to body and fade in
 					$('body').append(modal);
-					modal.show();
+					modal.fadeIn(200);
 					
 					// Close modal handlers
 					modal.on('click', function(e) {
