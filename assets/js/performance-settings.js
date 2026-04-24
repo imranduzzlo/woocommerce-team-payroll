@@ -368,6 +368,15 @@ jQuery(document).ready(function($) {
 				
 				if (!hasError) {
 					showMessage('success', 'All configurations saved successfully!');
+					
+					// Clear sessionStorage to force fresh configuration load
+					sessionStorage.clear();
+					
+					// Reload the page after a short delay to ensure settings are applied
+					setTimeout(function() {
+						location.reload();
+					}, 1000);
+					
 					// Reset the main form's unsaved changes flag
 					if (typeof window.wcTpResetUnsavedChanges === 'function') {
 						window.wcTpResetUnsavedChanges();

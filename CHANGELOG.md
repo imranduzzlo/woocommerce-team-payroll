@@ -1,3 +1,60 @@
+## [1.7.57] - 2026-04-26
+### 🐛 Bug Fix - Preloader Hanging After Settings Save
+
+#### WHAT WAS FIXED
+
+**Problem:**
+- After saving settings in admin panel, reloading my account page would show preloader indefinitely
+- Second reload would work fine
+- Only affected first reload after settings change
+
+**Root Cause:**
+- Settings were saved and server-side caches were cleared
+- Frontend still had stale configuration data in `sessionStorage`
+- Performance tracker loaded old configuration from sessionStorage
+- Mismatch between new settings and displayed data caused preloader to hang
+
+**Solution:**
+- Clear `sessionStorage` after successful settings save
+- Automatically reload page after 1 second delay
+- Ensures fresh configuration is loaded from server
+
+#### HOW IT WORKS NOW
+
+**Before:**
+1. Save settings → Success message
+2. Reload page → Preloader hangs (loading stale config)
+3. Reload again → Works fine (cache expired)
+
+**After:**
+1. Save settings → Success message
+2. Clear sessionStorage
+3. Wait 1 second (server finalizes changes)
+4. Auto-reload page
+5. Fresh configuration loaded → No preloader hang
+
+#### TECHNICAL DETAILS
+
+**Changes:**
+```javascript
+// After successful settings save:
+sessionStorage.clear();  // Remove cached configuration
+setTimeout(function() {
+    location.reload();   // Reload page with fresh data
+}, 1000);
+```
+
+**Benefits:**
+✅ **Instant Fix**: No more preloader hanging
+✅ **Automatic**: Users don't need to manually refresh
+✅ **Clean**: sessionStorage cleared, fresh start
+✅ **Safe**: 1 second delay ensures server is ready
+
+#### FILES MODIFIED
+- `assets/js/performance-settings.js` - Added sessionStorage clear and page reload
+
+---
+
 ## [1.7.56] - 2026-04-26
 ### 🎯 Major Update - Complete Order Status Independence & Live Achievement Calculation
 
