@@ -2567,7 +2567,9 @@ class WC_Team_Payroll_MyAccount {
 					font-family: {$font_family} !important;
 					border-radius: {$button_border_radius}px !important;
 				}
-				
+				.pv-page-wrapper .btn-action .ph{
+					color:{$button_color} !important;
+				}
 				.pv-table-controls .filter-button:hover,
 				.pv-filter-container .filter-button:hover,
 				.report-filters .filter-button:hover {
@@ -5558,10 +5560,12 @@ class WC_Team_Payroll_MyAccount {
 								// Get attributed order value
 								$commission_data = $order_obj ? $order_obj->get_meta( '_commission_data' ) : null;
 								$attributed_value = 0;
+								$user_role = isset( $order['my_role'] ) ? $order['my_role'] : ( isset( $order['role'] ) ? $order['role'] : 'agent' );
+								
 								if ( $commission_data && is_array( $commission_data ) ) {
-									if ( $order['role'] === 'agent' && isset( $commission_data['agent_order_value'] ) ) {
+									if ( $user_role === 'agent' && isset( $commission_data['agent_order_value'] ) ) {
 										$attributed_value = floatval( $commission_data['agent_order_value'] );
-									} elseif ( $order['role'] === 'processor' && isset( $commission_data['processor_order_value'] ) ) {
+									} elseif ( $user_role === 'processor' && isset( $commission_data['processor_order_value'] ) ) {
 										$attributed_value = floatval( $commission_data['processor_order_value'] );
 									}
 								}
@@ -5581,10 +5585,10 @@ class WC_Team_Payroll_MyAccount {
 									<td data-sort-value="<?php echo esc_attr( strtolower( $customer_name ) ); ?>">
 										<?php echo esc_html( $customer_name ); ?>
 									</td>
-									<td data-sort-value="<?php echo esc_attr( strtolower( $order['role'] ) ); ?>">
-										<span class="role-badge role-<?php echo esc_attr( strtolower( $order['role'] ) ); ?>">
-											<i class="ph <?php echo $order['role'] === 'agent' ? 'ph-user-check' : 'ph-gear'; ?>"></i>
-											<?php echo esc_html( ucfirst( $order['role'] ) ); ?>
+									<td data-sort-value="<?php echo esc_attr( strtolower( $user_role ) ); ?>">
+										<span class="role-badge role-<?php echo esc_attr( strtolower( $user_role ) ); ?>">
+											<i class="ph <?php echo $user_role === 'agent' ? 'ph-user-check' : 'ph-gear'; ?>"></i>
+											<?php echo esc_html( ucfirst( $user_role ) ); ?>
 										</span>
 									</td>
 									<td data-sort-value="<?php echo esc_attr( $order['total'] ); ?>">

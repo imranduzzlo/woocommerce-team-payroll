@@ -1,3 +1,35 @@
+## [1.7.32] - 2026-04-24
+### 🔧 Fix - My Order Processing Table Array Key Mismatch
+
+#### FIXED - Role and Status Display Issues
+- **Problem**: Table was using wrong array key `$order['role']` instead of `$order['my_role']`
+- **Root Cause**: AJAX handler returns `'my_role'` but table template was looking for `'role'`
+- **Solution**: Added fallback to check both `my_role` and `role` keys, use correct variable in display
+
+#### WHAT WAS CHANGED
+
+**Role Key Fix:**
+```php
+// Before: Used wrong key
+if ( $order['role'] === 'agent' ...
+
+// After: Gets correct key with fallback
+$user_role = isset( $order['my_role'] ) ? $order['my_role'] : ( isset( $order['role'] ) ? $order['role'] : 'agent' );
+```
+
+**Variable Usage:**
+- Changed all `$order['role']` references to use `$user_role` variable
+- Ensures role badge displays correctly
+- Ensures attributed value calculation uses correct role
+
+**Benefits:**
+- Status now displays correctly for all orders
+- Role badge shows proper agent/processor designation
+- Attributed order value calculated correctly based on role
+- No more array key mismatch errors
+
+---
+
 ## [1.7.31] - 2026-04-24
 ### 🔧 Fix - My Commission History Status Now Dynamic
 
