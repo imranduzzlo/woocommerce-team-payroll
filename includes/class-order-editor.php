@@ -779,103 +779,43 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
+		// Standard WooCommerce fields that should not be made editable
+		$standard_fields = array(
+			'Email', 'Phone', 'Payment method', 'First name', 'Last name', 
+			'Company', 'Address', 'City', 'Postcode', 'Country', 'State',
+			'Date created', 'Status', 'Customer'
+		);
+
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
+			var standardFields = <?php echo wp_json_encode( $standard_fields ); ?>;
+			var orderId = <?php echo $order->get_id(); ?>;
+			
 			// Make all <p> tags with <strong> labels editable
 			$('.order_data_column p').each(function() {
 				var $p = $(this);
 				var $strong = $p.find('strong');
 				
-				if ($strong.length > 0 && !$p.hasClass('form-field')) {
+				if ($strong.length > 0 && !$p.hasClass('form-field') && !$p.find('a').length && !$p.find('input').length && !$p.find('select').length) {
 					var label = $strong.text().replace(':', '').trim();
+					
+					// Skip standard WooCommerce fields
+					if (standardFields.indexOf(label) !== -1) {
+						return;
+					}
+					
 					var value = $p.clone().children().remove().end().text().trim();
 					var metaKey = '_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_');
 					
-					// Create editable field
-					var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" style="margin-left: 10px; color: #2271b1;" title="Edit"><span class="dashicons dashicons-edit"></span></a>');
-					$strong.after($editIcon);
+					// Skip if already has edit icon
+					if ($p.find('.wc-tp-edit-custom-field').length > 0) {
+						return;
+					}
 					
-					$editIcon.on('click', function(e) {
-						e.preventDefault();
-						
-						// Detect field type from value
-						var fieldType = 'text';
-						if (value === '1' || value === '0' || value.toLowerCase() === 'yes' || value.toLowerCase() === 'no') {
-							fieldType = 'checkbox';
-						} else if (value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-							fieldType = 'email';
-						} else if (value.match(/^https?:\/\//)) {
-							fieldType = 'url';
-						} else if (value.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-							fieldType = 'date';
-						} else if (value.length > 100 || value.includes(';') || value.includes(',')) {
-							fieldType = 'textarea';
-						}
-						
-						var modalHtml = '<div class="wc-tp-modal-overlay">' +
-							'<div class="wc-tp-modal">' +
-							'<div class="wc-tp-modal-header">' +
-							'<h2>Edit: ' + label + '</h2>' +
-							'<button class="wc-tp-modal-close">&times;</button>' +
-							'</div>' +
-							'<div class="wc-tp-modal-body">' +
-							'<div class="wc-tp-form-group">' +
-							'<label>' + label + ':</label>';
-						
-						if (fieldType === 'textarea') {
-							modalHtml += '<textarea class="wc-tp-field-value" rows="4">' + value + '</textarea>';
-						} else if (fieldType === 'checkbox') {
-							var checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
-							modalHtml += '<label><input type="checkbox" class="wc-tp-field-value" ' + checked + '> Yes</label>';
-						} else {
-							modalHtml += '<input type="' + fieldType + '" class="wc-tp-field-value" value="' + value + '">';
-						}
-						
-						modalHtml += '</div>' +
-							'<input type="hidden" class="wc-tp-field-key" value="' + metaKey + '">' +
-							'</div>' +
-							'<div class="wc-tp-modal-footer">' +
-							'<button class="button button-secondary wc-tp-modal-close">Cancel</button>' +
-							'<button class="button button-primary wc-tp-save-custom-field">Save</button>' +
-							'</div>' +
-							'</div>' +
-							'</div>';
-						
-						$('body').append(modalHtml);
-						
-						$('.wc-tp-modal-close').on('click', function() {
-							$('.wc-tp-modal-overlay').remove();
-						});
-						
-						$('.wc-tp-save-custom-field').on('click', function() {
-							var newValue = $('.wc-tp-field-value').is(':checkbox') ? 
-								($('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
-								$('.wc-tp-field-value').val();
-							var key = $('.wc-tp-field-key').val();
-							
-							$.ajax({
-								url: ajaxurl,
-								type: 'POST',
-								data: {
-									action: 'wc_tp_update_order_meta',
-									nonce: '<?php echo wp_create_nonce( 'wc-tp-order-editor' ); ?>',
-									order_id: <?php echo $order->get_id(); ?>,
-									meta_key: key,
-									meta_value: newValue,
-									action_type: 'update'
-								},
-								success: function(response) {
-									if (response.success) {
-										$('.wc-tp-modal-overlay').remove();
-										location.reload();
-									} else {
-										alert(response.data.message);
-									}
-								}
-							});
-						});
-					});
+					// Create editable field
+					var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></a>');
+					$strong.after($editIcon);
 				}
 			});
 		});
@@ -891,19 +831,31 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
+		// Standard WooCommerce billing fields that are already editable
+		$standard_fields = array(
+			'Email', 'Phone', 'Payment method', 'First name', 'Last name', 
+			'Company', 'Address', 'City', 'Postcode', 'Country', 'State'
+		);
+
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
+			var standardFields = <?php echo wp_json_encode( $standard_fields ); ?>;
+			var orderId = <?php echo $order->get_id(); ?>;
+			
 			// Find billing address section and make custom fields editable
 			$('.order_data_column:first p').each(function() {
 				var $p = $(this);
-				if ($p.find('strong').length > 0 && !$p.hasClass('form-field') && !$p.find('a').length) {
+				if ($p.find('strong').length > 0 && !$p.hasClass('form-field') && !$p.find('a').length && !$p.find('input').length && !$p.find('select').length) {
 					var $strong = $p.find('strong');
 					var label = $strong.text().replace(':', '').trim();
 					
-					// Skip standard WooCommerce fields
-					if (['Email', 'Phone', 'Payment method'].indexOf(label) === -1) {
-						var $editIcon = $('<a href="#" class="wc-tp-edit-billing-field" style="margin-left: 10px; color: #2271b1;" title="Edit"><span class="dashicons dashicons-edit"></span></a>');
+					// Skip standard WooCommerce fields and fields that already have edit icons
+					if (standardFields.indexOf(label) === -1 && $p.find('.wc-tp-edit-custom-field').length === 0) {
+						var value = $p.clone().children().remove().end().text().trim();
+						var metaKey = '_billing_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_');
+						
+						var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></a>');
 						$strong.after($editIcon);
 					}
 				}
@@ -921,18 +873,33 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
+		// Standard WooCommerce shipping fields that are already editable
+		$standard_fields = array(
+			'First name', 'Last name', 'Company', 'Address', 'City', 
+			'Postcode', 'Country', 'State'
+		);
+
 		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
+			var standardFields = <?php echo wp_json_encode( $standard_fields ); ?>;
+			var orderId = <?php echo $order->get_id(); ?>;
+			
 			// Find shipping address section and make custom fields editable
 			$('.order_data_column:eq(1) p').each(function() {
 				var $p = $(this);
-				if ($p.find('strong').length > 0 && !$p.hasClass('form-field')) {
+				if ($p.find('strong').length > 0 && !$p.hasClass('form-field') && !$p.find('a').length && !$p.find('input').length && !$p.find('select').length) {
 					var $strong = $p.find('strong');
 					var label = $strong.text().replace(':', '').trim();
 					
-					var $editIcon = $('<a href="#" class="wc-tp-edit-shipping-field" style="margin-left: 10px; color: #2271b1;" title="Edit"><span class="dashicons dashicons-edit"></span></a>');
-					$strong.after($editIcon);
+					// Skip standard WooCommerce fields and fields that already have edit icons
+					if (standardFields.indexOf(label) === -1 && $p.find('.wc-tp-edit-custom-field').length === 0) {
+						var value = $p.clone().children().remove().end().text().trim();
+						var metaKey = '_shipping_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_');
+						
+						var $editIcon = $('<a href="#" class="wc-tp-edit-custom-field" title="Edit this field" data-label="' + label + '" data-value="' + value.replace(/"/g, '&quot;') + '" data-key="' + metaKey + '" data-order-id="' + orderId + '"><span class="dashicons dashicons-edit"></span></a>');
+						$strong.after($editIcon);
+					}
 				}
 			});
 		});

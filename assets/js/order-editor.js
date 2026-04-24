@@ -938,3 +938,112 @@
                 $saveBtn.prop('disabled', false).text('Save ' + (addressType === 'billing' ? 'Billing' : 'Shipping') + ' Address');
             }
         });
+
+    // Handle custom field edit icon clicks
+    handleEditCustomField: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const $icon = $(this);
+        const label = $icon.data('label');
+        const value = $icon.data('value');
+        const metaKey = $icon.data('key');
+        const orderId = $icon.data('order-id');
+        
+        // Detect field type from value
+        let fieldType = 'text';
+        let fieldHtml = '';
+        
+        if (value === '1' || value === '0' || value.toLowerCase() === 'yes' || value.toLowerCase() === 'no') {
+            fieldType = 'checkbox';
+            const checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
+            fieldHtml = '<label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" class="wc-tp-field-value" ' + checked + ' style="margin: 0;"> <span>Yes</span></label>';
+        } else if (value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            fieldType = 'email';
+            fieldHtml = '<input type="email" class="wc-tp-field-value" value="' + value + '" style="width: 100%;">';
+        } else if (value.match(/^https?:\/\//)) {
+            fieldType = 'url';
+            fieldHtml = '<input type="url" class="wc-tp-field-value" value="' + value + '" style="width: 100%;">';
+        } else if (value.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            fieldType = 'date';
+            fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value + '" placeholder="DD/MM/YYYY" style="width: 100%;">';
+        } else if (value.length > 100 || value.includes(';') || value.includes(',') || value.includes('\n')) {
+            fieldType = 'textarea';
+            fieldHtml = '<textarea class="wc-tp-field-value" rows="4" style="width: 100%;">' + value + '</textarea>';
+        } else {
+            fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value + '" style="width: 100%;">';
+        }
+        
+        const modalHtml = '<div class="wc-tp-modal-overlay">' +
+            '<div class="wc-tp-modal">' +
+            '<div class="wc-tp-modal-header">' +
+            '<h2>Edit: ' + label + '</h2>' +
+            '<button class="wc-tp-modal-close">&times;</button>' +
+            '</div>' +
+            '<div class="wc-tp-modal-body">' +
+            '<div class="wc-tp-form-group">' +
+            '<label>' + label + ':</label>' +
+            fieldHtml +
+            '</div>' +
+            '<input type="hidden" class="wc-tp-field-key" value="' + metaKey + '">' +
+            '</div>' +
+            '<div class="wc-tp-modal-footer">' +
+            '<button class="button button-secondary wc-tp-modal-close">Cancel</button>' +
+            '<button class="button button-primary wc-tp-save-custom-field">Save Changes</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        
+        $('body').append(modalHtml);
+        
+        $('.wc-tp-modal-close').on('click', function() {
+            $('.wc-tp-modal-overlay').remove();
+        });
+        
+        $('.wc-tp-save-custom-field').on('click', function() {
+            const $btn = $(this);
+            $btn.prop('disabled', true).text('Saving...');
+            
+            const newValue = $('.wc-tp-field-value').is(':checkbox') ? 
+                ($('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
+                $('.wc-tp-field-value').val();
+            const key = $('.wc-tp-field-key').val();
+            
+            $.ajax({
+                url: wcTpOrderEditor.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'wc_tp_update_order_meta',
+                    nonce: wcTpOrderEditor.nonce,
+                    order_id: orderId,
+                    meta_key: key,
+                    meta_value: newValue,
+                    action_type: 'update'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('.wc-tp-modal-overlay').remove();
+                        OrderEditor.showNotice('success', 'Field updated successfully');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        OrderEditor.showNotice('error', response.data.message || 'Error saving field');
+                        $btn.prop('disabled', false).text('Save Changes');
+                    }
+                },
+                error: function() {
+                    OrderEditor.showNotice('error', 'Error saving field');
+                    $btn.prop('disabled', false).text('Save Changes');
+                }
+            });
+        });
+        
+        return false;
+    }
+};
+
+// Bind custom field edit icon clicks using event delegation
+$(document).on('click', '.wc-tp-edit-custom-field', function(e) {
+    OrderEditor.handleEditCustomField.call(this, e);
+});
