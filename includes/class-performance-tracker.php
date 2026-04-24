@@ -1022,7 +1022,7 @@ class WC_Team_Payroll_Performance_Tracker {
 		// Extract only achievement data (keys matching pattern)
 		if ( is_array( $stored_data ) ) {
 			foreach ( $stored_data as $key => $value ) {
-				if ( preg_match( '/^(earnings|orders|aov)_(bronze|silver|gold)$/', $key ) && is_array( $value ) ) {
+				if ( preg_match( '/^(earnings|orders|order_value|aov)_(bronze|silver|gold)$/', $key ) && is_array( $value ) ) {
 					$period_achievements[ $key ] = $value;
 				}
 			}

@@ -1,3 +1,37 @@
+## [1.7.44] - 2026-04-26
+### 🔧 Critical Fix - Order Value Achievements Not Loading Historical Data
+
+#### THE PROBLEM
+- **Root Cause**: Regex pattern in `update_period_achievements()` was missing `order_value` 
+- **Impact**: `order_value_bronze`, `order_value_silver`, `order_value_gold` achievements were NOT being loaded from stored data
+- **Result**: These achievements were recalculated every time with NEW settings, losing historical `value_at_unlock`
+
+#### THE FIX
+- **Changed**: Regex pattern from `/^(earnings|orders|aov)_(bronze|silver|gold)$/` 
+- **To**: `/^(earnings|orders|order_value|aov)_(bronze|silver|gold)$/`
+- **Now**: All achievement types properly load their historical data
+
+#### WHAT THIS MEANS
+- ✅ Order Value achievements now preserve historical `value_at_unlock`
+- ✅ Settings changes won't affect already achieved Order Value badges
+- ✅ Consistent behavior across ALL achievement categories (Earnings, Orders, Order Value, AOV)
+
+#### EXAMPLE
+**Before (v1.7.43):**
+- Order Value Bronze unlocked with $5000 (old settings)
+- Change settings to count only "completed" orders ($1500)
+- Display shows "$1500" ❌ (recalculated, wrong!)
+
+**After (v1.7.44):**
+- Order Value Bronze unlocked with $5000 (old settings)
+- Change settings to count only "completed" orders ($1500)
+- Display shows "$5000" ✅ (historical value preserved!)
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Fixed regex pattern to include `order_value`
+
+---
+
 ## [1.7.43] - 2026-04-26
 ### 🔧 Fix + Feature - Historical Values + Refresh Button
 
