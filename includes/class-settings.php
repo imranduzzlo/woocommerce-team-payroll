@@ -848,63 +848,77 @@ class WC_Team_Payroll_Settings {
 									? 'This will delete all user achievements, goals, baselines, and bonuses. Configurations will be preserved.'
 									: 'This will delete ALL plugin data including configurations, settings, and user data. This action cannot be undone!';
 								
-								// Create dialog HTML
-								const dialogHtml = `
-									<div id="wc-tp-clear-data-dialog" style="display: none;">
-										<p>${message}</p>
-										<p style="margin-top: 15px;"><strong>Type "CLEAR" to confirm:</strong></p>
-										<input type="text" id="wc-tp-clear-confirmation" placeholder="Type CLEAR here" style="width: 100%; padding: 8px; margin-top: 10px; box-sizing: border-box;" />
+								// Create custom modal HTML
+								const modalHtml = `
+									<div id="wc-tp-clear-modal-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+										<div id="wc-tp-clear-modal" style="background: white; border-radius: 8px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 10000;">
+											<h2 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">${title}</h2>
+											<p style="margin: 0 0 15px 0; color: #666; line-height: 1.6;">${message}</p>
+											<p style="margin: 15px 0; color: #d63638; font-weight: bold;">⚠️ This action cannot be undone!</p>
+											<p style="margin: 15px 0 0 0;"><strong>Type "CLEAR" to confirm:</strong></p>
+											<input type="text" id="wc-tp-clear-confirmation" placeholder="Type CLEAR here" style="width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;" />
+											<div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+												<button type="button" id="wc-tp-modal-cancel" class="button button-secondary" style="margin: 0;">Cancel</button>
+												<button type="button" id="wc-tp-modal-clear" class="button button-primary" style="margin: 0; background-color: #d63638; border-color: #d63638;">Clear</button>
+											</div>
+										</div>
 									</div>
 								`;
 
-								// Remove existing dialog if any
-								$('#wc-tp-clear-data-dialog').remove();
-								$('body').append(dialogHtml);
+								// Remove existing modal if any
+								$('#wc-tp-clear-modal-overlay').remove();
+								$('body').append(modalHtml);
 
-								// Show dialog
-								$('#wc-tp-clear-data-dialog').dialog({
-									title: title,
-									modal: true,
-									width: 400,
-									buttons: {
-										'Cancel': function() {
-											$(this).dialog('close');
-											$(this).remove();
+								// Cancel button
+								$('#wc-tp-modal-cancel').on('click', function() {
+									$('#wc-tp-clear-modal-overlay').fadeOut(200, function() {
+										$(this).remove();
+									});
+								});
+
+								// Clear button
+								$('#wc-tp-modal-clear').on('click', function() {
+									const confirmation = $('#wc-tp-clear-confirmation').val();
+									if (confirmation !== 'CLEAR') {
+										alert('Please type "CLEAR" to confirm.');
+										return;
+									}
+
+									// Disable button and show loading
+									$(this).prop('disabled', true).text('Clearing...');
+
+									// Send AJAX request
+									$.ajax({
+										url: ajaxurl,
+										type: 'POST',
+										data: {
+											action: type === 'frontend' ? 'wc_tp_clear_frontend_data' : 'wc_tp_clear_all_data',
+											nonce: '<?php echo wp_create_nonce( 'wc_team_payroll_settings_nonce' ); ?>',
+											confirmation: 'CLEAR'
 										},
-										'Clear': function() {
-											const confirmation = $('#wc-tp-clear-confirmation').val();
-											if (confirmation !== 'CLEAR') {
-												alert('Please type "CLEAR" to confirm.');
-												return;
+										success: function(response) {
+											if (response.success) {
+												alert(response.data.message);
+												location.reload();
+											} else {
+												alert('Error: ' + (response.data.message || 'Unknown error'));
+												$('#wc-tp-clear-modal-overlay').fadeOut(200, function() {
+													$(this).remove();
+												});
 											}
-
-											$(this).dialog('close');
-											$(this).remove();
-
-											// Send AJAX request
-											$.ajax({
-												url: ajaxurl,
-												type: 'POST',
-												data: {
-													action: type === 'frontend' ? 'wc_tp_clear_frontend_data' : 'wc_tp_clear_all_data',
-													nonce: '<?php echo wp_create_nonce( 'wc_team_payroll_settings_nonce' ); ?>',
-													confirmation: 'CLEAR'
-												},
-												success: function(response) {
-													if (response.success) {
-														alert(response.data.message);
-														location.reload();
-													} else {
-														alert('Error: ' + response.data.message);
-													}
-												},
-												error: function() {
-													alert('AJAX error occurred');
-												}
+										},
+										error: function(xhr, status, error) {
+											console.error('AJAX error:', error);
+											alert('AJAX error occurred: ' + error);
+											$('#wc-tp-clear-modal-overlay').fadeOut(200, function() {
+												$(this).remove();
 											});
 										}
-									}
+									});
 								});
+
+								// Focus on input field
+								$('#wc-tp-clear-confirmation').focus();
 							}
 						});
 					</script>
