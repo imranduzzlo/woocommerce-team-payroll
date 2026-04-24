@@ -392,13 +392,19 @@ class WC_Team_Payroll_Settings {
 					<textarea id="custom_css" name="wc_team_payroll_styling[custom_css]" rows="12" style="width: 100%; font-family: 'Courier New', monospace; font-size: 13px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;"><?php echo esc_textarea( isset( $styling_settings['custom_css'] ) ? $styling_settings['custom_css'] : '' ); ?></textarea>
 					<p class="description">Example: <code>.my-class { color: #333; }</code> - Auto-closing braces will be added when needed.</p>
 
-					<!-- Preview Button (Only for Styling Tab) -->
+					<!-- Reset Styling Button -->
 					<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-						<button type="button" id="wc-tp-preview-btn" class="button button-secondary" style="padding: 12px 20px; font-size: 14px; border-radius: 4px;">
-							👁️ Live Preview
+						<button type="button" id="wc-tp-reset-styling-btn" class="button button-secondary" style="padding: 12px 20px; font-size: 14px; border-radius: 4px;">
+							<span class="dashicons dashicons-update"></span>
+							Reset to Default Styling
 						</button>
-						<p class="description" style="margin-top: 10px;">Preview your styling changes in real-time without saving.</p>
+						<p class="description" style="margin-top: 10px;">Reset all styling options to their default values.</p>
 					</div>
+
+					<!-- Floating Preview Button (Bottom Right) -->
+					<button type="button" id="wc-tp-preview-btn" class="button button-primary" style="position: fixed; bottom: 30px; right: 30px; padding: 15px 25px; font-size: 14px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; display: none; align-items: center; gap: 8px;">
+						👁️ Live Preview
+					</button>
 
 					<!-- Live Preview Modal (Only for Styling Tab) -->
 					<div id="wc-tp-preview-modal" style="display: none; position: fixed; top: 0; right: 0; width: 450px; height: 100vh; background: white; z-index: 10000; overflow-y: auto; box-shadow: -2px 0 10px rgba(0,0,0,0.15); transition: transform 0.3s ease;">
@@ -569,6 +575,51 @@ class WC_Team_Payroll_Settings {
 								$('#wc-tp-preview-table tbody td:nth-child(2)').css({
 									'color': primaryColor
 								});
+							}
+
+							// Reset Styling Button Handler
+							$('#wc-tp-reset-styling-btn').on('click', function(e) {
+								e.preventDefault();
+								
+								if (!confirm('Are you sure you want to reset all styling to default values? This cannot be undone.')) {
+									return;
+								}
+
+								// Default values
+								const defaults = {
+									'primary_color': '#0073aa',
+									'secondary_color': '#28a745',
+									'heading_color': '#333333',
+									'text_color': '#495057',
+									'link_color': '#0073aa',
+									'link_hover_color': '#005a87',
+									'background_color': '#ffffff',
+									'header_background': '#f8f9fa',
+									'header_border_color': '#0073aa',
+									'card_background': '#ffffff',
+									'card_border_color': '#e0e0e0',
+									'card_border_radius': '8',
+									'button_background': '#0073aa',
+									'button_text_color': '#ffffff',
+									'button_border_radius': '4',
+									'font_family': 'inherit',
+									'base_font_size': '14',
+									'custom_css': ''
+								};
+
+								// Reset all color inputs
+								for (const [key, value] of Object.entries(defaults)) {
+									const selector = `input[name="wc_team_payroll_styling[${key}]"], select[name="wc_team_payroll_styling[${key}]"], textarea[name="wc_team_payroll_styling[${key}]"]`;
+									$(selector).val(value).trigger('change');
+								}
+
+								alert('Styling has been reset to default values. Remember to save your changes.');
+								updatePreview();
+							});
+
+							// Show preview button when on styling tab
+							if ($('#wc-tp-preview-btn').length) {
+								$('#wc-tp-preview-btn').show();
 							}
 						});
 					</script>
