@@ -1,3 +1,41 @@
+## [1.7.42] - 2026-04-26
+### 🔧 Fix - Already Achieved Achievements Keep Historical Values
+
+#### FIXED - Current Period Achievements Show Value at Unlock
+- **Problem**: When settings changed, already achieved achievements in current period showed new count instead of historical value
+- **Example**: Achievement unlocked with 7 orders, but after changing settings to "completed only", it showed 2 orders
+- **Solution**: Already achieved achievements now display the `value_at_unlock` (historical value), not current count
+
+#### WHAT WAS CHANGED
+
+**Achievement Display Logic:**
+- **Already Unlocked**: Shows `value_at_unlock` (e.g., 7 orders when it was achieved)
+- **Not Yet Unlocked**: Shows current count based on new settings (e.g., 2 completed orders)
+- **Period History**: Always shows historical values (unchanged)
+
+**How It Works:**
+```php
+// Check if achievement is already unlocked
+if ( $achievement['unlocked'] === true ) {
+    // Use historical value
+    $stats['orders'] = $achievement['value_at_unlock']; // 7
+} else {
+    // Use current count with new settings
+    $stats['orders'] = $tracker->get_order_count(...); // 2
+}
+```
+
+**Example Timeline:**
+1. User unlocks "Orders Bronze" with 7 orders (old settings)
+2. Admin changes settings to count only completed orders (2 orders)
+3. Achievement display still shows "7 orders" (value when unlocked) ✅
+4. Next period will use new settings (2 completed orders needed)
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker-ajax.php` - Updated to use `value_at_unlock` for already achieved
+
+---
+
 ## [1.7.41] - 2026-04-26
 ### ✨ Feature - Configurable Order Statuses for Achievements
 

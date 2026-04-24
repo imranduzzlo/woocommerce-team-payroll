@@ -191,10 +191,45 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					
 					// Add current period metrics to stats
 					$period_range = $tracker->get_period_date_range( $period_type );
-					$stats['orders'] = $tracker->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					$stats['order_value'] = $tracker->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					$stats['earnings'] = $tracker->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
-					$stats['aov'] = $tracker->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					
+					// Check if any orders/order_value achievements are already unlocked
+					// If unlocked, use the value_at_unlock, otherwise use current count
+					$has_unlocked_orders = false;
+					$has_unlocked_order_value = false;
+					$has_unlocked_earnings = false;
+					$has_unlocked_aov = false;
+					
+					foreach ( $achievements as $key => $achievement ) {
+						if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true ) {
+							if ( strpos( $key, 'orders_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
+								$has_unlocked_orders = true;
+								$stats['orders'] = $achievement['value_at_unlock'];
+							} elseif ( strpos( $key, 'order_value_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
+								$has_unlocked_order_value = true;
+								$stats['order_value'] = $achievement['value_at_unlock'];
+							} elseif ( strpos( $key, 'earnings_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
+								$has_unlocked_earnings = true;
+								$stats['earnings'] = $achievement['value_at_unlock'];
+							} elseif ( strpos( $key, 'aov_' ) === 0 && isset( $achievement['value_at_unlock'] ) ) {
+								$has_unlocked_aov = true;
+								$stats['aov'] = $achievement['value_at_unlock'];
+							}
+						}
+					}
+					
+					// If no achievements unlocked yet, use current metrics
+					if ( ! $has_unlocked_orders ) {
+						$stats['orders'] = $tracker->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					}
+					if ( ! $has_unlocked_order_value ) {
+						$stats['order_value'] = $tracker->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					}
+					if ( ! $has_unlocked_earnings ) {
+						$stats['earnings'] = $tracker->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					}
+					if ( ! $has_unlocked_aov ) {
+						$stats['aov'] = $tracker->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					}
 					
 					$data['stats'] = $stats;
 					$data['tier_categories'] = isset( $stats['tier_categories'] ) ? $stats['tier_categories'] : array();
