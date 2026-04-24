@@ -489,6 +489,34 @@ class WC_Team_Payroll_Performance_Settings {
 							<label for="achievements_notification"><?php esc_html_e( 'Show notification when employee earns a new achievement', 'wc-team-payroll' ); ?></label>
 						</td>
 					</tr>
+					<tr>
+						<th><label><?php esc_html_e( 'Order Statuses for Achievements', 'wc-team-payroll' ); ?></label></th>
+						<td>
+							<p class="description" style="margin-bottom: 10px;">
+								<?php esc_html_e( 'Select which order statuses should be counted for Orders and Order Value achievements. Earnings achievements will always use commission calculation statuses.', 'wc-team-payroll' ); ?>
+							</p>
+							<?php
+							$all_statuses = wc_get_order_statuses();
+							$selected_statuses = isset( $achievements_config['order_statuses'] ) ? $achievements_config['order_statuses'] : array( 'completed' );
+							
+							foreach ( $all_statuses as $status_key => $status_label ) {
+								$normalized_status = str_replace( 'wc-', '', $status_key );
+								// Skip draft and failed by default
+								if ( $normalized_status === 'draft' || $normalized_status === 'failed' ) {
+									continue;
+								}
+								$checked = in_array( $normalized_status, $selected_statuses ) ? 'checked' : '';
+								echo '<label style="display: block; margin-bottom: 5px;">';
+								echo '<input type="checkbox" name="achievements_order_statuses[]" value="' . esc_attr( $normalized_status ) . '" class="wc-tp-achievements-setting" ' . $checked . ' />';
+								echo ' ' . esc_html( $status_label );
+								echo '</label>';
+							}
+							?>
+							<p class="description">
+								<?php esc_html_e( 'Note: Earnings achievements will always use commission calculation statuses configured in WooCommerce settings, regardless of this selection.', 'wc-team-payroll' ); ?>
+							</p>
+						</td>
+					</tr>
 				</table>
 			</div>
 
@@ -2274,6 +2302,9 @@ class WC_Team_Payroll_Performance_Settings {
 		}
 		if ( isset( $config['notification'] ) ) {
 			$existing_config['notification'] = intval( $config['notification'] );
+		}
+		if ( isset( $config['order_statuses'] ) && is_array( $config['order_statuses'] ) ) {
+			$existing_config['order_statuses'] = array_map( 'sanitize_text_field', $config['order_statuses'] );
 		}
 		
 		// Update role-specific achievements

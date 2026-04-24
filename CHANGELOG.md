@@ -1,3 +1,45 @@
+## [1.7.41] - 2026-04-26
+### ✨ Feature - Configurable Order Statuses for Achievements
+
+#### NEW - Admin Can Configure Which Statuses Count for Achievements
+- **Feature**: Added setting to select which order statuses count for Orders and Order Value achievements
+- **Location**: Performance Settings → Achievements → Order Statuses for Achievements
+- **Default**: Only "Completed" orders (maintains current behavior)
+- **Note**: Earnings achievements always use commission calculation statuses (unchanged)
+
+#### WHAT WAS ADDED
+
+**New Setting in Achievements Configuration:**
+- Multi-select checkboxes for order statuses
+- Excludes draft and failed statuses from selection
+- Separate configuration from commission calculation statuses
+- Clear note that earnings achievements use commission statuses
+
+**How It Works:**
+1. **Orders Count Achievements**: Uses selected statuses
+2. **Order Value Achievements**: Uses selected statuses  
+3. **Earnings Achievements**: Always uses commission calculation statuses (not affected by this setting)
+4. **AOV Achievements**: Uses selected statuses
+
+**Example Use Cases:**
+- Count only completed orders (default)
+- Count completed + processing orders
+- Count completed + processing + on-hold orders
+- Any combination of statuses (except draft/failed)
+
+**Code Changes:**
+- `get_order_count()`: Now reads from achievements config
+- `get_attributed_order_total()`: Now reads from achievements config
+- Settings page: Added status checkboxes
+- JavaScript: Collects and saves selected statuses
+
+#### FILES MODIFIED
+- `includes/class-performance-settings.php` - Added status selection UI and save logic
+- `includes/class-performance-tracker.php` - Updated to use configured statuses
+- `assets/js/performance-settings.js` - Added status collection to save function
+
+---
+
 ## [1.7.40] - 2026-04-26
 ### 🔧 Fix - Achievements Display Now Shows Correct Current Metrics
 

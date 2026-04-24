@@ -87,8 +87,17 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @return float Attributed order total
 	 */
 	public function get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter = 'all', $status_filter = 'all' ) {
-		// Only count completed orders for performance tracker
-		$statuses_to_query = array( 'wc-completed' );
+		// Get configured order statuses for achievements, default to completed only
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$configured_statuses = isset( $achievements_config['order_statuses'] ) && is_array( $achievements_config['order_statuses'] ) && ! empty( $achievements_config['order_statuses'] ) 
+			? $achievements_config['order_statuses'] 
+			: array( 'completed' );
+		
+		// Prepare statuses with wc- prefix
+		$statuses_to_query = array();
+		foreach ( $configured_statuses as $status ) {
+			$statuses_to_query[] = 'wc-' . $status;
+		}
 
 		$attributed_total = 0;
 
@@ -157,8 +166,17 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @return int Order count
 	 */
 	public function get_order_count( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
-		// Only count completed orders for performance tracker
-		$statuses_to_query = array( 'wc-completed' );
+		// Get configured order statuses for achievements, default to completed only
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$configured_statuses = isset( $achievements_config['order_statuses'] ) && is_array( $achievements_config['order_statuses'] ) && ! empty( $achievements_config['order_statuses'] ) 
+			? $achievements_config['order_statuses'] 
+			: array( 'completed' );
+		
+		// Prepare statuses with wc- prefix
+		$statuses_to_query = array();
+		foreach ( $configured_statuses as $status ) {
+			$statuses_to_query[] = 'wc-' . $status;
+		}
 
 		$order_ids = array();
 

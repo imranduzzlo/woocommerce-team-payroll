@@ -1158,8 +1158,19 @@ jQuery(document).ready(function($) {
 			display_style: $('#achievements_display_style').val(),
 			show_locked: $('#achievements_show_locked').is(':checked') ? 1 : 0,
 			notification: $('#achievements_notification').is(':checked') ? 1 : 0,
+			order_statuses: [],
 			roles: {}
 		};
+		
+		// Collect selected order statuses
+		$('input[name="achievements_order_statuses[]"]:checked').each(function() {
+			config.order_statuses.push($(this).val());
+		});
+		
+		// Collect selected order statuses
+		$('input[name="achievements_order_statuses[]"]:checked').each(function() {
+			config.order_statuses.push($(this).val());
+		});
 
 		// Get current role being configured
 		const currentRole = $('.wc-tp-role-achievements-form').data('role');
@@ -1533,8 +1544,19 @@ jQuery(document).ready(function($) {
 			display_style: $('#achievements_display_style').val(),
 			show_locked: $('#achievements_show_locked').is(':checked') ? 1 : 0,
 			notification: $('#achievements_notification').is(':checked') ? 1 : 0,
+			order_statuses: [],
 			roles: {}
 		};
+		
+		// Collect selected order statuses
+		$('input[name="achievements_order_statuses[]"]:checked').each(function() {
+			config.order_statuses.push($(this).val());
+		});
+		
+		// Collect selected order statuses
+		$('input[name="achievements_order_statuses[]"]:checked').each(function() {
+			config.order_statuses.push($(this).val());
+		});
 
 		// Get current role being configured
 		const currentRole = $('.wc-tp-role-achievements-form').data('role');
@@ -2052,4 +2074,6 @@ jQuery(document).ready(function($) {
 	initializeBonusTypeHandlers();
 
 });
+
+
 
