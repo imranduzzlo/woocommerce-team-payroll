@@ -1,3 +1,69 @@
+## [1.7.55] - 2026-04-26
+### 🐛 Bug Fix - Goals Order Status Settings Not Saving
+
+#### WHAT WAS FIXED
+
+**Problem:**
+- Goals order status checkboxes were not being saved
+- Changes to order statuses were lost after clicking "Save All Settings"
+- Only affected the Goals configuration
+
+**Root Cause:**
+- JavaScript file had **two instances** of `collectGoalsConfigurationData()` function
+- Only the first instance was updated to collect order statuses
+- The second instance (line ~1320) was still using old code without order status collection
+- When saving, the second instance was being called, missing the order statuses
+
+**Solution:**
+- Updated both instances of `collectGoalsConfigurationData()` to collect order statuses
+- Added proper handling for empty order_statuses array in PHP
+- Both functions now consistently collect and send order statuses to server
+
+#### TECHNICAL DETAILS
+
+**Files Modified:**
+- `assets/js/performance-settings.js` - Fixed second instance of collectGoalsConfigurationData()
+- `includes/class-performance-settings.php` - Added handling for empty arrays
+
+**What Changed:**
+```javascript
+// Before (second instance - missing order statuses)
+function collectGoalsConfigurationData() {
+    const config = {
+        period: $('#goals_period').val(),
+        display_mode: $('#goals_display_mode').val(),
+        show_stretch: $('#goals_show_stretch').is(':checked') ? 1 : 0,
+        roles: {}
+    };
+    // ... missing order_statuses collection
+}
+
+// After (both instances now consistent)
+function collectGoalsConfigurationData() {
+    const orderStatuses = [];
+    $('input[name="goals_order_statuses[]"]:checked').each(function() {
+        orderStatuses.push($(this).val());
+    });
+    
+    const config = {
+        period: $('#goals_period').val(),
+        display_mode: $('#goals_display_mode').val(),
+        show_stretch: $('#goals_show_stretch').is(':checked') ? 1 : 0,
+        order_statuses: orderStatuses,  // ✅ Now included
+        roles: {}
+    };
+}
+```
+
+#### IMPACT
+
+✅ **Goals order status settings now save correctly**
+✅ **Both function instances are now consistent**
+✅ **Empty arrays are handled properly**
+✅ **No data loss when saving settings**
+
+---
+
 ## [1.7.54] - 2026-04-26
 ### ✨ Feature - Independent Order Status Settings for Goals
 

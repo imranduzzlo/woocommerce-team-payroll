@@ -1325,10 +1325,17 @@ jQuery(document).ready(function($) {
 
 	// Collect goals configuration data
 	function collectGoalsConfigurationData() {
+		// Collect order statuses
+		const orderStatuses = [];
+		$('input[name="goals_order_statuses[]"]:checked').each(function() {
+			orderStatuses.push($(this).val());
+		});
+		
 		const config = {
 			period: $('#goals_period').val(),
 			display_mode: $('#goals_display_mode').val(),
 			show_stretch: $('#goals_show_stretch').is(':checked') ? 1 : 0,
+			order_statuses: orderStatuses,
 			roles: {}
 		};
 
