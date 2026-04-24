@@ -532,7 +532,7 @@
 
 					<div class="goal-stats">
 						<div class="stat-row">
-							<span class="stat-label">Current:</span>
+							<span class="stat-label">Actual:</span>
 							<span class="stat-value">${this.formatValue(goal.current, label)}</span>
 						</div>
 						<div class="stat-row">

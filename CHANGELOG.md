@@ -1,3 +1,54 @@
+## [1.7.53] - 2026-04-26
+### ✨ UX Improvements - Better Goal Card Labels and Typography
+
+#### WHAT'S CHANGED
+
+**1. Label Update: "Current" → "Actual"**
+- Changed "Current:" to "Actual:" in goal cards
+- Makes more sense for view-mode based display
+- "Actual" works for all time ranges (current period, last 90 days, all time)
+
+**2. Improved Typography**
+- **Title**: Larger (17px), darker color, better letter spacing
+- **Percentage**: Larger (18px), bolder (700), more prominent
+- **Values**: Larger (16px), bolder (700), easier to read
+- **Labels**: Better contrast and sizing (14px)
+
+**3. Better Visual Hierarchy**
+- Progress bar: Slightly taller (10px vs 8px)
+- More spacing between elements
+- Darker text colors for better readability
+- Improved letter spacing for numbers
+
+#### BEFORE vs AFTER
+
+**Before:**
+```
+Current: $8,000  (small, light text)
+Target: $10,000  (small, light text)
+80%              (small percentage)
+```
+
+**After:**
+```
+Actual: $8,000   (larger, bold, dark text)
+Target: $10,000  (larger, bold, dark text)
+80%              (larger, prominent percentage)
+```
+
+#### BENEFITS
+
+✅ **Better Readability**: Larger, bolder fonts
+✅ **Clearer Labels**: "Actual" makes more sense than "Current"
+✅ **Professional Look**: Improved typography and spacing
+✅ **Better Hierarchy**: Important numbers stand out
+
+#### FILES MODIFIED
+- `assets/js/performance-tracker.js` - Changed "Current:" to "Actual:"
+- `assets/css/performance-tracker.css` - Improved typography and spacing
+
+---
+
 ## [1.7.52] - 2026-04-26
 ### ✨ Major Feature - Goals Now Use Aggregated Thresholds for Multi-Period Views
 

@@ -362,9 +362,10 @@
 
 .goal-title h4 {
 	margin: 0 0 4px 0;
-	font-size: 16px;
+	font-size: 17px;
 	font-weight: 600;
-	color: #212B36;
+	color: #1a1a1a;
+	letter-spacing: -0.2px;
 }
 
 .achievement-badge {
@@ -390,22 +391,22 @@
 
 /* Progress Bar */
 .goal-progress {
-	margin-bottom: 16px;
+	margin-bottom: 20px;
 }
 
 .progress-bar-container {
 	width: 100%;
-	height: 8px;
+	height: 10px;
 	background: #E5EAF0;
-	border-radius: 4px;
+	border-radius: 5px;
 	overflow: hidden;
-	margin-bottom: 8px;
+	margin-bottom: 10px;
 }
 
 .progress-bar {
 	height: 100%;
 	background: #0073aa;
-	border-radius: 4px;
+	border-radius: 5px;
 	transition: width 0.5s ease;
 }
 
@@ -414,9 +415,10 @@
 }
 
 .progress-percentage {
-	font-size: 14px;
-	font-weight: 600;
-	color: #212B36;
+	font-size: 18px;
+	font-weight: 700;
+	color: #1a1a1a;
+	letter-spacing: -0.3px;
 }
 
 /* Goal Stats */
@@ -424,25 +426,29 @@
 	display: flex;
 	flex-direction: column;
 	align-items: start;
-	gap: 8px;
-	margin-bottom: 12px;
+	gap: 10px;
+	margin-bottom: 16px;
 }
 
 .goal-stats .stat-row {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	font-size: 14px;
+	width: 100%;
+	font-size: 15px;
 }
 
 .goal-stats .stat-label {
 	color: #637381;
 	font-weight: 500;
+	font-size: 14px;
 }
 
 .goal-stats .stat-value {
-	color: #212B36;
-	font-weight: 600;
+	color: #1a1a1a;
+	font-weight: 700;
+	font-size: 16px;
+	letter-spacing: -0.2px;
 }
 
 /* Goal Status Badge */
