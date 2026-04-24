@@ -86,7 +86,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $status_filter Status filter
 	 * @return float Attributed order total
 	 */
-	private function get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter = 'all', $status_filter = 'all' ) {
+	public function get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter = 'all', $status_filter = 'all' ) {
 		// Only count completed orders for performance tracker
 		$statuses_to_query = array( 'wc-completed' );
 
@@ -156,7 +156,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $role_filter Role filter (agent, processor, all)
 	 * @return int Order count
 	 */
-	private function get_order_count( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
+	public function get_order_count( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
 		// Only count completed orders for performance tracker
 		$statuses_to_query = array( 'wc-completed' );
 
@@ -207,7 +207,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $role_filter Role filter (agent, processor, all)
 	 * @return float Average order value
 	 */
-	private function get_average_order_value( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
+	public function get_average_order_value( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
 		$attributed_total = $this->get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter );
 		$order_count = $this->get_order_count( $user_id, $start_date, $end_date, $role_filter );
 
@@ -228,7 +228,7 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $role_filter Role filter (agent, processor, all)
 	 * @return float Total earnings (commission + salary)
 	 */
-	private function get_total_earnings( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
+	public function get_total_earnings( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
 		// Get commission from commission calculation statuses (not just completed)
 		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
 		

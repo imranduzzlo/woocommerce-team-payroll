@@ -188,6 +188,14 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 					if ( ! is_array( $stats ) ) {
 						$stats = array();
 					}
+					
+					// Add current period metrics to stats
+					$period_range = $tracker->get_period_date_range( $period_type );
+					$stats['orders'] = $tracker->get_order_count( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					$stats['order_value'] = $tracker->get_attributed_order_total( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					$stats['earnings'] = $tracker->get_total_earnings( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					$stats['aov'] = $tracker->get_average_order_value( $user_id, $period_range['start_date'], $period_range['end_date'] );
+					
 					$data['stats'] = $stats;
 					$data['tier_categories'] = isset( $stats['tier_categories'] ) ? $stats['tier_categories'] : array();
 					

@@ -1,3 +1,50 @@
+## [1.7.40] - 2026-04-26
+### 🔧 Fix - Achievements Display Now Shows Correct Current Metrics
+
+#### FIXED - Achievement Display Shows Current Period Metrics
+- **Problem**: Achievements section displayed "Orders: 7" when only 2 completed orders existed
+- **Root Cause**: Current period metrics (orders, earnings, order_value, aov) were not being sent to frontend
+- **Solution**: Added current period metrics calculation to achievements AJAX response
+
+#### WHAT WAS CHANGED
+
+**Achievements AJAX Handler:**
+- Now calculates and includes current period metrics in the response:
+  - `orders`: Count of completed orders only
+  - `order_value`: Total value of completed orders only
+  - `earnings`: Commission (from commission statuses) + Salary
+  - `aov`: Average order value of completed orders only
+
+**Performance Tracker Methods:**
+- Changed visibility from `private` to `public` for:
+  - `get_order_count()` - Returns completed orders count
+  - `get_attributed_order_total()` - Returns completed orders total
+  - `get_total_earnings()` - Returns commission + salary
+  - `get_average_order_value()` - Returns AOV of completed orders
+
+**Before:**
+```php
+// Stats didn't include current metrics
+$data['stats'] = $stats;
+// Frontend showed incorrect/cached values
+```
+
+**After:**
+```php
+// Stats now include fresh current metrics
+$stats['orders'] = $tracker->get_order_count(...); // Only completed
+$stats['order_value'] = $tracker->get_attributed_order_total(...); // Only completed
+$stats['earnings'] = $tracker->get_total_earnings(...); // Commission + Salary
+$stats['aov'] = $tracker->get_average_order_value(...); // Only completed
+$data['stats'] = $stats;
+```
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker-ajax.php` - Added current metrics to achievements response
+- `includes/class-performance-tracker.php` - Changed method visibility to public
+
+---
+
 ## [1.7.39] - 2026-04-24
 ### 🔧 Fix - Achievements Now Use Correct Metrics for Each Type
 
