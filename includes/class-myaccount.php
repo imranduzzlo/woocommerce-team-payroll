@@ -3629,8 +3629,17 @@ class WC_Team_Payroll_MyAccount {
 		$my_total_earnings = 0;
 
 		foreach ( $orders as $order ) {
+			// Check both old and new meta keys
 			$agent_id = $order->get_meta( '_primary_agent_id' );
+			if ( ! $agent_id ) {
+				$agent_id = $order->get_meta( '_wc_tp_agent_id' );
+			}
+			
 			$processor_id = $order->get_meta( '_processor_user_id' );
+			if ( ! $processor_id ) {
+				$processor_id = $order->get_meta( '_wc_tp_processor_id' );
+			}
+			
 			$commission_data = $order->get_meta( '_commission_data' );
 
 			// Check if user is involved in this order (even without commission data)

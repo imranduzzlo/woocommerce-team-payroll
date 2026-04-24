@@ -1,3 +1,41 @@
+## [1.7.28] - 2026-04-24
+### 🔧 Fix - My Order Processing Table Now Checks New Meta Keys
+
+#### FIXED - Meta Key Compatibility in Order Processing Table
+- **Problem**: My Order Processing table was only checking old meta keys for agent/processor assignments
+- **Solution**: Now checks both old and new meta keys for complete order visibility
+- **Result**: All orders are now displayed regardless of which meta key format was used
+
+#### WHAT WAS CHANGED
+
+**Meta Key Checking:**
+```php
+// Before: Only checked old keys
+$agent_id = $order->get_meta( '_primary_agent_id' );
+$processor_id = $order->get_meta( '_processor_user_id' );
+
+// After: Checks both old and new keys
+$agent_id = $order->get_meta( '_primary_agent_id' );
+if ( ! $agent_id ) {
+    $agent_id = $order->get_meta( '_wc_tp_agent_id' );
+}
+
+$processor_id = $order->get_meta( '_processor_user_id' );
+if ( ! $processor_id ) {
+    $processor_id = $order->get_meta( '_wc_tp_processor_id' );
+}
+```
+
+**Benefits:**
+- Complete order visibility in My Order Processing table
+- Works with both old and new order meta key formats
+- Consistent with other sections (Performance Metrics, Earnings History)
+- No orders are missed due to meta key format differences
+
+**Note:** The table already counted all order statuses (`'status' => 'any'`), this fix ensures all orders are found regardless of meta key format.
+
+---
+
 ## [1.7.27] - 2026-04-24
 ### 🔧 Fix - Performance Metrics Total Orders Now Counts All Statuses
 
