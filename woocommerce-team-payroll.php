@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Team Payroll & Commission System
  * Plugin URI: https://github.com/imranduzzlo/pv-team-payroll
  * Description: Manage team-based commission and payroll system with agents and processors
- * Version: 1.7.25
+ * Version: 1.7.26
  * Author: Imran
  * Author URI: https://imranhossain.me/
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_TEAM_PAYROLL_VERSION', '1.7.25' );
+define( 'WC_TEAM_PAYROLL_VERSION', '1.7.26' );
 define( 'WC_TEAM_PAYROLL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_TEAM_PAYROLL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -184,6 +184,7 @@ add_action( 'plugins_loaded', function() {
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-employee-detail.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-custom-fields.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-myaccount.php';
+	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-order-details-modal.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-github-updater.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-automation.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-display-helper.php';
@@ -316,7 +317,7 @@ add_action( 'plugins_loaded', function() {
 
 	// Add AJAX handlers for My Account
 	add_action( 'wp_ajax_wc_tp_get_myaccount_orders', array( 'WC_Team_Payroll_MyAccount', 'ajax_get_orders' ) );
-	add_action( 'wp_ajax_wc_tp_get_order_details', array( 'WC_Team_Payroll_MyAccount', 'ajax_get_order_details' ) );
+	add_action( 'wp_ajax_wc_tp_get_order_details', array( 'WC_TP_Order_Details_Modal', 'ajax_get_order_details' ) );
 
 	// Block inactive employees from logging in
 	add_filter( 'wp_authenticate_user', function( $user, $password ) {

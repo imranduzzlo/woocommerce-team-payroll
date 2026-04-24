@@ -39,7 +39,7 @@ class WC_Team_Payroll_MyAccount {
 		// Register AJAX handlers
 		add_action( 'wp_ajax_wc_tp_get_earnings_data', array( __CLASS__, 'ajax_get_earnings_data' ) );
 		add_action( 'wp_ajax_wc_tp_get_myaccount_orders', array( __CLASS__, 'ajax_get_orders' ) );
-		add_action( 'wp_ajax_wc_tp_get_order_details', array( __CLASS__, 'ajax_get_order_details' ) );
+		add_action( 'wp_ajax_wc_tp_get_order_details', array( 'WC_TP_Order_Details_Modal', 'ajax_get_order_details' ) );
 		add_action( 'wp_ajax_wc_tp_get_filtered_dashboard_data', array( __CLASS__, 'ajax_get_filtered_dashboard_data' ) );
 		add_action( 'wp_ajax_wc_tp_get_filtered_analytics_data', array( __CLASS__, 'ajax_get_filtered_analytics_data' ) );
 		add_action( 'wp_ajax_wc_tp_get_filtered_performance_data', array( __CLASS__, 'ajax_get_filtered_performance_data' ) );

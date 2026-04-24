@@ -1,3 +1,50 @@
+## [1.7.26] - 2026-04-24
+### ✨ Enhancement - Improved Order Details Modal UI & Comprehensive Changelog
+
+#### IMPROVED - Order Information Tab
+- **Better Layout**: Restructured with proper sections and spacing
+- **Header Section**: Order ID, Date, Status, and Total in a clean grid layout
+- **Customer Information**: Full name, email, phone, and complete billing address
+- **Order Items Table**: Product details with quantity, price, and totals
+- **Order Totals**: Subtotal, discount, shipping, tax, and grand total breakdown
+- **Team Assignment**: Clean grid showing Agent and Processor with "You" badges
+- **Commission Breakdown**: Improved layout with total commission highlighted
+
+#### ENHANCED - Order Changelog Tab
+- **Comprehensive Tracking**: Now tracks ALL order changes, not just notes
+- **Change Types Detected**:
+  - Status Changes (green icon)
+  - Item Updates (orange icon)
+  - Shipping Updates (blue icon)
+  - Payment Updates (purple icon)
+  - Refunds (red icon)
+  - Customer Notes (yellow icon)
+  - System Updates (gray icon)
+- **Visual Indicators**: Each change type has unique icon and color coding
+- **Better Description**: Updated tab description to reflect comprehensive tracking
+
+#### TECHNICAL CHANGES
+
+**New Files:**
+- `includes/class-order-details-modal.php` - Dedicated class for order details modal
+- Moved `ajax_get_order_details()` method to new class
+- Added `get_order_comprehensive_changelog()` method for intelligent change detection
+
+**Updated Files:**
+- `woocommerce-team-payroll.php` - Added require for new class file
+- `includes/class-myaccount.php` - Updated AJAX action to use new class
+- `assets/css/order-details-modal.css` - Added styles for new changelog entry types
+
+**UI Improvements:**
+- Grid-based layouts for better responsiveness
+- Proper spacing and padding throughout
+- Icons for all sections and information types
+- Color-coded badges for different change types
+- Better typography hierarchy
+- Improved mobile responsiveness
+
+---
+
 ## [1.7.25] - 2026-04-24
 ### 🔧 Fix - Button Click Event Not Firing
 

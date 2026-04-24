@@ -807,3 +807,63 @@
 		overflow-x: auto;
 	}
 }
+
+
+/* ============================================================================
+   ENHANCED CHANGELOG ENTRY TYPES
+   ============================================================================ */
+
+.changelog-entry.status-entry .changelog-icon {
+	background: #E8F5E9;
+	border-color: #4CAF50;
+	color: #4CAF50;
+}
+
+.changelog-entry.item-entry .changelog-icon {
+	background: #FFF3E0;
+	border-color: #FF9800;
+	color: #FF9800;
+}
+
+.changelog-entry.shipping-entry .changelog-icon {
+	background: #E3F2FD;
+	border-color: #2196F3;
+	color: #2196F3;
+}
+
+.changelog-entry.payment-entry .changelog-icon {
+	background: #F3E5F5;
+	border-color: #9C27B0;
+	color: #9C27B0;
+}
+
+.changelog-entry.refund-entry .changelog-icon {
+	background: #FFEBEE;
+	border-color: #F44336;
+	color: #F44336;
+}
+
+.changelog-type-badge.status {
+	background: #E8F5E9;
+	color: #4CAF50;
+}
+
+.changelog-type-badge.item {
+	background: #FFF3E0;
+	color: #FF9800;
+}
+
+.changelog-type-badge.shipping {
+	background: #E3F2FD;
+	color: #2196F3;
+}
+
+.changelog-type-badge.payment {
+	background: #F3E5F5;
+	color: #9C27B0;
+}
+
+.changelog-type-badge.refund {
+	background: #FFEBEE;
+	color: #F44336;
+}
