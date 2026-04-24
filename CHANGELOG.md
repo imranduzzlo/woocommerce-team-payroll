@@ -1,3 +1,36 @@
+## [1.7.46] - 2026-04-26
+### ✨ UX Improvement - Period Dropdown Warning for Achievements
+
+#### WHAT'S NEW
+- **Toast Warning**: Added notification when changing period dropdown on Achievements or Period History tabs
+- **Message**: "Period dropdown does not affect Achievements or Period History views"
+- **Type**: Warning toast (yellow/amber color)
+
+#### WHY THIS MATTERS
+- **Achievements Tab**: Always shows current period achievements (based on settings)
+- **Period History Tab**: Always shows all-time achievement history
+- **Other Tabs**: Goals, Overview, Leaderboard follow the period dropdown
+- **User Clarity**: Users now know when dropdown changes won't affect the view
+
+#### BEHAVIOR CONFIRMATION
+✅ **Achievements**: Do NOT follow period dropdown (always current period)
+✅ **Period History**: Do NOT follow period dropdown (always all-time history)
+✅ **Goals**: Follow period dropdown (current, last, last 3 months, etc.)
+✅ **Overview**: Follows period dropdown
+✅ **Leaderboard**: Follows period dropdown
+✅ **Baselines**: Follows period dropdown
+
+#### EXAMPLE
+1. User is on "Achievements" tab
+2. User changes dropdown from "Current Month" to "Last Month"
+3. Toast warning appears: "Period dropdown does not affect Achievements or Period History views"
+4. Achievements still show current month (as designed)
+
+#### FILES MODIFIED
+- `assets/js/performance-tracker.js` - Added toast warning on dropdown change
+
+---
+
 ## [1.7.45] - 2026-04-26
 ### 🔧 Critical Fix - Preserve Historical Values for Already Unlocked Achievements
 

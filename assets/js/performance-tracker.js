@@ -71,6 +71,14 @@
 			// View selector change
 			$(document).on('change', '#performance-view-selector', (e) => {
 				this.currentView = $(e.target).val();
+				
+				// Show warning if on Achievements or Period History tabs
+				if (this.currentTab === 'achievements' || this.currentTab === 'period_history') {
+					if (typeof wcTPToast !== 'undefined') {
+						wcTPToast.warning('Period dropdown does not affect Achievements or Period History views');
+					}
+				}
+				
 				this.refreshCurrentTab();
 			});
 
