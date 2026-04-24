@@ -1,3 +1,29 @@
+## [1.7.64] - 2026-04-26
+### 🐛 Bug Fix - Custom Field Editor Click Handler & Styling
+
+#### FIXES
+
+**Click Handler Not Working (# in URL)**
+- Changed edit icons from `<a>` tags to `<button>` elements to prevent default link behavior
+- Removed `href="#"` which was causing URL hash changes
+- Click handler now properly triggers modal without page navigation
+
+**Improved Icon Styling**
+- Icons now only visible on hover (opacity: 0 by default)
+- Smaller icon size (14px instead of 16px) to match WooCommerce style
+- Light gray color (#999) that changes to blue (#2271b1) on hover
+- Smooth opacity transition for better UX
+- Matches WooCommerce's design language
+
+#### TECHNICAL IMPROVEMENTS
+
+- Button elements are more semantic for interactive elements
+- Better event handling without preventDefault conflicts
+- CSS-based visibility toggle for cleaner implementation
+- Consistent with WooCommerce admin UI patterns
+
+---
+
 ## [1.7.63] - 2026-04-26
 ### 🐛 Bug Fix - Custom Field Editor Improvements
 
