@@ -1,3 +1,29 @@
+## [1.7.35] - 2026-04-24
+### 🔧 Fix - Restored Status Filter Functionality in Reports Page
+
+#### FIXED - Status Filter Now Works Properly
+- **Problem**: Status filtering was hardcoded to exclude draft/failed, breaking the filter dropdown functionality
+- **Root Cause**: Recent changes hardcoded status exclusion logic instead of respecting user's filter selection
+- **Solution**: Restored proper filter behavior - "All Statuses" excludes draft/failed, specific status shows only that status
+
+#### WHAT WAS CHANGED
+
+**Reports Page - Status Filter Dropdown:**
+- Changed from showing only commission calculation statuses to showing ALL statuses (except draft and failed)
+- Users can now filter by any status: processing, completed, cancelled, refunded, on-hold, pending, custom statuses, etc.
+- "All Statuses" option shows all orders except draft and failed
+
+**AJAX Handlers - Status Query Logic:**
+- Fixed all 4 AJAX handlers: `ajax_get_filtered_analytics_data`, `ajax_get_filtered_performance_data`, `ajax_get_filtered_table_data`, `ajax_get_filtered_goals_data`
+- When user selects specific status: shows only that status
+- When user selects "All Statuses": shows all except draft and failed
+- Properly formatted code indentation for better readability
+
+#### FILES MODIFIED
+- `includes/class-myaccount.php` - Updated status filter dropdown and all AJAX handlers
+
+---
+
 ## [1.7.34] - 2026-04-24
 ### 🔧 Fix - Core Engine Now Returns ALL Orders, Not Just Those With Commission
 

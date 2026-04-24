@@ -1942,17 +1942,16 @@ class WC_Team_Payroll_MyAccount {
 						<select id="reports-order-status">
 							<option value="all"><?php esc_html_e( 'All Statuses', 'wc-team-payroll' ); ?></option>
 							<?php
-							// Get only commission calculation statuses from settings
-							$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+							// Get all WooCommerce order statuses (excluding draft and failed)
 							$all_statuses = wc_get_order_statuses();
 							
 							foreach ( $all_statuses as $status_key => $status_label ) {
-								// Normalize status key by removing 'wc-' prefix for comparison
+								// Normalize status key by removing 'wc-' prefix
 								$normalized_status = str_replace( 'wc-', '', $status_key );
 								
-								// Only show statuses that are configured for commission calculation
-								if ( in_array( $normalized_status, $commission_statuses ) ) {
-									echo '<option value="' . esc_attr( $status_key ) . '">' . esc_html( $status_label ) . '</option>';
+								// Exclude draft and failed statuses
+								if ( $normalized_status !== 'draft' && $normalized_status !== 'failed' ) {
+									echo '<option value="' . esc_attr( $normalized_status ) . '">' . esc_html( $status_label ) . '</option>';
 								}
 							}
 							?>
@@ -4510,9 +4509,17 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
+			// User selected a specific status
 			$order_statuses = array( $status_filter );
+		} else {
+			// User selected "All Statuses" - show all except draft and failed
+			$all_statuses = array_keys( wc_get_order_statuses() );
+			$order_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed' ) );
+			// Remove 'wc-' prefix for the query
+			$order_statuses = array_map( function( $status ) {
+				return str_replace( 'wc-', '', $status );
+			}, $order_statuses );
 		}
 
 		// Get user earnings data with status filtering
@@ -4742,9 +4749,17 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
+			// User selected a specific status
 			$order_statuses = array( $status_filter );
+		} else {
+			// User selected "All Statuses" - show all except draft and failed
+			$all_statuses = array_keys( wc_get_order_statuses() );
+			$order_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed' ) );
+			// Remove 'wc-' prefix for the query
+			$order_statuses = array_map( function( $status ) {
+				return str_replace( 'wc-', '', $status );
+			}, $order_statuses );
 		}
 
 		// Get user earnings data with status filtering
@@ -5202,9 +5217,17 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
+			// User selected a specific status
 			$order_statuses = array( $status_filter );
+		} else {
+			// User selected "All Statuses" - show all except draft and failed
+			$all_statuses = array_keys( wc_get_order_statuses() );
+			$order_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed' ) );
+			// Remove 'wc-' prefix for the query
+			$order_statuses = array_map( function( $status ) {
+				return str_replace( 'wc-', '', $status );
+			}, $order_statuses );
 		}
 
 		// Get user earnings data with status filtering
@@ -5695,9 +5718,17 @@ class WC_Team_Payroll_MyAccount {
 		$status_filter = isset( $filters['orderStatus'] ) ? $filters['orderStatus'] : 'all';
 
 		// Prepare order statuses for query
-		$order_statuses = 'any'; // Get all order statuses
 		if ( $status_filter !== 'all' ) {
+			// User selected a specific status
 			$order_statuses = array( $status_filter );
+		} else {
+			// User selected "All Statuses" - show all except draft and failed
+			$all_statuses = array_keys( wc_get_order_statuses() );
+			$order_statuses = array_diff( $all_statuses, array( 'wc-draft', 'wc-failed' ) );
+			// Remove 'wc-' prefix for the query
+			$order_statuses = array_map( function( $status ) {
+				return str_replace( 'wc-', '', $status );
+			}, $order_statuses );
 		}
 
 		// Get user earnings data with status filtering
