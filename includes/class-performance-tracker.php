@@ -1085,6 +1085,11 @@ class WC_Team_Payroll_Performance_Tracker {
 					'percentage' => $threshold > 0 ? round( ( $current_value / $threshold ) * 100, 2 ) : 0,
 					'tier' => $tier,
 				);
+			} else {
+				// Already unlocked - preserve existing data, only update threshold if changed
+				// NEVER recalculate value_at_unlock for already unlocked achievements
+				$period_achievements[ $achievement_key ]['threshold'] = $threshold;
+				$period_achievements[ $achievement_key ]['tier'] = $tier;
 			}
 		}
 

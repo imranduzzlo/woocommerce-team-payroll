@@ -1,3 +1,60 @@
+## [1.7.45] - 2026-04-26
+### 🔧 Critical Fix - Preserve Historical Values for Already Unlocked Achievements
+
+#### THE PROBLEM
+- **Issue**: When achievement settings changed (which statuses to count), already unlocked achievements were being recalculated
+- **Impact**: Historical `value_at_unlock` was being lost when settings changed
+- **Example**: Achievement unlocked with 9 orders → Change settings → Shows 2 orders (wrong!)
+
+#### THE ROOT CAUSE
+- When `update_period_achievements()` ran after settings change, it would:
+  1. Load stored achievements (with historical `value_at_unlock`)
+  2. Check if achievement is unlocked
+  3. If unlocked, do nothing (skip the update)
+  4. BUT: The stored data wasn't being explicitly preserved in the array
+- The issue was that the code relied on NOT updating unlocked achievements, but didn't explicitly preserve their data
+
+#### THE FIX
+- **Added explicit preservation logic** for already unlocked achievements
+- When an achievement is already unlocked:
+  - ✅ Preserve `unlocked` status
+  - ✅ Preserve `unlocked_date` (never changes)
+  - ✅ Preserve `value_at_unlock` (NEVER recalculated)
+  - ✅ Update `threshold` (if admin changes it)
+  - ✅ Update `tier` (if admin changes it)
+
+#### CODE CHANGES
+```php
+} else {
+    // Already unlocked - preserve existing data, only update threshold if changed
+    // NEVER recalculate value_at_unlock for already unlocked achievements
+    $period_achievements[ $achievement_key ]['threshold'] = $threshold;
+    $period_achievements[ $achievement_key ]['tier'] = $tier;
+}
+```
+
+#### WHAT THIS MEANS
+- ✅ Once an achievement is unlocked, its `value_at_unlock` is LOCKED FOREVER
+- ✅ Settings changes won't affect already unlocked achievements
+- ✅ Order status changes won't affect already unlocked achievements
+- ✅ Only the "Refresh Current Period" button can recalculate (by design)
+
+#### EXAMPLE WORKFLOW
+**Before (v1.7.44):**
+- Achievement unlocked with 9 orders
+- Change settings to count only "completed" (2 orders)
+- View achievements page → Shows 2 orders ❌ (recalculated!)
+
+**After (v1.7.45):**
+- Achievement unlocked with 9 orders
+- Change settings to count only "completed" (2 orders)
+- View achievements page → Shows 9 orders ✅ (preserved!)
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Added explicit preservation logic for unlocked achievements
+
+---
+
 ## [1.7.44] - 2026-04-26
 ### 🔧 Critical Fix - Order Value Achievements Not Loading Historical Data
 
