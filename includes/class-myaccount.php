@@ -1275,6 +1275,15 @@ class WC_Team_Payroll_MyAccount {
 				let lastCustomDateFrom = '';
 				let lastCustomDateTo = '';
 
+				// Event delegation for order details button
+				$(document).on('click', '.btn-action.btn-view', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					const orderId = $(this).attr('data-order-id');
+					console.log('Button clicked via delegation for order:', orderId);
+					showOrderDetailsModal(orderId);
+				});
+
 				// Load orders data on page load
 				loadOrdersData();
 
@@ -1410,13 +1419,6 @@ class WC_Team_Payroll_MyAccount {
 						.append($('<i class="ph ph-eye"></i>'));
 					
 					console.log('Creating button for order:', order.order_id);
-					
-					viewButton.on('click', function(e) {
-						console.log('Button clicked for order:', order.order_id);
-						e.preventDefault();
-						e.stopPropagation();
-						showOrderDetailsModal(order.order_id);
-					});
 					
 					actionsCell.append(viewButton);
 					

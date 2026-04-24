@@ -1,3 +1,32 @@
+## [1.7.25] - 2026-04-24
+### 🔧 Fix - Button Click Event Not Firing
+
+#### FIXED - Event Delegation for Dynamic Buttons
+- **Problem**: Button click event was not firing even though buttons were created
+- **Root Cause**: Event handlers attached to dynamically created elements were being lost during table updates
+- **Solution**: Implemented event delegation by attaching click handler to document instead of individual buttons
+
+#### WHAT WAS FIXED
+
+**Event Delegation:**
+- Moved click handler from individual buttons to document level
+- Used `$(document).on('click', '.btn-action.btn-view', ...)` for event delegation
+- Event handler now persists even when table rows are recreated
+- Removed inline `.on('click')` from button creation
+
+**How Event Delegation Works:**
+- Event bubbles up from button to document
+- Document checks if clicked element matches `.btn-action.btn-view` selector
+- If match, executes the handler
+- Works for all current and future buttons with that class
+
+**Benefits:**
+- Click events work even after table sorting/filtering
+- Better performance (one handler instead of many)
+- No memory leaks from orphaned event handlers
+
+---
+
 ## [1.7.24] - 2026-04-24
 ### 🐛 Debug - Enhanced Logging for Button Creation
 
