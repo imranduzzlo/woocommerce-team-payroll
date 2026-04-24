@@ -1,3 +1,41 @@
+## [1.7.38] - 2026-04-24
+### 🔧 Fix - Performance Tracker Now Counts Only Completed Orders
+
+#### CHANGED - Performance Tracker Order Counting Logic
+- **Previous Behavior**: Performance Tracker counted all commission calculation statuses (completed, processing, refunded, etc.)
+- **New Behavior**: Performance Tracker now counts ONLY completed orders
+- **Reason**: Performance tracking should be based on finalized/completed orders, not pending or processing orders
+
+#### WHAT WAS CHANGED
+
+**Performance Tracker - Order Counting:**
+- `get_attributed_order_total()`: Now queries only 'wc-completed' status instead of all commission statuses
+- `get_order_count()`: Now queries only 'wc-completed' status instead of all commission statuses
+- `get_average_order_value()`: Automatically uses completed orders (calls the above methods)
+
+**Impact on Performance Metrics:**
+- Goals tracking: Now based on completed orders only
+- Achievements: Now based on completed orders only
+- Baselines: Now based on completed orders only
+- Leaderboard: Now based on completed orders only
+
+**Before:**
+```php
+$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
+// Could include: completed, processing, refunded, etc.
+```
+
+**After:**
+```php
+$statuses_to_query = array( 'wc-completed' );
+// Only completed orders
+```
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Updated order counting methods
+
+---
+
 ## [1.7.37] - 2026-04-24
 ### 🔧 Fix - Performance Metrics Now Respect Status Filter
 

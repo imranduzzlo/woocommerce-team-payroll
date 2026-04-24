@@ -87,14 +87,8 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @return float Attributed order total
 	 */
 	private function get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter = 'all', $status_filter = 'all' ) {
-		// Get commission calculation statuses from settings using the correct method
-		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
-
-		// Prepare statuses to query
-		$statuses_to_query = array();
-		foreach ( $commission_statuses as $status ) {
-			$statuses_to_query[] = 'wc-' . $status;
-		}
+		// Only count completed orders for performance tracker
+		$statuses_to_query = array( 'wc-completed' );
 
 		$attributed_total = 0;
 
@@ -163,14 +157,8 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @return int Order count
 	 */
 	private function get_order_count( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
-		// Get commission calculation statuses from settings using the correct method
-		$commission_statuses = WC_Team_Payroll_Core_Engine::get_commission_calculation_statuses();
-
-		// Prepare statuses to query
-		$statuses_to_query = array();
-		foreach ( $commission_statuses as $status ) {
-			$statuses_to_query[] = 'wc-' . $status;
-		}
+		// Only count completed orders for performance tracker
+		$statuses_to_query = array( 'wc-completed' );
 
 		$order_ids = array();
 
