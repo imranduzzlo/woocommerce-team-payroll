@@ -1,3 +1,43 @@
+## [1.7.68] - 2026-04-26
+### 🐛 Bug Fixes - Custom Field Editing
+
+#### FIXES
+
+**Duplicate Edit Panels Issue**
+- Removed duplicate JavaScript handlers from each method
+- Consolidated all custom field editing logic into single handler in order-editor.js
+- Only one edit panel now appears per field click
+
+**Edit Button Styling**
+- Changed from button with text to icon-only button
+- Removed background, border, and padding
+- Icon-only design with proper sizing (16x16px)
+- Light color (#666) with hover effect (#2271b1)
+
+**Hover Behavior**
+- Edit button now properly hidden by default (opacity: 0)
+- Shows only on hover over the field row
+- Smooth opacity transition for better UX
+
+**Cancel Button Behavior**
+- Cancel button now only affects its own row
+- Prevents event bubbling with stopPropagation()
+- Properly restores display and hides editor
+
+**AJAX Data Construction**
+- Fixed bracket notation issues in AJAX data
+- Properly constructs fields object for save operation
+- Consistent error handling across all field types
+
+#### TECHNICAL CHANGES
+
+- Removed inline JavaScript from `make_custom_fields_editable()`, `make_billing_custom_fields_editable()`, and `make_shipping_custom_fields_editable()` methods
+- Added centralized `handleEditCustomField()` method in order-editor.js
+- Updated CSS for `.wc-tp-edit-custom-field-btn` with proper styling
+- All three custom field sections now use same event handler
+
+---
+
 ## [1.7.67] - 2026-04-26
 ### 🎯 UX Enhancement - Inline Field Editing with Hover Button
 

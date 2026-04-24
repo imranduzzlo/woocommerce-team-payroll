@@ -98,11 +98,19 @@
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    font-size: 13px;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s ease;
+    color: #666;
+}
+
+.wc-tp-edit-custom-field-btn:hover {
+    color: #2271b1;
 }
 
 .wc-tp-custom-field-row:hover .wc-tp-edit-custom-field-btn {
@@ -110,9 +118,9 @@
 }
 
 .wc-tp-edit-custom-field-btn .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
 }
 
 @keyframes fadeIn {
