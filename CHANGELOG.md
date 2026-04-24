@@ -1,3 +1,38 @@
+## [1.7.66] - 2026-04-26
+### 🎨 UX Improvement - Readonly Fields with Edit Modal
+
+#### CHANGES
+
+**Display Strategy**
+- Custom fields now display as readonly by default
+- Shows field value in a light gray box for easy reading
+- Edit button appears next to each field
+- Click Edit button to open modal with proper field type
+
+**Proper Field Type Rendering**
+- Checkbox: Renders as checkbox input with checked state preserved
+- Date: Renders as date input with value pre-filled
+- Email: Renders as email input
+- URL: Renders as URL input
+- Number: Renders as number input
+- Textarea: Renders as textarea for long text
+- Text: Default text input
+
+**Better UX**
+- Readonly display prevents accidental edits
+- Clear visual separation between display and edit modes
+- Proper field types ensure correct data entry
+- Values are preserved when opening edit modal
+
+#### TECHNICAL IMPROVEMENTS
+
+- Removed WooCommerce native field rendering from display
+- Added custom readonly display with edit buttons
+- Proper field type detection and modal rendering
+- Better data attribute handling for field metadata
+
+---
+
 ## [1.7.65] - 2026-04-26
 ### 🚀 Major Refactor - WooCommerce Native Custom Field Editing
 
