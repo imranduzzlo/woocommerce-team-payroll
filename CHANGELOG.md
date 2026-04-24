@@ -1,3 +1,63 @@
+## [1.7.30] - 2026-04-24
+### 🔧 Fix - My Order Processing Table Now Shows ALL Orders
+
+#### FIXED - Inefficient Query Causing Missing Orders
+- **Problem**: Table was querying ALL orders in the system then filtering, causing performance issues and missing orders
+- **Root Cause**: `wc_get_orders()` without meta_query retrieved thousands of orders, hitting memory/time limits
+- **Solution**: Query orders specifically where user is assigned as agent OR processor using meta queries
+
+#### WHAT WAS CHANGED
+
+**Before (Inefficient):**
+```php
+// Gets ALL orders in the system (could be 10,000+ orders)
+$args = array(
+    'limit'  => -1,
+    'status' => 'any',
+);
+$orders = wc_get_orders( $args );
+
+// Then loops through ALL orders to check if user is involved
+foreach ( $orders as $order ) {
+    // Check if user is agent or processor
+    // This is very slow and might timeout
+}
+```
+
+**After (Efficient):**
+```php
+// Query only orders where user is agent (old meta key)
+$agent_order_ids_old = wc_get_orders( array(
+    'meta_key'   => '_primary_agent_id',
+    'meta_value' => $user_id,
+    'status'     => 'any',
+) );
+
+// Query only orders where user is agent (new meta key)
+$agent_order_ids_new = wc_get_orders( array(
+    'meta_key'   => '_wc_tp_agent_id',
+    'meta_value' => $user_id,
+    'status'     => 'any',
+) );
+
+// Same for processor with both meta keys
+// Then merge and get unique order IDs
+```
+
+**Benefits:**
+- **Performance**: Only queries relevant orders (10-100 orders instead of 10,000+)
+- **Completeness**: Shows ALL orders where user is assigned
+- **Reliability**: No timeout or memory limit issues
+- **Compatibility**: Checks both old and new meta key formats
+
+**Technical Details:**
+- Uses `'return' => 'ids'` for faster queries
+- Queries 4 separate meta keys (agent old/new, processor old/new)
+- Merges results and removes duplicates with `array_unique()`
+- Then loads full order objects only for relevant orders
+
+---
+
 ## [1.7.29] - 2026-04-24
 ### 🔧 Fix - Reports Page Order Processing Table Status & Modal
 

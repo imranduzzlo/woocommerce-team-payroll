@@ -3715,30 +3715,65 @@ class WC_Team_Payroll_MyAccount {
 		$page = isset( $_POST['page'] ) ? intval( $_POST['page'] ) : 1;
 		$per_page = isset( $_POST['per_page'] ) ? intval( $_POST['per_page'] ) : 25;
 
-		// Get orders - include all statuses
-		$args = array(
+		// Base query args
+		$base_args = array(
 			'limit'  => -1,
 			'status' => 'any', // Get orders with any status
+			'return' => 'ids',
 		);
 
 		// Apply date range filter with proper time coverage
 		if ( $date_from && $date_to ) {
 			// Both dates provided - use range query
-			$args['date_created'] = $date_from . ' 00:00:00...' . $date_to . ' 23:59:59';
+			$base_args['date_created'] = $date_from . ' 00:00:00...' . $date_to . ' 23:59:59';
 		} elseif ( $date_from ) {
 			// Only start date provided
-			$args['date_created'] = '>=' . $date_from . ' 00:00:00';
+			$base_args['date_created'] = '>=' . $date_from . ' 00:00:00';
 		} elseif ( $date_to ) {
 			// Only end date provided
-			$args['date_created'] = '<=' . $date_to . ' 23:59:59';
+			$base_args['date_created'] = '<=' . $date_to . ' 23:59:59';
 		}
 
-		$orders = wc_get_orders( $args );
+		// Get orders where user is agent (check both old and new meta keys)
+		$agent_order_ids_old = wc_get_orders( array_merge( $base_args, array(
+			'meta_key'   => '_primary_agent_id',
+			'meta_value' => $user_id,
+		) ) );
+		
+		$agent_order_ids_new = wc_get_orders( array_merge( $base_args, array(
+			'meta_key'   => '_wc_tp_agent_id',
+			'meta_value' => $user_id,
+		) ) );
+		
+		// Get orders where user is processor (check both old and new meta keys)
+		$processor_order_ids_old = wc_get_orders( array_merge( $base_args, array(
+			'meta_key'   => '_processor_user_id',
+			'meta_value' => $user_id,
+		) ) );
+		
+		$processor_order_ids_new = wc_get_orders( array_merge( $base_args, array(
+			'meta_key'   => '_wc_tp_processor_id',
+			'meta_value' => $user_id,
+		) ) );
+		
+		// Merge and get unique order IDs
+		$all_order_ids = array_unique( array_merge( 
+			$agent_order_ids_old, 
+			$agent_order_ids_new, 
+			$processor_order_ids_old, 
+			$processor_order_ids_new 
+		) );
+
 		$filtered_orders = array();
 		$total_commission = 0;
 		$my_total_earnings = 0;
 
-		foreach ( $orders as $order ) {
+		foreach ( $all_order_ids as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				continue;
+			}
+			
 			// Check both old and new meta keys
 			$agent_id = $order->get_meta( '_primary_agent_id' );
 			if ( ! $agent_id ) {
