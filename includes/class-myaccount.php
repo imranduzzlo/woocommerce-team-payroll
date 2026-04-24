@@ -1409,6 +1409,7 @@ class WC_Team_Payroll_MyAccount {
 							.on('click', function(e) {
 								e.preventDefault();
 								e.stopPropagation();
+								console.log('Button clicked for order:', order.order_id);
 								showOrderDetailsModal(order.order_id);
 							}));
 					
@@ -1418,11 +1419,13 @@ class WC_Team_Payroll_MyAccount {
 
 				// Show order details modal
 				function showOrderDetailsModal(orderId) {
+					console.log('showOrderDetailsModal called with order ID:', orderId);
+					
 					// Remove any existing modal
 					$('#order-details-modal').remove();
 					
 					// Create modal structure
-					const modal = $('<div id="order-details-modal" class="wc-tp-modal" style="display: none;"></div>');
+					const modal = $('<div id="order-details-modal" class="wc-tp-modal"></div>');
 					const modalContent = $('<div class="wc-tp-modal-content order-details-modal-content"></div>');
 					const modalHeader = $('<div class="wc-tp-modal-header"></div>')
 						.append($('<h3></h3>').html('<i class="ph ph-package"></i> <?php esc_html_e( 'Order Details', 'wc-team-payroll' ); ?>'))
@@ -1434,9 +1437,9 @@ class WC_Team_Payroll_MyAccount {
 					modalContent.append(modalHeader, modalBody);
 					modal.append(modalContent);
 					
-					// Append to body and fade in
+					// Append to body
 					$('body').append(modal);
-					modal.fadeIn(200);
+					console.log('Modal appended to body');
 					
 					// Close modal handlers
 					modal.on('click', function(e) {
