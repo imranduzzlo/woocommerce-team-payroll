@@ -1,3 +1,69 @@
+## [1.7.54] - 2026-04-26
+### ✨ Feature - Independent Order Status Settings for Goals
+
+#### WHAT'S NEW
+
+**Goals Now Have Their Own Order Status Configuration**
+- Goals can now use different order statuses than Achievements
+- Configure which order statuses count for "Orders" and "Order Value" goals
+- Settings located in Performance Settings → Goals → Global Goal Settings
+- Earnings always use commission calculation statuses (unchanged)
+
+#### HOW IT WORKS
+
+**Before:**
+- Goals used the same order statuses as Achievements
+- No way to have different counting rules for goals vs achievements
+
+**After:**
+- Goals have independent order status checkboxes
+- Select which statuses count (completed, processing, on-hold, etc.)
+- Achievements keep their own separate settings
+- Full flexibility for different business rules
+
+#### EXAMPLE USE CASES
+
+**Use Case 1: Conservative Goals**
+- Goals: Only count "completed" orders
+- Achievements: Count "completed" and "processing"
+- Result: Goals are harder to achieve, achievements are easier
+
+**Use Case 2: Aggressive Goals**
+- Goals: Count "completed", "processing", "on-hold"
+- Achievements: Only count "completed"
+- Result: Goals include pending orders, achievements only final
+
+**Use Case 3: Same Settings**
+- Both use same statuses
+- Works exactly like before
+
+#### TECHNICAL DETAILS
+
+**New Context Parameter:**
+- `get_attributed_order_total()` now accepts `$context` parameter
+- `get_order_count()` now accepts `$context` parameter
+- `get_average_order_value()` now accepts `$context` parameter
+- Context can be 'goals', 'achievements', or 'default'
+
+**Configuration Storage:**
+- Goals config: `wc_tp_goals_config['order_statuses']`
+- Achievements config: `wc_tp_achievements_config['order_statuses']`
+- Separate storage ensures independence
+
+#### BENEFITS
+
+✅ **Flexibility**: Different rules for goals vs achievements
+✅ **Business Logic**: Match your specific workflow
+✅ **Backward Compatible**: Defaults to 'completed' if not configured
+✅ **Independent**: Changes to one don't affect the other
+
+#### FILES MODIFIED
+- `assets/js/performance-settings.js` - Collect order statuses in goals config
+- `includes/class-performance-tracker.php` - Context-aware status filtering
+- `includes/class-performance-settings.php` - Save goals order statuses
+
+---
+
 ## [1.7.53] - 2026-04-26
 ### ✨ UX Improvements - Better Goal Card Labels and Typography
 

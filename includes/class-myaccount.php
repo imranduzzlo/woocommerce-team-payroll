@@ -2592,6 +2592,9 @@ class WC_Team_Payroll_MyAccount {
 				.pv-table-controls .btn-clear-filters:hover, .pv-page-wrapper .performance-tab:hover {
 					background-color: rgba(" . implode(',', sscanf($primary_color, "#%02x%02x%02x")) . ", 0.1) !important;
 				}
+				.pv-page-wrapper .performance-tracker-wrapper .performance-tabs{
+					border-bottom-color:{$border_color};
+				}
 				.pv-page-wrapper .performance-tracker-wrapper .performance-tabs .performance-tab.active{
 					border-bottom:3px solid {$button_background} !important;
 					color:{$button_background} !important;

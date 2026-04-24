@@ -372,6 +372,35 @@ class WC_Team_Payroll_Performance_Settings {
 							<label for="goals_show_stretch"><?php esc_html_e( 'Display stretch goals to employees', 'wc-team-payroll' ); ?></label>
 						</td>
 					</tr>
+					<tr>
+						<th><label><?php esc_html_e( 'Order Statuses for Goals', 'wc-team-payroll' ); ?></label></th>
+						<td>
+							<?php
+							$goal_statuses = isset( $goals_config['order_statuses'] ) && is_array( $goals_config['order_statuses'] ) && ! empty( $goals_config['order_statuses'] ) 
+								? $goals_config['order_statuses'] 
+								: array( 'completed' );
+							
+							$all_statuses = wc_get_order_statuses();
+							?>
+							<div class="wc-tp-status-checkboxes">
+								<?php foreach ( $all_statuses as $status_key => $status_label ) : 
+									$status_slug = str_replace( 'wc-', '', $status_key );
+								?>
+									<label style="display: block; margin-bottom: 8px;">
+										<input type="checkbox" 
+											name="goals_order_statuses[]" 
+											value="<?php echo esc_attr( $status_slug ); ?>" 
+											class="wc-tp-goals-setting"
+											<?php checked( in_array( $status_slug, $goal_statuses ), true ); ?> />
+										<?php echo esc_html( $status_label ); ?>
+									</label>
+								<?php endforeach; ?>
+							</div>
+							<p class="description">
+								<?php esc_html_e( 'Select which order statuses should count towards Orders Count and Order Value goals. Earnings always use commission calculation statuses.', 'wc-team-payroll' ); ?>
+							</p>
+						</td>
+					</tr>
 				</table>
 			</div>
 
@@ -2227,6 +2256,9 @@ class WC_Team_Payroll_Performance_Settings {
 		}
 		if ( isset( $config['show_stretch'] ) ) {
 			$existing_config['show_stretch'] = intval( $config['show_stretch'] );
+		}
+		if ( isset( $config['order_statuses'] ) && is_array( $config['order_statuses'] ) ) {
+			$existing_config['order_statuses'] = array_map( 'sanitize_text_field', $config['order_statuses'] );
 		}
 		
 		// Update role-specific goals

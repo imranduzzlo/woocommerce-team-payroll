@@ -84,13 +84,20 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $end_date End date (Y-m-d)
 	 * @param string $role_filter Role filter (agent, processor, all)
 	 * @param string $status_filter Status filter
+	 * @param string $context Context (goals, achievements, or default)
 	 * @return float Attributed order total
 	 */
-	public function get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter = 'all', $status_filter = 'all' ) {
-		// Get configured order statuses for achievements, default to completed only
-		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
-		$configured_statuses = isset( $achievements_config['order_statuses'] ) && is_array( $achievements_config['order_statuses'] ) && ! empty( $achievements_config['order_statuses'] ) 
-			? $achievements_config['order_statuses'] 
+	public function get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter = 'all', $status_filter = 'all', $context = 'default' ) {
+		// Determine which config to use based on context
+		if ( $context === 'goals' ) {
+			$config = get_option( 'wc_tp_goals_config', array() );
+		} else {
+			$config = get_option( 'wc_tp_achievements_config', array() );
+		}
+		
+		// Get configured order statuses, default to completed only
+		$configured_statuses = isset( $config['order_statuses'] ) && is_array( $config['order_statuses'] ) && ! empty( $config['order_statuses'] ) 
+			? $config['order_statuses'] 
 			: array( 'completed' );
 		
 		// Prepare statuses with wc- prefix
@@ -163,13 +170,20 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $start_date Start date (Y-m-d)
 	 * @param string $end_date End date (Y-m-d)
 	 * @param string $role_filter Role filter (agent, processor, all)
+	 * @param string $context Context (goals, achievements, or default)
 	 * @return int Order count
 	 */
-	public function get_order_count( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
-		// Get configured order statuses for achievements, default to completed only
-		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
-		$configured_statuses = isset( $achievements_config['order_statuses'] ) && is_array( $achievements_config['order_statuses'] ) && ! empty( $achievements_config['order_statuses'] ) 
-			? $achievements_config['order_statuses'] 
+	public function get_order_count( $user_id, $start_date, $end_date, $role_filter = 'all', $context = 'default' ) {
+		// Determine which config to use based on context
+		if ( $context === 'goals' ) {
+			$config = get_option( 'wc_tp_goals_config', array() );
+		} else {
+			$config = get_option( 'wc_tp_achievements_config', array() );
+		}
+		
+		// Get configured order statuses, default to completed only
+		$configured_statuses = isset( $config['order_statuses'] ) && is_array( $config['order_statuses'] ) && ! empty( $config['order_statuses'] ) 
+			? $config['order_statuses'] 
 			: array( 'completed' );
 		
 		// Prepare statuses with wc- prefix
@@ -223,11 +237,12 @@ class WC_Team_Payroll_Performance_Tracker {
 	 * @param string $start_date Start date (Y-m-d)
 	 * @param string $end_date End date (Y-m-d)
 	 * @param string $role_filter Role filter (agent, processor, all)
+	 * @param string $context Context (goals, achievements, or default)
 	 * @return float Average order value
 	 */
-	public function get_average_order_value( $user_id, $start_date, $end_date, $role_filter = 'all' ) {
-		$attributed_total = $this->get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter );
-		$order_count = $this->get_order_count( $user_id, $start_date, $end_date, $role_filter );
+	public function get_average_order_value( $user_id, $start_date, $end_date, $role_filter = 'all', $context = 'default' ) {
+		$attributed_total = $this->get_attributed_order_total( $user_id, $start_date, $end_date, $role_filter, 'all', $context );
+		$order_count = $this->get_order_count( $user_id, $start_date, $end_date, $role_filter, $context );
 
 		if ( $order_count === 0 ) {
 			return 0;
@@ -482,10 +497,10 @@ class WC_Team_Payroll_Performance_Tracker {
 		// Get period dates based on view mode
 		$period_dates = $this->get_view_mode_dates( $view_mode, $period_type );
 
-		// Calculate current values
-		$attributed_total = $this->get_attributed_order_total( $user_id, $period_dates['start'], $period_dates['end'] );
-		$order_count = $this->get_order_count( $user_id, $period_dates['start'], $period_dates['end'] );
-		$aov = $this->get_average_order_value( $user_id, $period_dates['start'], $period_dates['end'] );
+		// Calculate current values (use 'goals' context for order statuses)
+		$attributed_total = $this->get_attributed_order_total( $user_id, $period_dates['start'], $period_dates['end'], 'all', 'all', 'goals' );
+		$order_count = $this->get_order_count( $user_id, $period_dates['start'], $period_dates['end'], 'all', 'goals' );
+		$aov = $this->get_average_order_value( $user_id, $period_dates['start'], $period_dates['end'], 'all', 'goals' );
 
 		// For non-current views, calculate aggregated thresholds from historical periods
 		if ( $view_mode !== 'current' ) {
