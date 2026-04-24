@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Team Payroll & Commission System
  * Plugin URI: https://github.com/imranduzzlo/pv-team-payroll
  * Description: Manage team-based commission and payroll system with agents and processors
- * Version: 1.7.66
+ * Version: 1.7.67
  * Author: Imran
  * Author URI: https://imranhossain.me/
  * License: GPL v2 or later
