@@ -144,25 +144,22 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 				// Get overview data with view mode
 				$goals = $tracker->update_goal_progress( $user_id, $view_mode );
 				
-				// Get current period achievements and stats
-				$achievements_config = get_option( 'wc_tp_achievements_config', array() );
-				$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
-				$current_period_id = $tracker->get_current_period_id( $period_type );
-				$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $current_period_id, true );
-				$period_stats = get_user_meta( $user_id, '_wc_tp_period_achievements_stats_' . $current_period_id, true );
+				// Get achievements for the view mode date range
+				$achievements_summary = $tracker->get_achievements_for_view_mode( $user_id, $view_mode );
 				
-				$baselines = get_user_meta( $user_id, '_wc_tp_current_baselines', true );
+				// Get baselines for the view mode date range
+				$baselines_summary = $tracker->get_baselines_for_view_mode( $user_id, $view_mode );
 
 				$data['goals_summary'] = array(
 					'html' => self::render_goals_summary( $goals )
 				);
 				$data['achievements_summary'] = array(
-					'html' => self::render_achievements_summary( $period_stats )
+					'html' => self::render_achievements_summary( $achievements_summary )
 				);
 				$data['baselines_summary'] = array(
-					'html' => self::render_baselines_summary( $baselines )
+					'html' => self::render_baselines_summary( $baselines_summary )
 				);
-				$data['quick_stats'] = self::get_quick_stats( $goals, $period_stats, $baselines );
+				$data['quick_stats'] = self::get_quick_stats( $goals, $achievements_summary, $baselines_summary );
 				break;
 
 			case 'goals':
@@ -343,7 +340,14 @@ class WC_Team_Payroll_Performance_Tracker_AJAX {
 	/**
 	 * Render baselines summary for overview
 	 */
-	private static function render_baselines_summary( $baselines ) {
+	private static function render_baselines_summary( $baselines_data ) {
+		if ( empty( $baselines_data ) ) {
+			return '<p>Insufficient data</p>';
+		}
+
+		// Check if we have the new structure (with baselines key)
+		$baselines = isset( $baselines_data['baselines'] ) ? $baselines_data['baselines'] : $baselines_data;
+		
 		if ( empty( $baselines ) || isset( $baselines['error'] ) ) {
 			return '<p>Insufficient data</p>';
 		}

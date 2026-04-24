@@ -1,3 +1,88 @@
+## [1.7.47] - 2026-04-26
+### ✨ Major Feature - Overview Tab Now Follows Period Dropdown
+
+#### WHAT'S NEW
+- **Achievements in Overview**: Now follow the period dropdown selection
+- **Baselines in Overview**: Now follow the period dropdown selection
+- **Goals in Overview**: Already followed dropdown (unchanged)
+- **Consistent Experience**: All three sections now show data for the same time period
+
+#### HOW IT WORKS - Option C Implementation
+
+**The Challenge:**
+- Goals period setting: Could be Monthly
+- Achievements period setting: Could be Weekly
+- View dropdown: Shows "Current Month", "Last Month", etc.
+
+**The Solution:**
+When you select a view mode (e.g., "Last Month"), the system:
+1. Gets the date range for that view (e.g., April 1-30)
+2. Finds ALL achievement periods within that range (e.g., 4 weekly periods)
+3. Aggregates achievements from those periods
+4. Shows total unlocked, tier breakdown, etc.
+
+#### EXAMPLES
+
+**Example 1: Weekly Achievements, Monthly View**
+- Achievement setting: Weekly
+- View dropdown: "Current Month" (April 1-30)
+- Shows: All achievements from weeks 1, 2, 3, 4 of April
+- Display: "12 Total Unlocked (🥉 5  🥈 4  🥇 3)"
+
+**Example 2: Monthly Achievements, Last 3 Months View**
+- Achievement setting: Monthly
+- View dropdown: "Last 3 Months"
+- Shows: All achievements from those 3 months
+- Display: Aggregated counts across all 3 periods
+
+**Example 3: Quarterly Achievements, Current Quarter**
+- Achievement setting: Quarterly
+- View dropdown: "Current Quarter"
+- Shows: Achievements from current quarter
+- Display: Current quarter's achievements
+
+#### BENEFITS
+
+✅ **Consistent Overview**: All metrics (Goals, Achievements, Baselines) show the same time period
+✅ **Flexible Viewing**: Admin sets granular tracking (weekly), users view summaries (monthly)
+✅ **Historical Analysis**: Compare performance across different time periods
+✅ **Meaningful Comparisons**: "How did I do last month vs this month?" includes all metrics
+
+#### TECHNICAL DETAILS
+
+**New Methods Added:**
+- `get_achievements_for_view_mode()` - Aggregates achievements across periods in date range
+- `get_baselines_for_view_mode()` - Calculates baselines for specific date range
+- `get_period_ids_in_range()` - Finds all period IDs within a date range
+- `get_period_dates_for_date()` - Gets period dates for any specific date
+
+**Data Structure:**
+```php
+array(
+    'total_unlocked' => 12,
+    'bronze_count' => 5,
+    'silver_count' => 4,
+    'gold_count' => 3,
+    'achievements' => [...], // All unlocked achievements in range
+    'period_type' => 'weekly',
+    'date_range' => array('start' => '2026-04-01', 'end' => '2026-04-30')
+)
+```
+
+#### IMPORTANT NOTES
+
+- ✅ **Overview Tab**: Achievements and Baselines NOW follow dropdown
+- ✅ **Achievements Tab**: Still shows current period only (by design)
+- ✅ **Period History Tab**: Still shows all-time history (by design)
+- ✅ **Goals Tab**: Already followed dropdown (unchanged)
+
+#### FILES MODIFIED
+- `includes/class-performance-tracker.php` - Added new methods for view mode support
+- `includes/class-performance-tracker-ajax.php` - Updated overview case, updated render methods
+- `assets/js/performance-tracker.js` - Removed toast warning (no longer needed for overview)
+
+---
+
 ## [1.7.46] - 2026-04-26
 ### ✨ UX Improvement - Period Dropdown Warning for Achievements
 

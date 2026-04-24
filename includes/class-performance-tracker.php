@@ -1108,6 +1108,196 @@ class WC_Team_Payroll_Performance_Tracker {
 	}
 
 	/**
+	 * Get achievements summary for a specific view mode (for Overview tab)
+	 * Aggregates achievements across all periods within the view mode date range
+	 *
+	 * @param int $user_id User ID
+	 * @param string $view_mode View mode (current, last, last_3, etc.)
+	 * @return array Aggregated achievement stats
+	 */
+	public function get_achievements_for_view_mode( $user_id, $view_mode = 'current' ) {
+		// Get achievements configuration
+		$achievements_config = get_option( 'wc_tp_achievements_config', array() );
+		$period_type = isset( $achievements_config['period'] ) ? $achievements_config['period'] : 'monthly';
+		
+		// Get goals configuration to determine the view mode period type
+		$goals_config = get_option( 'wc_tp_goals_config', array() );
+		$goals_period_type = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
+		
+		// Get date range for the view mode (using goals period type for consistency)
+		$date_range = $this->get_view_mode_dates( $view_mode, $goals_period_type );
+		
+		// Get all achievement periods that fall within this date range
+		$all_period_achievements = array();
+		$tier_counts = array( 'bronze' => 0, 'silver' => 0, 'gold' => 0 );
+		$total_unlocked = 0;
+		
+		// Get period IDs that fall within the date range
+		$period_ids = $this->get_period_ids_in_range( $date_range['start'], $date_range['end'], $period_type );
+		
+		foreach ( $period_ids as $period_id ) {
+			$period_achievements = get_user_meta( $user_id, '_wc_tp_period_achievements_' . $period_id, true );
+			
+			if ( is_array( $period_achievements ) ) {
+				foreach ( $period_achievements as $key => $achievement ) {
+					if ( isset( $achievement['unlocked'] ) && $achievement['unlocked'] === true ) {
+						$tier = isset( $achievement['tier'] ) ? $achievement['tier'] : 'bronze';
+						$tier_counts[ $tier ]++;
+						$total_unlocked++;
+						
+						// Store achievement with period info
+						$all_period_achievements[] = array_merge( $achievement, array(
+							'key' => $key,
+							'period_id' => $period_id
+						) );
+					}
+				}
+			}
+		}
+		
+		return array(
+			'total_unlocked' => $total_unlocked,
+			'bronze_count' => $tier_counts['bronze'],
+			'silver_count' => $tier_counts['silver'],
+			'gold_count' => $tier_counts['gold'],
+			'achievements' => $all_period_achievements,
+			'period_type' => $period_type,
+			'date_range' => $date_range
+		);
+	}
+
+	/**
+	 * Get baselines summary for a specific view mode (for Overview tab)
+	 *
+	 * @param int $user_id User ID
+	 * @param string $view_mode View mode (current, last, last_3, etc.)
+	 * @return array Baseline data for the view mode
+	 */
+	public function get_baselines_for_view_mode( $user_id, $view_mode = 'current' ) {
+		// Get goals configuration to determine the view mode period type
+		$goals_config = get_option( 'wc_tp_goals_config', array() );
+		$goals_period_type = isset( $goals_config['period'] ) ? $goals_config['period'] : 'monthly';
+		
+		// Get date range for the view mode
+		$date_range = $this->get_view_mode_dates( $view_mode, $goals_period_type );
+		
+		// Calculate metrics for this date range
+		$order_value = $this->get_attributed_order_total( $user_id, $date_range['start'], $date_range['end'] );
+		$order_count = $this->get_order_count( $user_id, $date_range['start'], $date_range['end'] );
+		$aov = $order_count > 0 ? ( $order_value / $order_count ) : 0;
+		
+		// Get current baselines for comparison
+		$current_baselines = get_user_meta( $user_id, '_wc_tp_current_baselines', true );
+		if ( ! is_array( $current_baselines ) ) {
+			$current_baselines = array();
+		}
+		
+		return array(
+			'order_value' => $order_value,
+			'order_count' => $order_count,
+			'aov' => $aov,
+			'baselines' => $current_baselines,
+			'date_range' => $date_range
+		);
+	}
+
+	/**
+	 * Get all period IDs that fall within a date range
+	 *
+	 * @param string $start_date Start date (Y-m-d)
+	 * @param string $end_date End date (Y-m-d)
+	 * @param string $period_type Period type (weekly, monthly, quarterly, yearly)
+	 * @return array Array of period IDs
+	 */
+	private function get_period_ids_in_range( $start_date, $end_date, $period_type ) {
+		$period_ids = array();
+		$current_date = strtotime( $start_date );
+		$end_timestamp = strtotime( $end_date );
+		
+		while ( $current_date <= $end_timestamp ) {
+			$date_str = date( 'Y-m-d', $current_date );
+			
+			// Get period dates for this date
+			$period_dates = $this->get_period_dates_for_date( $date_str, $period_type );
+			$period_id = $period_dates['period_id'];
+			
+			// Add to array if not already added
+			if ( ! in_array( $period_id, $period_ids ) ) {
+				$period_ids[] = $period_id;
+			}
+			
+			// Move to next period
+			switch ( $period_type ) {
+				case 'weekly':
+					$current_date = strtotime( '+1 week', $current_date );
+					break;
+				case 'monthly':
+					$current_date = strtotime( '+1 month', $current_date );
+					break;
+				case 'quarterly':
+					$current_date = strtotime( '+3 months', $current_date );
+					break;
+				case 'yearly':
+					$current_date = strtotime( '+1 year', $current_date );
+					break;
+			}
+		}
+		
+		return $period_ids;
+	}
+
+	/**
+	 * Get period dates for a specific date
+	 *
+	 * @param string $date Date (Y-m-d)
+	 * @param string $period_type Period type
+	 * @return array Period dates
+	 */
+	private function get_period_dates_for_date( $date, $period_type ) {
+		$timestamp = strtotime( $date );
+		
+		switch ( $period_type ) {
+			case 'weekly':
+				$week_start = strtotime( 'monday this week', $timestamp );
+				$week_end = strtotime( 'sunday this week', $timestamp );
+				return array(
+					'start' => date( 'Y-m-d', $week_start ),
+					'end' => date( 'Y-m-d', $week_end ),
+					'period_id' => date( 'Y-W', $timestamp )
+				);
+				
+			case 'monthly':
+				return array(
+					'start' => date( 'Y-m-01', $timestamp ),
+					'end' => date( 'Y-m-t', $timestamp ),
+					'period_id' => date( 'Y-m', $timestamp )
+				);
+				
+			case 'quarterly':
+				$month = intval( date( 'n', $timestamp ) );
+				$quarter = ceil( $month / 3 );
+				$quarter_start_month = ( $quarter - 1 ) * 3 + 1;
+				$year = date( 'Y', $timestamp );
+				
+				return array(
+					'start' => date( 'Y-m-01', strtotime( "$year-$quarter_start_month-01" ) ),
+					'end' => date( 'Y-m-t', strtotime( "$year-$quarter_start_month-01 +2 months" ) ),
+					'period_id' => $year . '-Q' . $quarter
+				);
+				
+			case 'yearly':
+				return array(
+					'start' => date( 'Y-01-01', $timestamp ),
+					'end' => date( 'Y-12-31', $timestamp ),
+					'period_id' => date( 'Y', $timestamp )
+				);
+				
+			default:
+				return $this->get_period_dates( 'monthly' );
+		}
+	}
+
+	/**
 	 * Update period achievement statistics
 	 *
 	 * @param int $user_id User ID
