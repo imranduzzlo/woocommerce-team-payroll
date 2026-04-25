@@ -1,0 +1,389 @@
+/**
+ * Premium Achievement Badges & Profile Picture Styling
+ * Golden vibe with inner shadows and crown badge design
+ */
+
+/* ============================================================================
+   PROFILE PICTURE CONTAINER WITH GOLDEN BORDER
+   ============================================================================ */
+
+.wc-tp-profile-picture.has-badge,
+.profile-picture-container.has-badge {
+	position: relative;
+}
+
+.wc-tp-profile-picture.has-badge img,
+.profile-picture-container.has-badge .profile-picture {
+	border: 3px solid transparent;
+	background-image: 
+		linear-gradient(white, white),
+		linear-gradient(135deg, #FFD700 0%, #FFA500 25%, #FFD700 50%, #FFA500 75%, #FFD700 100%);
+	background-origin: border-box;
+	background-clip: padding-box, border-box;
+	box-shadow: 
+		0 0 20px rgba(255, 215, 0, 0.4),
+		inset 0 2px 4px rgba(255, 255, 255, 0.3),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+	animation: goldenGlow 3s ease-in-out infinite;
+}
+
+@keyframes goldenGlow {
+	0%, 100% {
+		box-shadow: 
+			0 0 20px rgba(255, 215, 0, 0.4),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3),
+			inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+	}
+	50% {
+		box-shadow: 
+			0 0 30px rgba(255, 215, 0, 0.6),
+			inset 0 2px 4px rgba(255, 255, 255, 0.4),
+			inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+	}
+}
+
+/* ============================================================================
+   PREMIUM ACHIEVEMENT BADGE - CROWN STYLE
+   ============================================================================ */
+
+.profile-achievement-badge {
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	width: 50px;
+	height: 50px;
+	z-index: 15;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-achievement-badge:hover {
+	transform: scale(1.15) rotate(5deg);
+}
+
+/* Badge Container */
+.premium-badge-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Crown Badge Base */
+.crown-badge {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: visible;
+}
+
+/* Crown Icon on Top */
+.crown-icon {
+	position: absolute;
+	top: -8px;
+	right: -2px;
+	width: 20px;
+	height: 20px;
+	background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 
+		0 2px 8px rgba(0, 0, 0, 0.3),
+		inset 0 1px 2px rgba(255, 255, 255, 0.5),
+		inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+	z-index: 2;
+}
+
+.crown-icon::before {
+	content: '♔';
+	font-size: 12px;
+	color: #8B6914;
+	text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+	font-weight: bold;
+}
+
+/* Badge Circle with Inner Shadow */
+.badge-circle {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	box-shadow: 
+		0 4px 12px rgba(0, 0, 0, 0.3),
+		inset 0 4px 8px rgba(0, 0, 0, 0.4),
+		inset 0 -4px 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Badge Letter */
+.badge-letter {
+	position: relative;
+	z-index: 1;
+	font-size: 24px;
+	font-weight: 900;
+	font-family: 'Arial Black', Arial, sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+/* Stars Container */
+.badge-stars {
+	position: absolute;
+	bottom: -6px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 2px;
+	z-index: 2;
+}
+
+.badge-star {
+	font-size: 10px;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* ============================================================================
+   GOLD BADGE (G)
+   ============================================================================ */
+
+.profile-achievement-badge-gold .badge-circle {
+	background: 
+		radial-gradient(circle at 30% 30%, #FFFACD 0%, #FFD700 20%, #FFA500 60%, #FF8C00 85%, #8B6914 100%);
+}
+
+.profile-achievement-badge-gold .badge-letter {
+	color: #8B6914;
+	text-shadow: 
+		0 1px 0 rgba(255, 255, 255, 0.5),
+		0 2px 4px rgba(0, 0, 0, 0.3),
+		0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.profile-achievement-badge-gold .badge-star {
+	color: #FFD700;
+	text-shadow: 
+		0 0 4px rgba(255, 215, 0, 0.8),
+		0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.profile-achievement-badge-gold .crown-icon {
+	background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+}
+
+/* ============================================================================
+   SILVER BADGE (S)
+   ============================================================================ */
+
+.profile-achievement-badge-silver .badge-circle {
+	background: 
+		radial-gradient(circle at 30% 30%, #F5F5F5 0%, #E0E0E0 20%, #C0C0C0 60%, #A8A8A8 85%, #606060 100%);
+}
+
+.profile-achievement-badge-silver .badge-letter {
+	color: #505050;
+	text-shadow: 
+		0 1px 0 rgba(255, 255, 255, 0.6),
+		0 2px 4px rgba(0, 0, 0, 0.3),
+		0 0 10px rgba(192, 192, 192, 0.5);
+}
+
+.profile-achievement-badge-silver .badge-star {
+	color: #C0C0C0;
+	text-shadow: 
+		0 0 4px rgba(192, 192, 192, 0.8),
+		0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.profile-achievement-badge-silver .crown-icon {
+	background: linear-gradient(135deg, #E0E0E0 0%, #C0C0C0 50%, #E0E0E0 100%);
+}
+
+.profile-achievement-badge-silver .crown-icon::before {
+	color: #505050;
+}
+
+/* ============================================================================
+   BRONZE BADGE (B)
+   ============================================================================ */
+
+.profile-achievement-badge-bronze .badge-circle {
+	background: 
+		radial-gradient(circle at 30% 30%, #F4A460 0%, #CD853F 20%, #CD7F32 60%, #8B4513 85%, #6B3410 100%);
+}
+
+.profile-achievement-badge-bronze .badge-letter {
+	color: #6B3410;
+	text-shadow: 
+		0 1px 0 rgba(255, 200, 150, 0.5),
+		0 2px 4px rgba(0, 0, 0, 0.3),
+		0 0 10px rgba(205, 127, 50, 0.5);
+}
+
+.profile-achievement-badge-bronze .badge-star {
+	color: #CD7F32;
+	text-shadow: 
+		0 0 4px rgba(205, 127, 50, 0.8),
+		0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.profile-achievement-badge-bronze .crown-icon {
+	background: linear-gradient(135deg, #CD853F 0%, #CD7F32 50%, #CD853F 100%);
+}
+
+.profile-achievement-badge-bronze .crown-icon::before {
+	color: #6B3410;
+}
+
+/* ============================================================================
+   LOCKED BADGE
+   ============================================================================ */
+
+.profile-achievement-badge-locked .badge-circle {
+	background: 
+		radial-gradient(circle at 30% 30%, #E0E0E0 0%, #BDBDBD 20%, #9E9E9E 60%, #757575 85%, #424242 100%);
+	opacity: 0.6;
+}
+
+.profile-achievement-badge-locked .badge-letter {
+	color: #757575;
+	text-shadow: 
+		0 1px 0 rgba(255, 255, 255, 0.3),
+		0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.profile-achievement-badge-locked .crown-icon {
+	background: linear-gradient(135deg, #BDBDBD 0%, #9E9E9E 50%, #BDBDBD 100%);
+	opacity: 0.5;
+}
+
+.profile-achievement-badge-locked .crown-icon::before {
+	content: '🔒';
+	font-size: 10px;
+	filter: grayscale(100%);
+}
+
+.profile-achievement-badge-locked .badge-star {
+	color: #9E9E9E;
+	opacity: 0.5;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================================
+   HOVER EFFECTS
+   ============================================================================ */
+
+.profile-achievement-badge-gold:hover .badge-circle {
+	box-shadow: 
+		0 6px 16px rgba(255, 215, 0, 0.5),
+		inset 0 4px 8px rgba(0, 0, 0, 0.5),
+		inset 0 -4px 8px rgba(255, 255, 255, 0.3);
+}
+
+.profile-achievement-badge-silver:hover .badge-circle {
+	box-shadow: 
+		0 6px 16px rgba(192, 192, 192, 0.5),
+		inset 0 4px 8px rgba(0, 0, 0, 0.5),
+		inset 0 -4px 8px rgba(255, 255, 255, 0.3);
+}
+
+.profile-achievement-badge-bronze:hover .badge-circle {
+	box-shadow: 
+		0 6px 16px rgba(205, 127, 50, 0.5),
+		inset 0 4px 8px rgba(0, 0, 0, 0.5),
+		inset 0 -4px 8px rgba(255, 200, 150, 0.3);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+	.profile-achievement-badge {
+		width: 42px;
+		height: 42px;
+		top: -8px;
+		right: -8px;
+	}
+	
+	.crown-icon {
+		width: 18px;
+		height: 18px;
+		top: -6px;
+	}
+	
+	.crown-icon::before {
+		font-size: 11px;
+	}
+	
+	.badge-letter {
+		font-size: 20px;
+	}
+	
+	.badge-star {
+		font-size: 9px;
+	}
+}
+
+@media (max-width: 480px) {
+	.profile-achievement-badge {
+		width: 38px;
+		height: 38px;
+	}
+	
+	.crown-icon {
+		width: 16px;
+		height: 16px;
+	}
+	
+	.crown-icon::before {
+		font-size: 10px;
+	}
+	
+	.badge-letter {
+		font-size: 18px;
+	}
+	
+	.badge-star {
+		font-size: 8px;
+	}
+}
+
+/* ============================================================================
+   ANIMATION ENHANCEMENTS
+   ============================================================================ */
+
+@keyframes badgeShine {
+	0%, 100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
+.profile-achievement-badge-gold .badge-circle,
+.profile-achievement-badge-silver .badge-circle,
+.profile-achievement-badge-bronze .badge-circle {
+	background-size: 200% 200%;
+	animation: badgeShine 4s ease-in-out infinite;
+}
+
+/* Pulse effect on hover */
+@keyframes badgePulse {
+	0%, 100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.05);
+	}
+}
+
+.profile-achievement-badge:hover .crown-icon {
+	animation: badgePulse 0.6s ease-in-out infinite;
+}

@@ -2943,6 +2943,14 @@ class WC_Team_Payroll_MyAccount {
 				WC_TEAM_PAYROLL_VERSION
 			);
 
+			// Enqueue Premium Badges CSS
+			wp_enqueue_style(
+				'wc-team-payroll-premium-badges',
+				WC_TEAM_PAYROLL_URL . 'assets/css/premium-badges.css',
+				array( 'wc-team-payroll-reports' ),
+				WC_TEAM_PAYROLL_VERSION
+			);
+
 			// Enqueue Performance Tracker CSS
 			wp_enqueue_style(
 				'wc-team-payroll-performance-tracker',
@@ -3090,7 +3098,7 @@ class WC_Team_Payroll_MyAccount {
 			<div class="header-main-grid">
 				<!-- Left Column: Profile Picture -->
 				<div class="header-left-column">
-					<div class="profile-picture-container">
+					<div class="profile-picture-container<?php echo ! empty( $highest_tier ) ? ' has-badge' : ''; ?>">
 						<?php if ( $profile_picture_url ) : ?>
 							<img src="<?php echo esc_url( $profile_picture_url ); ?>" alt="<?php echo esc_attr( $user->display_name ); ?>" class="profile-picture" />
 						<?php else : ?>
@@ -3101,32 +3109,38 @@ class WC_Team_Payroll_MyAccount {
 						
 						<?php if ( ! empty( $highest_tier ) ) : ?>
 							<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
-								<div class="badge-coin-container">
-									<div class="badge-coin"></div>
-									<div class="badge-letter">
-										<?php if ( $highest_tier === 'gold' ) : ?>
-											<span class="letter-g">G</span>
-										<?php elseif ( $highest_tier === 'silver' ) : ?>
-											<span class="letter-s">S</span>
-										<?php else : ?>
-											<span class="letter-b">B</span>
+								<div class="premium-badge-container">
+									<div class="crown-badge">
+										<div class="crown-icon"></div>
+										<div class="badge-circle"></div>
+										<div class="badge-letter">
+											<?php if ( $highest_tier === 'gold' ) : ?>
+												G
+											<?php elseif ( $highest_tier === 'silver' ) : ?>
+												S
+											<?php else : ?>
+												B
+											<?php endif; ?>
+										</div>
+										<?php if ( $tier_star_count > 0 ) : ?>
+											<div class="badge-stars">
+												<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
+													<span class="badge-star">★</span>
+												<?php endfor; ?>
+											</div>
 										<?php endif; ?>
 									</div>
-									<?php if ( $tier_star_count > 0 ) : ?>
-										<div class="badge-stars">
-											<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
-												<span class="badge-star">★</span>
-											<?php endfor; ?>
-										</div>
-									<?php endif; ?>
 								</div>
 							</div>
 						<?php else : ?>
 							<!-- Locked Badge -->
 							<div class="profile-achievement-badge profile-achievement-badge-locked">
-								<div class="locked-badge-container">
-									<div class="locked-badge-coin"></div>
-									<i class="ph ph-lock-key locked-badge-icon"></i>
+								<div class="premium-badge-container">
+									<div class="crown-badge">
+										<div class="crown-icon"></div>
+										<div class="badge-circle"></div>
+										<div class="badge-letter">🔒</div>
+									</div>
 								</div>
 							</div>
 						<?php endif; ?>

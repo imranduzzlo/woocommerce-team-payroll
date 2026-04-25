@@ -60,7 +60,7 @@ class WC_Team_Payroll_Employee_Detail {
 			<div class="wc-tp-profile-section">
 				<div class="wc-tp-profile-header">
 					<div class="wc-tp-profile-left">
-						<div class="wc-tp-profile-picture">
+						<div class="wc-tp-profile-picture<?php echo ! empty( $highest_tier ) ? ' has-badge' : ''; ?>">
 							<?php if ( $profile_picture ) : ?>
 								<img src="<?php echo esc_url( $profile_picture ); ?>" alt="<?php echo esc_attr( $user->display_name ); ?>" />
 							<?php else : ?>
@@ -116,98 +116,38 @@ class WC_Team_Payroll_Employee_Detail {
 							
 							<?php if ( ! empty( $highest_tier ) ) : ?>
 								<div class="profile-achievement-badge profile-achievement-badge-<?php echo esc_attr( $highest_tier ); ?>">
-									<svg class="badge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-										<defs>
-											<!-- Gold 3D Coin Gradients -->
-											<radialGradient id="goldGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#FFFACD;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#FFD700;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#FFA500;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#8B6914;stop-opacity:1"/>
-											</radialGradient>
-											
-											<linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
-											</linearGradient>
-											
-											<!-- Silver 3D Coin Gradients -->
-											<radialGradient id="silverGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#E8E8E8;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#C0C0C0;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#808080;stop-opacity:1"/>
-											</radialGradient>
-											
-											<linearGradient id="silverShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.2"/>
-											</linearGradient>
-											
-											<!-- Bronze 3D Coin Gradients -->
-											<radialGradient id="bronzeGradient" cx="35%" cy="35%">
-												<stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1"/>
-												<stop offset="30%" style="stop-color:#CD7F32;stop-opacity:1"/>
-												<stop offset="70%" style="stop-color:#B8860B;stop-opacity:1"/>
-												<stop offset="100%" style="stop-color:#654321;stop-opacity:1"/>
-											</radialGradient>
-											
-											<linearGradient id="bronzeShine" x1="0%" y1="0%" x2="100%" y2="100%">
-												<stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.5"/>
-												<stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0"/>
-												<stop offset="100%" style="stop-color:#000000;stop-opacity:0.3"/>
-											</linearGradient>
-											
-											<!-- Shadow Filter for 3D Effect -->
-											<filter id="coinShadow" x="-50%" y="-50%" width="200%" height="200%">
-												<feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.4"/>
-											</filter>
-										</defs>
-										
-										<!-- Outer Ring (3D Edge) -->
-										<circle cx="50" cy="50" r="46" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="0.5" opacity="0.3"/>
-										
-										<!-- Main Coin Circle with 3D Gradient -->
-										<circle cx="50" cy="50" r="45" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Gradient)" stroke="#000000" stroke-width="1" filter="url(#coinShadow)"/>
-										
-										<!-- Shine/Highlight for 3D Effect -->
-										<ellipse cx="40" cy="35" rx="20" ry="18" fill="url(#<?php echo esc_attr( $highest_tier ); ?>Shine)" opacity="0.7"/>
-										
-										<!-- Inner Ring for Depth -->
-										<circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="0.5" opacity="0.2"/>
-										
-										<!-- Letter Badge (G, S, or B) with Stars -->
-										<g class="badge-letter">
-											<?php if ( $highest_tier === 'gold' ) : ?>
-												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#8B6914" font-family="Arial, sans-serif" letter-spacing="2">G</text>
-											<?php elseif ( $highest_tier === 'silver' ) : ?>
-												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#606060" font-family="Arial, sans-serif" letter-spacing="2">S</text>
-											<?php else : ?>
-												<text x="50" y="62" font-size="48" font-weight="bold" text-anchor="middle" fill="#6B3410" font-family="Arial, sans-serif" letter-spacing="2">B</text>
+									<div class="premium-badge-container">
+										<div class="crown-badge">
+											<div class="crown-icon"></div>
+											<div class="badge-circle"></div>
+											<div class="badge-letter">
+												<?php if ( $highest_tier === 'gold' ) : ?>
+													G
+												<?php elseif ( $highest_tier === 'silver' ) : ?>
+													S
+												<?php else : ?>
+													B
+												<?php endif; ?>
+											</div>
+											<?php if ( $tier_star_count > 0 ) : ?>
+												<div class="badge-stars">
+													<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
+														<span class="badge-star">★</span>
+													<?php endfor; ?>
+												</div>
 											<?php endif; ?>
-										</g>
-										
-										<!-- Stars for Category Count -->
-										<?php if ( $tier_star_count > 0 ) : ?>
-											<?php for ( $i = 0; $i < $tier_star_count; $i++ ) : ?>
-												<g class="badge-star" transform="translate(<?php echo esc_attr( 50 + ( $i - ( $tier_star_count - 1 ) / 2 ) * 18 ); ?>, 78)">
-													<polygon points="0,-6 1.5,-2 6,-2 2.5,1 4,5 0,2 -4,5 -2.5,1 -6,-2 -1.5,-2" fill="<?php echo esc_attr( $highest_tier === 'gold' ? '#FFD700' : ( $highest_tier === 'silver' ? '#C0C0C0' : '#CD7F32' ) ); ?>" stroke="#000000" stroke-width="0.3"/>
-												</g>
-											<?php endfor; ?>
-										<?php endif; ?>
-										
-										<!-- Subtle Border Highlight -->
-										<circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
-									</svg>
+										</div>
+									</div>
 								</div>
 							<?php else : ?>
 								<!-- Locked Badge -->
 								<div class="profile-achievement-badge profile-achievement-badge-locked">
-									<div class="locked-badge-container">
-										<div class="locked-badge-coin"></div>
-										<i class="ph ph-lock-key locked-badge-icon"></i>
+									<div class="premium-badge-container">
+										<div class="crown-badge">
+											<div class="crown-icon"></div>
+											<div class="badge-circle"></div>
+											<div class="badge-letter">🔒</div>
+										</div>
 									</div>
 								</div>
 							<?php endif; ?>
@@ -740,360 +680,6 @@ class WC_Team_Payroll_Employee_Detail {
 				width: 60px;
 				height: 60px;
 				color: #fff;
-			}
-
-			/* Profile Achievement Badge - Top Right */
-			.profile-achievement-badge {
-				position: absolute;
-				top: -8px;
-				right: -8px;
-				width: 44px;
-				height: 44px;
-				z-index: 10;
-				filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
-				transition: all 0.3s ease;
-			}
-
-			.profile-achievement-badge:hover {
-				filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4));
-				transform: scale(1.08);
-			}
-
-			.badge-icon {
-				width: 100%;
-				height: 100%;
-			}
-
-			/* Gold Badge */
-			.profile-achievement-badge-gold {
-				opacity: 1;
-			}
-
-			.profile-achievement-badge-gold .badge-coin-container {
-				position: relative;
-				width: 100%;
-				height: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-
-			.profile-achievement-badge-gold .badge-coin {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				border-radius: 50%;
-				background: radial-gradient(circle at 35% 35%, #FFFACD 0%, #FFD700 30%, #FFA500 70%, #8B6914 100%);
-				box-shadow: 
-					inset -2px -2px 4px rgba(0, 0, 0, 0.3),
-					inset 2px 2px 4px rgba(255, 255, 255, 0.6),
-					0 4px 8px rgba(0, 0, 0, 0.3);
-			}
-
-			.profile-achievement-badge-gold .badge-coin::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
-				pointer-events: none;
-			}
-
-			.profile-achievement-badge-gold .badge-coin::after {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				border: 1px solid rgba(255, 255, 255, 0.3);
-				pointer-events: none;
-			}
-
-			.profile-achievement-badge-gold .badge-letter {
-				position: relative;
-				z-index: 2;
-				font-size: 28px;
-				font-weight: 700;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-			}
-
-			.profile-achievement-badge-gold .letter-g {
-				color: #8B6914;
-				font-family: Arial, sans-serif;
-				letter-spacing: 2px;
-			}
-
-			/* Silver Badge */
-			.profile-achievement-badge-silver {
-				opacity: 1;
-			}
-
-			.profile-achievement-badge-silver .badge-coin-container {
-				position: relative;
-				width: 100%;
-				height: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-
-			.profile-achievement-badge-silver .badge-coin {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				border-radius: 50%;
-				background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E8E8E8 30%, #C0C0C0 70%, #808080 100%);
-				box-shadow: 
-					inset -2px -2px 4px rgba(0, 0, 0, 0.2),
-					inset 2px 2px 4px rgba(255, 255, 255, 0.8),
-					0 4px 8px rgba(0, 0, 0, 0.3);
-			}
-
-			.profile-achievement-badge-silver .badge-coin::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
-				pointer-events: none;
-			}
-
-			.profile-achievement-badge-silver .badge-coin::after {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				border: 1px solid rgba(255, 255, 255, 0.3);
-				pointer-events: none;
-			}
-
-			.profile-achievement-badge-silver .badge-letter {
-				position: relative;
-				z-index: 2;
-				font-size: 28px;
-				font-weight: 700;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-			}
-
-			.profile-achievement-badge-silver .letter-s {
-				color: #606060;
-				font-family: Arial, sans-serif;
-				letter-spacing: 2px;
-			}
-
-			/* Bronze Badge */
-			.profile-achievement-badge-bronze {
-				opacity: 1;
-			}
-
-			.profile-achievement-badge-bronze .badge-coin-container {
-				position: relative;
-				width: 100%;
-				height: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-
-			.profile-achievement-badge-bronze .badge-coin {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				border-radius: 50%;
-				background: radial-gradient(circle at 35% 35%, #FFE4B5 0%, #CD7F32 30%, #B8860B 70%, #654321 100%);
-				box-shadow: 
-					inset -2px -2px 4px rgba(0, 0, 0, 0.3),
-					inset 2px 2px 4px rgba(255, 255, 255, 0.5),
-					0 4px 8px rgba(0, 0, 0, 0.3);
-			}
-
-			.profile-achievement-badge-bronze .badge-coin::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.5) 0%, transparent 70%);
-				pointer-events: none;
-			}
-
-			.profile-achievement-badge-bronze .badge-coin::after {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				border: 1px solid rgba(255, 255, 255, 0.3);
-				pointer-events: none;
-			}
-
-			.profile-achievement-badge-bronze .badge-letter {
-				position: relative;
-				z-index: 2;
-				font-size: 28px;
-				font-weight: 700;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-			}
-
-			.profile-achievement-badge-bronze .letter-b {
-				color: #6B3410;
-				font-family: Arial, sans-serif;
-				letter-spacing: 2px;
-			}
-
-			/* Badge Stars - Category Count Display */
-			.badge-stars {
-				position: absolute;
-				bottom: -6px;
-				left: 50%;
-				transform: translateX(-50%);
-				display: flex;
-				gap: 2px;
-				z-index: 3;
-			}
-
-			.badge-star {
-				font-size: 10px;
-				line-height: 1;
-				display: inline-block;
-			}
-
-			.profile-achievement-badge-gold .badge-stars .badge-star {
-				color: #FFD700;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-			}
-
-			.profile-achievement-badge-silver .badge-stars .badge-star {
-				color: #C0C0C0;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-			}
-
-			.profile-achievement-badge-bronze .badge-stars .badge-star {
-				color: #CD7F32;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-			}
-
-			/* Locked Badge */
-			.profile-achievement-badge-locked {
-				opacity: 1;
-			}
-
-			.locked-badge-container {
-				position: relative;
-				width: 100%;
-				height: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-
-			.locked-badge-coin {
-				position: absolute;
-				width: 100%;
-				height: 100%;
-				border-radius: 50%;
-				background: radial-gradient(circle at 35% 35%, #F5F5F5 0%, #D3D3D3 30%, #A9A9A9 70%, #696969 100%);
-				box-shadow: 
-					inset -2px -2px 4px rgba(0, 0, 0, 0.3),
-					inset 2px 2px 4px rgba(255, 255, 255, 0.4),
-					0 4px 8px rgba(0, 0, 0, 0.3);
-			}
-
-			.locked-badge-coin::before {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				background: radial-gradient(ellipse 40% 40% at 35% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
-				pointer-events: none;
-			}
-
-			.locked-badge-coin::after {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				border-radius: 50%;
-				border: 1px solid rgba(255, 255, 255, 0.3);
-				pointer-events: none;
-			}
-
-			.locked-badge-icon {
-				position: relative;
-				z-index: 2;
-				font-size: 24px;
-				color: #505050;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-			}
-
-			/* Profile Goal Counter - Bottom Center */
-			.profile-goal-counter {
-				position: absolute;
-				bottom: -8px;
-				left: 50%;
-				transform: translateX(-50%);
-				display: flex;
-				align-items: center;
-				gap: 4px;
-				background: #fff;
-				padding: 4px 10px;
-				border-radius: 20px;
-				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-				z-index: 10;
-				border: 2px solid #ff9900;
-				transition: all 0.3s ease;
-			}
-
-			.profile-goal-counter:hover {
-				box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
-				transform: translateX(-50%) scale(1.05);
-			}
-
-			.goal-star-icon {
-				width: 16px;
-				height: 16px;
-				color: #FFC107;
-				flex-shrink: 0;
-			}
-
-			.goal-count {
-				font-size: 12px;
-				font-weight: 700;
-				color: #ff9900;
-				line-height: 1;
-				white-space: nowrap;
 			}
 
 			.wc-tp-profile-info {
@@ -3537,6 +3123,14 @@ class WC_Team_Payroll_Employee_Detail {
 			'wc-team-payroll-shared',
 			WC_TEAM_PAYROLL_URL . 'assets/css/myaccount-shared.css',
 			array(),
+			WC_TEAM_PAYROLL_VERSION
+		);
+
+		// Enqueue Premium Badges CSS
+		wp_enqueue_style(
+			'wc-team-payroll-premium-badges',
+			WC_TEAM_PAYROLL_URL . 'assets/css/premium-badges.css',
+			array( 'wc-team-payroll-shared' ),
 			WC_TEAM_PAYROLL_VERSION
 		);
 

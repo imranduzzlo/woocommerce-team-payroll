@@ -1,3 +1,31 @@
+## [1.0.4] - 2026-04-25
+### ✨ Premium Achievement Badges
+
+**New Premium Badge Design**
+- ✨ Crown badge design with golden vibe (inspired by Telegram profile badges)
+- ✨ Inner shadow effects for depth and premium feel
+- ✨ Animated golden border on profile pictures when user has badge
+- ✨ Badge colors based on tier: Gold (G), Silver (S), Bronze (B)
+- ✨ Stars displayed with badge to show category count
+- ✨ Smooth hover animations and transitions
+- ✨ Responsive design for all screen sizes
+
+**Technical Implementation**
+- Created new `assets/css/premium-badges.css` with premium styling
+- Updated badge HTML structure in both Employee Detail and My Account pages
+- Removed old SVG-based badge design
+- Added `has-badge` class to profile pictures for golden border effect
+- Radial gradients for metallic look with inner shadows
+- Crown icon positioned on top-right of badge
+- Locked badge design for users without achievements
+
+**Files Changed**
+- `assets/css/premium-badges.css` (new file)
+- `includes/class-employee-detail.php` (badge HTML + CSS enqueue)
+- `includes/class-myaccount.php` (badge HTML + CSS enqueue)
+
+---
+
 ## [1.0.3] - 2026-04-25
 ### 🎯 Complete Rewrite of Update System
 
