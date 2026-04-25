@@ -47,6 +47,9 @@ class WC_Team_Payroll_Order_Editor {
 		// Add custom meta box for order editing
 		add_action( 'add_meta_boxes', array( $this, 'add_order_editor_meta_box' ) );
 		
+		// Add edit button for custom fields in Additional Information
+		add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'add_custom_fields_edit_button' ) );
+		
 		// Save custom fields when order is saved
 		add_action( 'woocommerce_process_shop_order_meta', array( $this, 'save_custom_fields_on_order_save' ), 10, 2 );
 		
@@ -818,6 +821,50 @@ class WC_Team_Payroll_Order_Editor {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Add edit button for custom fields in Additional Information
+	 */
+	public function add_custom_fields_edit_button( $order ) {
+		if ( ! $this->is_order_editable_by_status( $order ) ) {
+			return;
+		}
+
+		// Get all order meta to check if there are custom fields
+		$all_meta = $order->get_meta_data();
+		$has_custom_fields = false;
+
+		foreach ( $all_meta as $meta ) {
+			$key = $meta->key;
+			$value = $meta->value;
+
+			// Skip internal WooCommerce meta (starts with _)
+			if ( strpos( $key, '_' ) === 0 ) {
+				continue;
+			}
+
+			// Skip if value is empty or array
+			if ( empty( $value ) || is_array( $value ) ) {
+				continue;
+			}
+
+			$has_custom_fields = true;
+			break;
+		}
+
+		if ( ! $has_custom_fields ) {
+			return;
+		}
+
+		?>
+		<div class="wc-tp-custom-fields-edit-section" style="margin-top: 15px; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+			<button type="button" class="button wc-tp-toggle-custom-fields-edit" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="display: inline-flex; align-items: center; gap: 5px;">
+				<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px; margin: 0;"></span>
+				<?php esc_html_e( 'Edit Custom Fields', 'wc-team-payroll' ); ?>
+			</button>
+		</div>
+		<?php
 	}
 
 	/**

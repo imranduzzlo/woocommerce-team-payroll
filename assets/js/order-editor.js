@@ -22,6 +22,7 @@
             $(document).on('click', '.wc-tp-edit-order-meta', function(e) { self.handleEditOrderMeta.call(self, e); });
             $(document).on('click', '.wc-tp-recalculate-order', function(e) { self.handleRecalculateOrder.call(self, e); });
             $(document).on('click', '.wc-tp-edit-custom-field-btn', function(e) { self.handleEditCustomField.call(self, e, this); });
+            $(document).on('click', '.wc-tp-toggle-custom-fields-edit', function(e) { self.handleToggleCustomFieldsEdit.call(self, e); });
         },
 
         handleEditItem: function(e) {
@@ -47,6 +48,82 @@
         handleRecalculateOrder: function(e) {
             e.preventDefault();
             OrderEditor.showNotice('info', 'Order recalculation coming soon.');
+        },
+
+        handleToggleCustomFieldsEdit: function(e) {
+            e.preventDefault();
+            var $btn = $(e.currentTarget);
+            var orderId = $btn.data('order-id');
+            var $section = $btn.closest('.wc-tp-custom-fields-edit-section');
+            
+            // Find all p tags in Additional Information that contain custom fields
+            var $additionalInfo = $section.closest('.order_data_column').find('p');
+            var isEditing = $btn.hasClass('editing');
+            
+            if (!isEditing) {
+                // Make fields editable
+                $additionalInfo.each(function() {
+                    var $p = $(this);
+                    var text = $p.text().trim();
+                    
+                    // Skip empty or section headers
+                    if (!text || text.length === 0) {
+                        return;
+                    }
+                    
+                    // Make the content editable
+                    $p.attr('contenteditable', 'true');
+                    $p.css({
+                        'background': '#fffbea',
+                        'border': '1px solid #ffb81c',
+                        'padding': '8px',
+                        'border-radius': '4px',
+                        'cursor': 'text'
+                    });
+                });
+                
+                $btn.addClass('editing');
+                $btn.html('<span class="dashicons dashicons-yes" style="font-size: 16px; width: 16px; height: 16px; margin: 0;"></span> Save Custom Fields');
+                $btn.css('background-color', '#28a745');
+                $btn.css('border-color', '#28a745');
+                $btn.css('color', '#fff');
+                
+                OrderEditor.showNotice('info', 'Click on any field to edit. Click Save when done.');
+            } else {
+                // Save and disable editing
+                var fieldsData = {};
+                $additionalInfo.each(function() {
+                    var $p = $(this);
+                    var originalText = $p.attr('data-original-text');
+                    var newText = $p.text().trim();
+                    
+                    if (originalText && originalText !== newText) {
+                        // Parse field name and value
+                        var match = newText.match(/^([^:]+):\s*(.*)$/);
+                        if (match) {
+                            var fieldName = match[1].trim().toLowerCase().replace(/\s+/g, '_');
+                            fieldsData[fieldName] = match[2].trim();
+                        }
+                    }
+                    
+                    $p.removeAttr('contenteditable');
+                    $p.css({
+                        'background': '',
+                        'border': '',
+                        'padding': '',
+                        'border-radius': '',
+                        'cursor': ''
+                    });
+                });
+                
+                $btn.removeClass('editing');
+                $btn.html('<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px; margin: 0;"></span> Edit Custom Fields');
+                $btn.css('background-color', '');
+                $btn.css('border-color', '');
+                $btn.css('color', '');
+                
+                OrderEditor.showNotice('success', 'Custom fields updated. Save the order to apply changes.');
+            }
         },
 
         handleEditCustomField: function(e, btnElement) {

@@ -1,3 +1,33 @@
+## [1.7.77] - 2026-04-25
+### ✏️ Added Edit Custom Fields Button
+
+#### New Features
+
+**Edit Custom Fields Button**
+- Added "Edit Custom Fields" button in Additional Information section
+- Matches WooCommerce's native billing/shipping edit pattern
+- Click to toggle edit mode for all custom fields
+
+**Inline Editing**
+- Custom fields become editable with highlighted background (yellow)
+- Click on any field to edit the text directly
+- Button changes to "Save Custom Fields" when in edit mode
+
+**User Experience**
+- Clean, intuitive interface matching WooCommerce standards
+- Visual feedback with highlighted editable fields
+- Helpful notifications guide users through the process
+- Changes save when order is saved
+
+**How It Works**
+1. Click "Edit Custom Fields" button
+2. All custom fields become editable (highlighted in yellow)
+3. Click on any field to edit the text
+4. Click "Save Custom Fields" when done
+5. Save the order to apply changes
+
+---
+
 ## [1.7.76] - 2026-04-25
 ### 🧹 Cleanup - Removed Custom Field Rendering
 
