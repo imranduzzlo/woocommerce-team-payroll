@@ -1,3 +1,38 @@
+## [1.0.3] - 2026-04-25
+### 🎯 Complete Rewrite of Update System
+
+**Properly Implemented GitHub Updater**
+- ✅ **COMPLETE REWRITE** using WordPress best practices
+- ✅ Uses proper `update_plugins_github.com` filter (WordPress standard)
+- ✅ Added "Update URI" header (WordPress 5.8+ standard)
+- ✅ Works exactly like WordPress.org plugins
+- ✅ Updates show even when plugin is inactive
+- ✅ Proper directory naming after update
+- ✅ Based on official WordPress documentation
+
+**Technical Implementation**
+- ✅ Follows WordPress Plugin Handbook guidelines
+- ✅ Uses `update_plugins_{$hostname}` filter pattern
+- ✅ Proper GitHub API integration
+- ✅ Correct zipball handling
+- ✅ Automatic directory renaming
+- ✅ Plugin information modal support
+
+**What Changed**
+- Complete rewrite of GitHub updater class
+- Removed old custom implementation
+- Added Update URI header to plugin
+- Simplified and standardized code
+- Better error handling
+- Proper caching strategy
+
+**References**
+- WordPress Plugin Handbook
+- GitHub API v3 documentation
+- Community best practices
+
+---
+
 ## [1.0.2] - 2026-04-25
 ### 🔥 Critical Fixes
 
