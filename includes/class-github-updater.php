@@ -21,19 +21,20 @@ class WC_Team_Payroll_GitHub_Updater {
 		$this->plugin_slug = 'woocommerce-team-payroll';
 		$this->plugin_file = 'woocommerce-team-payroll/woocommerce-team-payroll.php';
 		$this->github_user = 'imranduzzlo';
-		$this->github_repo = 'pv-team-management';
+		$this->github_repo = 'woocommerce-team-payroll';
 		$this->github_branch = 'main';
 		$this->github_api_url = "https://api.github.com/repos/{$this->github_user}/{$this->github_repo}";
 
 		// Hook into WordPress update checks
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
 		add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
+		add_filter( 'upgrader_source_selection', array( $this, 'fix_source_directory' ), 10, 4 );
+		
+		// Add after plugin update hook
+		add_action( 'upgrader_process_complete', array( $this, 'after_update' ), 10, 2 );
 		
 		// Clear cache on plugin activation
 		add_action( 'activated_plugin', array( $this, 'clear_cache' ) );
-		
-		// Force check on admin page load
-		add_action( 'admin_init', array( $this, 'force_check' ) );
 	}
 
 	/**
@@ -46,15 +47,51 @@ class WC_Team_Payroll_GitHub_Updater {
 	}
 
 	/**
-	 * Force update check on admin init
+	 * Fix the source directory name after download
+	 * GitHub zipballs extract to username-repo-commit format
 	 */
-	public function force_check() {
-		// Clear cache to force fresh check
-		delete_transient( 'wc_tp_github_release' );
-		delete_transient( 'wc_tp_last_update_check' );
-		
-		// Trigger WordPress update check
-		wp_update_plugins();
+	public function fix_source_directory( $source, $remote_source, $upgrader, $hook_extra = null ) {
+		global $wp_filesystem;
+
+		// Only process our plugin
+		if ( ! isset( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== $this->plugin_file ) {
+			return $source;
+		}
+
+		// Get the correct directory name
+		$corrected_source = trailingslashit( $remote_source ) . $this->plugin_slug . '/';
+
+		// Check if source is already correct
+		if ( $source === $corrected_source ) {
+			return $source;
+		}
+
+		// Rename the directory
+		if ( $wp_filesystem->move( $source, $corrected_source, true ) ) {
+			return $corrected_source;
+		}
+
+		return new WP_Error( 'rename_failed', __( 'Unable to rename plugin directory.', 'wc-team-payroll' ) );
+	}
+
+	/**
+	 * Clear cache after plugin update
+	 */
+	public function after_update( $upgrader_object, $options ) {
+		// Check if this is a plugin update
+		if ( $options['action'] !== 'update' || $options['type'] !== 'plugin' ) {
+			return;
+		}
+
+		// Check if our plugin was updated
+		if ( isset( $options['plugins'] ) ) {
+			foreach ( $options['plugins'] as $plugin ) {
+				if ( $plugin === $this->plugin_file ) {
+					$this->clear_cache();
+					break;
+				}
+			}
+		}
 	}
 
 	/**
@@ -92,25 +129,52 @@ class WC_Team_Payroll_GitHub_Updater {
 
 		// Only add to response if there's a newer version
 		if ( version_compare( $latest_version, $current_version_normalized, '>' ) ) {
-			$transient->response[ $this->plugin_file ] = (object) array(
-				'id'            => $this->github_repo,
+			$update_object = (object) array(
+				'id'            => "github.com/{$this->github_user}/{$this->github_repo}",
 				'slug'          => $this->plugin_slug,
 				'plugin'        => $this->plugin_file,
 				'new_version'   => $latest_version,
 				'url'           => $latest_release['url'],
 				'package'       => $latest_release['download_url'],
-				'tested'        => '6.4',
+				'tested'        => '6.7',
 				'requires'      => '5.0',
 				'requires_php'  => '7.2',
 				'icons'         => array(),
 				'banners'       => array(),
-				'upgrade_notice' => 'New version available from GitHub',
+				'compatibility' => new stdClass(),
 			);
+
+			$transient->response[ $this->plugin_file ] = $update_object;
+			
+			// Debug logging
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'WC Team Payroll: Update available - ' . $latest_version );
+			}
 		} else {
 			// Explicitly remove from response if versions are equal or current is newer
 			if ( isset( $transient->response[ $this->plugin_file ] ) ) {
 				unset( $transient->response[ $this->plugin_file ] );
 			}
+			
+			// Add to no_update to show plugin is up to date
+			if ( ! isset( $transient->no_update ) ) {
+				$transient->no_update = array();
+			}
+			
+			$transient->no_update[ $this->plugin_file ] = (object) array(
+				'id'            => "github.com/{$this->github_user}/{$this->github_repo}",
+				'slug'          => $this->plugin_slug,
+				'plugin'        => $this->plugin_file,
+				'new_version'   => $current_version_normalized,
+				'url'           => "https://github.com/{$this->github_user}/{$this->github_repo}",
+				'package'       => '',
+				'tested'        => '6.7',
+				'requires'      => '5.0',
+				'requires_php'  => '7.2',
+				'icons'         => array(),
+				'banners'       => array(),
+				'compatibility' => new stdClass(),
+			);
 		}
 
 		return $transient;
@@ -185,23 +249,58 @@ class WC_Team_Payroll_GitHub_Updater {
 			'name'            => 'WooCommerce Team Payroll & Commission System',
 			'slug'            => $this->plugin_slug,
 			'version'         => $latest_release['version'],
-			'author'          => 'Imran',
+			'author'          => '<a href="https://imranhossain.me/">Imran</a>',
 			'author_profile'  => 'https://imranhossain.me/',
+			'homepage'        => "https://github.com/{$this->github_user}/{$this->github_repo}",
 			'download_link'   => $latest_release['download_url'],
 			'trunk'           => $latest_release['download_url'],
 			'requires'        => '5.0',
 			'requires_php'    => '7.2',
-			'tested'          => '6.4',
+			'tested'          => '6.7',
 			'last_updated'    => $latest_release['updated'],
 			'sections'        => array(
-				'description' => 'Manage team-based commission and payroll system with agents and processors',
+				'description' => $this->get_description(),
 				'changelog'   => $this->get_changelog(),
+				'installation' => $this->get_installation_instructions(),
 			),
 			'banners'         => array(),
 			'icons'           => array(),
 		);
 
 		return $result;
+	}
+
+	/**
+	 * Get plugin description
+	 */
+	private function get_description() {
+		return '<p><strong>WooCommerce Team Payroll & Commission System</strong> is a powerful plugin designed to manage team-based sales commissions, employee salaries, and performance tracking for WooCommerce stores.</p>
+		<h3>Key Features</h3>
+		<ul>
+			<li>✅ Flexible commission system with agent/processor split</li>
+			<li>✅ Multiple salary types: Commission-based, Fixed, Combined</li>
+			<li>✅ Automatic salary transfers (daily, weekly, monthly)</li>
+			<li>✅ Performance tracking with goals and achievements</li>
+			<li>✅ Beautiful employee dashboards</li>
+			<li>✅ Advanced order editor with automatic recalculation</li>
+			<li>✅ Comprehensive reporting and analytics</li>
+			<li>✅ WooCommerce HPOS compatible</li>
+		</ul>
+		<p><a href="https://github.com/' . $this->github_user . '/' . $this->github_repo . '" target="_blank">View on GitHub</a> | <a href="https://github.com/' . $this->github_user . '/' . $this->github_repo . '/issues" target="_blank">Report Issues</a></p>';
+	}
+
+	/**
+	 * Get installation instructions
+	 */
+	private function get_installation_instructions() {
+		return '<ol>
+			<li>Click "Install Now" to download and install the plugin</li>
+			<li>Activate the plugin through the Plugins menu</li>
+			<li>Go to WooCommerce → Team Payroll to configure settings</li>
+			<li>Add employees and configure their salary types</li>
+			<li>Start tracking commissions and managing payroll!</li>
+		</ol>
+		<p><strong>Requirements:</strong> WordPress 5.0+, WooCommerce 5.0+, PHP 7.2+</p>';
 	}
 
 	/**
@@ -260,10 +359,16 @@ class WC_Team_Payroll_GitHub_Updater {
 			'url'          => $release['html_url'],
 			'download_url' => $download_url,
 			'updated'      => $release['published_at'],
+			'body'         => isset( $release['body'] ) ? $release['body'] : '',
 		);
 
-		// Cache for 12 hours (longer cache to avoid rate limiting)
-		set_transient( $transient_key, $result, 12 * HOUR_IN_SECONDS );
+		// Cache for 6 hours (balanced between freshness and rate limiting)
+		set_transient( $transient_key, $result, 6 * HOUR_IN_SECONDS );
+
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( "WC Team Payroll: Fetched release {$version} from GitHub" );
+		}
 
 		return $result;
 	}
@@ -272,36 +377,26 @@ class WC_Team_Payroll_GitHub_Updater {
 	 * Get changelog from GitHub releases
 	 */
 	private function get_changelog() {
-		$response = wp_remote_get(
-			"{$this->github_api_url}/releases",
-			array(
-				'timeout'   => 10,
-				'sslverify' => true,
-				'headers'   => array(
-					'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ),
-				),
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return 'Unable to fetch changelog from GitHub.';
+		$latest_release = $this->get_latest_release();
+		
+		if ( ! $latest_release || empty( $latest_release['body'] ) ) {
+			return '<p>View full changelog on <a href="https://github.com/' . $this->github_user . '/' . $this->github_repo . '/releases" target="_blank">GitHub</a>.</p>';
 		}
 
-		$body = wp_remote_retrieve_body( $response );
-		$releases = json_decode( $body, true );
-
-		if ( ! is_array( $releases ) || empty( $releases ) ) {
-			return 'No releases found.';
-		}
-
-		$changelog = '<ul>';
-		foreach ( array_slice( $releases, 0, 5 ) as $release ) {
-			$changelog .= '<li><strong>' . esc_html( $release['tag_name'] ) . '</strong> - ' . esc_html( $release['published_at'] ) . '<br/>';
-			$changelog .= wp_kses_post( wpautop( $release['body'] ) ) . '</li>';
-		}
-		$changelog .= '</ul>';
-
+		// Convert markdown to HTML (basic conversion)
+		$changelog = $latest_release['body'];
+		$changelog = wp_kses_post( wpautop( $changelog ) );
+		
 		return $changelog;
+	}
+
+	/**
+	 * Add settings link to force update check
+	 */
+	public function add_action_links( $links ) {
+		$check_link = '<a href="' . admin_url( 'plugins.php?wc_tp_check_update=1' ) . '">' . __( 'Check for Updates', 'wc-team-payroll' ) . '</a>';
+		array_unshift( $links, $check_link );
+		return $links;
 	}
 }
 

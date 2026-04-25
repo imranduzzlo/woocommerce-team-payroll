@@ -39,6 +39,7 @@ class WC_Team_Payroll_Settings {
 				<a href="?page=wc-team-payroll-settings&tab=performance" class="nav-tab <?php echo $current_tab === 'performance' ? 'nav-tab-active' : ''; ?>">Reports & Performance</a>
 				<a href="?page=wc-team-payroll-settings&tab=roles" class="nav-tab <?php echo $current_tab === 'roles' ? 'nav-tab-active' : ''; ?>">User Roles</a>
 				<a href="?page=wc-team-payroll-settings&tab=woocommerce" class="nav-tab <?php echo $current_tab === 'woocommerce' ? 'nav-tab-active' : ''; ?>">WooCommerce</a>
+				<a href="?page=wc-team-payroll-settings&tab=documentation" class="nav-tab <?php echo $current_tab === 'documentation' ? 'nav-tab-active' : ''; ?>">📖 Documentation</a>
 				<a href="?page=wc-team-payroll-settings&tab=debug" class="nav-tab <?php echo $current_tab === 'debug' ? 'nav-tab-active' : ''; ?>">Debug</a>
 			</nav>
 
@@ -787,6 +788,649 @@ class WC_Team_Payroll_Settings {
 						<?php $this->render_statuses_repeater( $checkout_fields ); ?>
 					</div>
 					<button type="button" class="button button-secondary" id="wc-tp-add-status-btn">+ Add New Status</button>
+				<?php endif; ?>
+
+				<?php if ( $current_tab === 'documentation' ) : ?>
+					<style>
+						.wc-tp-docs-container {
+							max-width: 1200px;
+							margin: 20px 0;
+						}
+						.wc-tp-docs-header {
+							background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+							color: white;
+							padding: 40px 30px;
+							border-radius: 8px;
+							margin-bottom: 30px;
+							text-align: center;
+						}
+						.wc-tp-docs-header h2 {
+							margin: 0 0 10px 0;
+							font-size: 32px;
+							font-weight: 700;
+						}
+						.wc-tp-docs-header p {
+							margin: 0;
+							font-size: 16px;
+							opacity: 0.9;
+						}
+						.wc-tp-docs-grid {
+							display: grid;
+							grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+							gap: 20px;
+							margin-bottom: 30px;
+						}
+						.wc-tp-docs-card {
+							background: white;
+							border: 1px solid #e0e0e0;
+							border-radius: 8px;
+							padding: 25px;
+							transition: all 0.3s ease;
+							cursor: pointer;
+						}
+						.wc-tp-docs-card:hover {
+							box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+							transform: translateY(-2px);
+							border-color: #667eea;
+						}
+						.wc-tp-docs-card-icon {
+							font-size: 36px;
+							margin-bottom: 15px;
+							display: block;
+						}
+						.wc-tp-docs-card h3 {
+							margin: 0 0 10px 0;
+							font-size: 20px;
+							color: #333;
+						}
+						.wc-tp-docs-card p {
+							margin: 0;
+							color: #666;
+							font-size: 14px;
+							line-height: 1.6;
+						}
+						.wc-tp-docs-section {
+							background: white;
+							border: 1px solid #e0e0e0;
+							border-radius: 8px;
+							padding: 30px;
+							margin-bottom: 20px;
+						}
+						.wc-tp-docs-section h3 {
+							margin: 0 0 20px 0;
+							font-size: 24px;
+							color: #333;
+							border-bottom: 2px solid #667eea;
+							padding-bottom: 10px;
+						}
+						.wc-tp-docs-section h4 {
+							margin: 20px 0 10px 0;
+							font-size: 18px;
+							color: #444;
+						}
+						.wc-tp-docs-section ul {
+							margin: 10px 0 10px 20px;
+							line-height: 1.8;
+						}
+						.wc-tp-docs-section li {
+							margin-bottom: 8px;
+						}
+						.wc-tp-docs-code {
+							background: #f5f5f5;
+							border: 1px solid #e0e0e0;
+							border-radius: 4px;
+							padding: 15px;
+							font-family: 'Courier New', monospace;
+							font-size: 13px;
+							margin: 10px 0;
+							overflow-x: auto;
+						}
+						.wc-tp-docs-note {
+							background: #e3f2fd;
+							border-left: 4px solid #2196f3;
+							padding: 15px;
+							margin: 15px 0;
+							border-radius: 4px;
+						}
+						.wc-tp-docs-warning {
+							background: #fff3e0;
+							border-left: 4px solid #ff9800;
+							padding: 15px;
+							margin: 15px 0;
+							border-radius: 4px;
+						}
+						.wc-tp-docs-success {
+							background: #e8f5e9;
+							border-left: 4px solid #4caf50;
+							padding: 15px;
+							margin: 15px 0;
+							border-radius: 4px;
+						}
+						.wc-tp-docs-toc {
+							background: #f9f9f9;
+							border: 1px solid #e0e0e0;
+							border-radius: 8px;
+							padding: 20px;
+							margin-bottom: 30px;
+						}
+						.wc-tp-docs-toc h3 {
+							margin: 0 0 15px 0;
+							font-size: 18px;
+						}
+						.wc-tp-docs-toc ul {
+							margin: 0;
+							padding: 0;
+							list-style: none;
+						}
+						.wc-tp-docs-toc li {
+							margin-bottom: 8px;
+						}
+						.wc-tp-docs-toc a {
+							color: #667eea;
+							text-decoration: none;
+							font-weight: 500;
+						}
+						.wc-tp-docs-toc a:hover {
+							text-decoration: underline;
+						}
+					</style>
+
+					<div class="wc-tp-docs-container">
+						<!-- Header -->
+						<div class="wc-tp-docs-header">
+							<h2>📖 WooCommerce Team Payroll Documentation</h2>
+							<p>Complete guide to setting up and using the Team Payroll & Commission System</p>
+						</div>
+
+						<!-- Quick Start Cards -->
+						<div class="wc-tp-docs-grid">
+							<div class="wc-tp-docs-card" onclick="document.getElementById('getting-started').scrollIntoView({behavior: 'smooth'})">
+								<span class="wc-tp-docs-card-icon">🚀</span>
+								<h3>Getting Started</h3>
+								<p>Learn the basics and set up your first employee with commission tracking</p>
+							</div>
+							<div class="wc-tp-docs-card" onclick="document.getElementById('commission-setup').scrollIntoView({behavior: 'smooth'})">
+								<span class="wc-tp-docs-card-icon">💰</span>
+								<h3>Commission Setup</h3>
+								<p>Configure commission rates, splits, and calculation rules</p>
+							</div>
+							<div class="wc-tp-docs-card" onclick="document.getElementById('salary-management').scrollIntoView({behavior: 'smooth'})">
+								<span class="wc-tp-docs-card-icon">💵</span>
+								<h3>Salary Management</h3>
+								<p>Set up fixed salaries, combined pay, and automatic transfers</p>
+							</div>
+							<div class="wc-tp-docs-card" onclick="document.getElementById('employee-management').scrollIntoView({behavior: 'smooth'})">
+								<span class="wc-tp-docs-card-icon">👥</span>
+								<h3>Employee Management</h3>
+								<p>Add employees, manage payments, and track performance</p>
+							</div>
+							<div class="wc-tp-docs-card" onclick="document.getElementById('frontend-features').scrollIntoView({behavior: 'smooth'})">
+								<span class="wc-tp-docs-card-icon">🎨</span>
+								<h3>Frontend Features</h3>
+								<p>Customize My Account pages and employee dashboards</p>
+							</div>
+							<div class="wc-tp-docs-card" onclick="document.getElementById('troubleshooting').scrollIntoView({behavior: 'smooth'})">
+								<span class="wc-tp-docs-card-icon">🔧</span>
+								<h3>Troubleshooting</h3>
+								<p>Common issues and solutions to get you back on track</p>
+							</div>
+						</div>
+
+						<!-- Table of Contents -->
+						<div class="wc-tp-docs-toc">
+							<h3>📑 Table of Contents</h3>
+							<ul>
+								<li><a href="#getting-started">1. Getting Started</a></li>
+								<li><a href="#commission-setup">2. Commission Setup</a></li>
+								<li><a href="#salary-management">3. Salary Management</a></li>
+								<li><a href="#employee-management">4. Employee Management</a></li>
+								<li><a href="#checkout-integration">5. Checkout Integration</a></li>
+								<li><a href="#frontend-features">6. Frontend Features</a></li>
+								<li><a href="#performance-tracking">7. Performance Tracking</a></li>
+								<li><a href="#order-editor">8. Order Editor</a></li>
+								<li><a href="#troubleshooting">9. Troubleshooting</a></li>
+								<li><a href="#hooks-filters">10. Hooks & Filters (Developers)</a></li>
+							</ul>
+						</div>
+
+						<!-- Getting Started -->
+						<div class="wc-tp-docs-section" id="getting-started">
+							<h3>🚀 1. Getting Started</h3>
+							
+							<h4>Initial Setup</h4>
+							<p>After installing and activating the plugin, follow these steps:</p>
+							<ol>
+								<li><strong>Configure General Settings:</strong> Go to <code>Team Payroll > Settings > General</code></li>
+								<li><strong>Set Employee ID Prefix:</strong> Choose a prefix for auto-generated employee IDs (e.g., PVVB-EMID)</li>
+								<li><strong>Configure Commission:</strong> Go to <code>Settings > Commission</code> and set agent/processor percentages</li>
+								<li><strong>Map Fields:</strong> Go to <code>Settings > WooCommerce</code> and configure checkout fields</li>
+								<li><strong>Flush Permalinks:</strong> Go to <code>Settings > Permalinks</code> and click "Save Changes"</li>
+							</ol>
+
+							<div class="wc-tp-docs-success">
+								<strong>✅ Quick Tip:</strong> Start with default settings and adjust as you learn the system. You can always change settings later without affecting existing data.
+							</div>
+
+							<h4>System Requirements</h4>
+							<ul>
+								<li>WordPress 5.0 or higher</li>
+								<li>WooCommerce 5.0 or higher (tested up to 10.7.0)</li>
+								<li>PHP 7.2 or higher</li>
+								<li>Advanced Custom Fields (ACF) or Smart Custom Fields (optional)</li>
+							</ul>
+						</div>
+
+						<!-- Commission Setup -->
+						<div class="wc-tp-docs-section" id="commission-setup">
+							<h3>💰 2. Commission Setup</h3>
+							
+							<h4>Understanding Commission Calculation</h4>
+							<p>The plugin calculates commission based on:</p>
+							<ul>
+								<li><strong>Product Commission Rate:</strong> Set per product (e.g., 10 = 10%)</li>
+								<li><strong>Agent/Processor Split:</strong> Configurable percentage split</li>
+								<li><strong>Salary Type:</strong> Only commission-eligible employees receive commission</li>
+							</ul>
+
+							<h4>Commission Split Logic</h4>
+							<div class="wc-tp-docs-code">
+<strong>Single User (Agent = Processor):</strong>
+- Gets 100% of commission
+- No split applied
+
+<strong>Two Different Users:</strong>
+- Agent: 70% (configurable)
+- Processor: 30% (configurable)
+
+<strong>Salary-Aware:</strong>
+- Commission-based: ✅ Receives commission
+- Fixed salary: ❌ No commission
+- Combined: ✅ Receives commission + base salary
+							</div>
+
+							<h4>Setting Product Commission Rates</h4>
+							<ol>
+								<li>Edit a product in WooCommerce</li>
+								<li>Find the "Team Commission" field (or your configured field name)</li>
+								<li>Enter commission percentage (e.g., 10 for 10%)</li>
+								<li>Save the product</li>
+							</ol>
+
+							<div class="wc-tp-docs-note">
+								<strong>💡 Note:</strong> Commission is calculated when orders reach configured statuses (default: completed, processing). You can change these in <code>Settings > WooCommerce</code>.
+							</div>
+
+							<h4>Commission Calculation Statuses</h4>
+							<p>Configure which order statuses trigger commission calculation:</p>
+							<ul>
+								<li>Go to <code>Settings > WooCommerce</code></li>
+								<li>Select statuses (e.g., completed, processing)</li>
+								<li>Commission calculates automatically when orders reach these statuses</li>
+							</ul>
+						</div>
+
+						<!-- Salary Management -->
+						<div class="wc-tp-docs-section" id="salary-management">
+							<h3>💵 3. Salary Management</h3>
+							
+							<h4>Three Salary Types</h4>
+							<div class="wc-tp-docs-code">
+<strong>1. Commission-Based:</strong>
+   - Earnings from order commissions only
+   - No fixed salary
+   - Best for: Sales agents
+
+<strong>2. Fixed Salary:</strong>
+   - Regular salary (daily/weekly/monthly)
+   - No commission from orders
+   - Automatic salary transfers
+   - Best for: Support staff, managers
+
+<strong>3. Combined (Base + Commission):</strong>
+   - Fixed base salary + order commissions
+   - Best of both worlds
+   - Best for: Senior sales staff
+							</div>
+
+							<h4>Setting Up Employee Salary</h4>
+							<ol>
+								<li>Go to <code>Team Payroll > Team Members</code></li>
+								<li>Click "Manage" next to an employee</li>
+								<li>In the "Salary Information" section:
+									<ul>
+										<li>Select salary type</li>
+										<li>Enter amount (if fixed or combined)</li>
+										<li>Choose frequency (daily/weekly/monthly)</li>
+									</ul>
+								</li>
+								<li>Click "Update Salary"</li>
+							</ol>
+
+							<h4>Automatic Salary Transfers</h4>
+							<p>For fixed and combined salary types, the system automatically:</p>
+							<ul>
+								<li><strong>Daily:</strong> Transfers salary amount every day</li>
+								<li><strong>Weekly:</strong> Accumulates daily and transfers on week end (Saturday)</li>
+								<li><strong>Monthly:</strong> Accumulates daily and transfers on month end</li>
+							</ul>
+
+							<div class="wc-tp-docs-warning">
+								<strong>⚠️ Important:</strong> Automatic transfers require WordPress cron to be working. If cron is disabled, use the Salary Debug tool to manually trigger transfers.
+							</div>
+
+							<h4>Salary History</h4>
+							<p>All salary changes are automatically logged with:</p>
+							<ul>
+								<li>Date and time of change</li>
+								<li>Previous and new salary details</li>
+								<li>Who made the change</li>
+								<li>Visible to employees in My Account > Salary Details</li>
+							</ul>
+						</div>
+
+						<!-- Employee Management -->
+						<div class="wc-tp-docs-section" id="employee-management">
+							<h3>👥 4. Employee Management</h3>
+							
+							<h4>Adding New Employees</h4>
+							<ol>
+								<li>Go to <code>Users > Add New</code></li>
+								<li>Create user with role: Shop Employee, Shop Manager, or Administrator</li>
+								<li>Employee ID is auto-generated (e.g., PVVB-EMID001)</li>
+								<li>Go to <code>Team Payroll > Team Members</code></li>
+								<li>Click "Manage" to configure salary and details</li>
+							</ol>
+
+							<h4>Employee Status</h4>
+							<p>Employees can be Active or Inactive:</p>
+							<ul>
+								<li><strong>Active:</strong> Can login, process orders, earn commission</li>
+								<li><strong>Inactive:</strong> Cannot login, shown contact info on login page</li>
+							</ul>
+
+							<h4>Adding Payments</h4>
+							<ol>
+								<li>Go to employee detail page</li>
+								<li>Click "Add Payment" button</li>
+								<li>Enter:
+									<ul>
+										<li>Amount</li>
+										<li>Date and time</li>
+										<li>Payment method</li>
+										<li>Notes (optional)</li>
+									</ul>
+								</li>
+								<li>Payment is tracked in employee's payment history</li>
+							</ol>
+
+							<h4>Payment Methods</h4>
+							<p>Configure employee payment methods:</p>
+							<ul>
+								<li>Bank account details</li>
+								<li>Mobile banking (bKash, Nagad, etc.)</li>
+								<li>PayPal, Stripe, etc.</li>
+								<li>Visible to employee in My Account > Salary Details</li>
+							</ul>
+						</div>
+
+						<!-- Checkout Integration -->
+						<div class="wc-tp-docs-section" id="checkout-integration">
+							<h3>🛒 5. Checkout Integration</h3>
+							
+							<h4>Agent Dropdown at Checkout</h4>
+							<p>The plugin automatically adds an agent selection dropdown at checkout:</p>
+							<ul>
+								<li>Shows only active employees with configured roles</li>
+								<li>Excludes current logged-in user (can't select themselves)</li>
+								<li>Displays employee ID + name for easy identification</li>
+							</ul>
+
+							<h4>Configuration</h4>
+							<ol>
+								<li>Go to <code>Settings > WooCommerce</code></li>
+								<li>Configure:
+									<ul>
+										<li><strong>Agent Field Name:</strong> order_agent_name (default)</li>
+										<li><strong>Processor Field Name:</strong> _processor_user_id (default)</li>
+										<li><strong>Agent User Roles:</strong> Select which roles can be agents</li>
+									</ul>
+								</li>
+							</ol>
+
+							<h4>How It Works</h4>
+							<div class="wc-tp-docs-code">
+<strong>Scenario 1: Customer selects agent</strong>
+- Agent: Selected user
+- Processor: Logged-in user (if any)
+- Commission split applies
+
+<strong>Scenario 2: No agent selected, user logged in</strong>
+- Agent: Logged-in user
+- Processor: None
+- User gets 100% commission
+
+<strong>Scenario 3: No agent, no logged-in user</strong>
+- No commission assignment
+							</div>
+						</div>
+
+						<!-- Frontend Features -->
+						<div class="wc-tp-docs-section" id="frontend-features">
+							<h3>🎨 6. Frontend Features</h3>
+							
+							<h4>My Account Tabs</h4>
+							<p>Employees get four new tabs in My Account:</p>
+							<ul>
+								<li><strong>Salary Details:</strong> View salary info, payment methods, history</li>
+								<li><strong>My Earnings:</strong> Monthly earnings breakdown with filters</li>
+								<li><strong>My Orders (Commission):</strong> Detailed order list with commission data</li>
+								<li><strong>Reports:</strong> Personal performance analytics and charts</li>
+							</ul>
+
+							<h4>Customizing Appearance</h4>
+							<ol>
+								<li>Go to <code>Settings > Frontend Styling</code></li>
+								<li>Customize:
+									<ul>
+										<li>Colors (primary, secondary, text, backgrounds)</li>
+										<li>Typography (fonts, sizes)</li>
+										<li>Buttons (colors, hover states, border radius)</li>
+										<li>Tables (headers, rows, borders)</li>
+										<li>Custom CSS</li>
+									</ul>
+								</li>
+								<li>Use Live Preview to see changes in real-time</li>
+							</ol>
+
+							<div class="wc-tp-docs-success">
+								<strong>✅ Pro Tip:</strong> Use CSS variables from your theme for consistent branding. Example: <code>var(--primary-color)</code>
+							</div>
+						</div>
+
+						<!-- Performance Tracking -->
+						<div class="wc-tp-docs-section" id="performance-tracking">
+							<h3>📊 7. Performance Tracking</h3>
+							
+							<h4>Goals System</h4>
+							<p>Set performance goals for employees:</p>
+							<ul>
+								<li><strong>Order Goals:</strong> Number of orders to complete</li>
+								<li><strong>Revenue Goals:</strong> Total order value to achieve</li>
+								<li><strong>Commission Goals:</strong> Commission amount to earn</li>
+							</ul>
+
+							<h4>Achievements</h4>
+							<p>Reward employees for reaching milestones:</p>
+							<ul>
+								<li><strong>Money Rewards:</strong> Bonus amount added to earnings</li>
+								<li><strong>Badge Rewards:</strong> Virtual badges for recognition</li>
+								<li>Employees can claim achievements in My Account > Reports</li>
+							</ul>
+
+							<h4>Leaderboard</h4>
+							<p>Real-time ranking of top performers:</p>
+							<ul>
+								<li>Visible in admin dashboard</li>
+								<li>Can be displayed on frontend (optional)</li>
+								<li>Motivates healthy competition</li>
+							</ul>
+						</div>
+
+						<!-- Order Editor -->
+						<div class="wc-tp-docs-section" id="order-editor">
+							<h3>✏️ 8. Order Editor</h3>
+							
+							<h4>Enabling Order Editor</h4>
+							<ol>
+								<li>Go to <code>Settings > General > Order Editor Settings</code></li>
+								<li>Check "Enable Order Editor"</li>
+								<li>Select which order statuses allow editing</li>
+								<li>Save settings</li>
+							</ol>
+
+							<h4>Features</h4>
+							<ul>
+								<li><strong>Add Products:</strong> Add new products to existing orders</li>
+								<li><strong>Edit Items:</strong> Modify quantities, prices, and totals</li>
+								<li><strong>Remove Items:</strong> Delete items from orders</li>
+								<li><strong>Edit Meta:</strong> Add, update, or delete custom order meta fields</li>
+								<li><strong>Recalculate:</strong> Automatically recalculate totals and commissions</li>
+								<li><strong>Audit Trail:</strong> All changes logged in order notes</li>
+							</ul>
+
+							<div class="wc-tp-docs-warning">
+								<strong>⚠️ Note:</strong> Order editor respects existing order editing plugins. If conflicts are detected, it will be automatically disabled.
+							</div>
+						</div>
+
+						<!-- Troubleshooting -->
+						<div class="wc-tp-docs-section" id="troubleshooting">
+							<h3>🔧 9. Troubleshooting</h3>
+							
+							<h4>My Account Tabs Not Showing</h4>
+							<ol>
+								<li>Go to <code>Settings > Permalinks</code></li>
+								<li>Click "Save Changes" (no need to modify anything)</li>
+								<li>Clear browser cache</li>
+								<li>Check if user has correct role (Shop Employee, Shop Manager, Administrator)</li>
+							</ol>
+
+							<h4>Commission Not Calculating</h4>
+							<ol>
+								<li>Check <code>Settings > Commission</code> - verify percentages are set</li>
+								<li>Check <code>Settings > WooCommerce</code> - verify commission calculation statuses</li>
+								<li>Ensure products have commission rates set</li>
+								<li>Check employee salary type (must be commission-eligible)</li>
+								<li>Verify order status is in commission calculation statuses</li>
+							</ol>
+
+							<h4>Automatic Salary Not Transferring</h4>
+							<ol>
+								<li>Check if WordPress cron is working (use WP Crontrol plugin)</li>
+								<li>Enable Salary Debug in <code>Settings > Debug</code></li>
+								<li>Go to <code>Team Payroll > Salary Debug</code></li>
+								<li>Use "Test Accumulation" to manually trigger transfers</li>
+								<li>Check employee salary configuration</li>
+							</ol>
+
+							<h4>Order Editor Not Appearing</h4>
+							<ol>
+								<li>Check <code>Settings > General > Order Editor Settings</code></li>
+								<li>Ensure order status is in editable statuses list</li>
+								<li>Verify no conflicting plugins (check for JavaScript errors in console)</li>
+								<li>Try disabling other order editing plugins temporarily</li>
+							</ol>
+
+							<h4>Agent Dropdown Not Populating</h4>
+							<ol>
+								<li>Check <code>Settings > WooCommerce</code> - verify agent user roles</li>
+								<li>Ensure users have correct roles assigned</li>
+								<li>Check if employees are active (inactive employees are excluded)</li>
+								<li>Clear browser cache and reload checkout page</li>
+							</ol>
+						</div>
+
+						<!-- Hooks & Filters -->
+						<div class="wc-tp-docs-section" id="hooks-filters">
+							<h3>🔌 10. Hooks & Filters (For Developers)</h3>
+							
+							<h4>Actions</h4>
+							<div class="wc-tp-docs-code">
+// Commission calculated
+do_action( 'wc_team_payroll_commission_calculated', $order_id, $commission_data );
+
+// Salary changed
+do_action( 'wc_tp_salary_changed', $user_id, $salary_data );
+
+// Order edited
+do_action( 'wc_team_payroll_order_edited', $order_id );
+
+// Salary transferred
+do_action( 'wc_tp_salary_transferred', $user_id, $amount, $type );
+							</div>
+
+							<h4>Filters</h4>
+							<div class="wc-tp-docs-code">
+// Modify commission data
+$commission_data = apply_filters( 'wc_tp_commission_data', $commission_data, $order );
+
+// Modify agent percentage
+$agent_percentage = apply_filters( 'wc_tp_agent_percentage', $agent_percentage, $order_id );
+
+// Modify processor percentage
+$processor_percentage = apply_filters( 'wc_tp_processor_percentage', $processor_percentage, $order_id );
+
+// Customize My Account menu items
+$items = apply_filters( 'woocommerce_account_menu_items', $items );
+							</div>
+
+							<h4>Example: Custom Commission Logic</h4>
+							<div class="wc-tp-docs-code">
+add_filter( 'wc_tp_commission_data', function( $commission_data, $order ) {
+    // Add custom logic here
+    // Example: Add bonus for high-value orders
+    if ( $order->get_total() > 1000 ) {
+        $commission_data['agent_earnings'] *= 1.1; // 10% bonus
+    }
+    return $commission_data;
+}, 10, 2 );
+							</div>
+
+							<h4>Database Schema</h4>
+							<div class="wc-tp-docs-code">
+<strong>User Meta:</strong>
+_wc_tp_fixed_salary          // Boolean: Is fixed salary
+_wc_tp_combined_salary       // Boolean: Is combined salary
+_wc_tp_salary_amount         // Float: Salary amount
+_wc_tp_salary_frequency      // String: daily/weekly/monthly
+_wc_tp_salary_history        // Array: Salary change history
+_wc_tp_payments              // Array: Payment records
+_wc_tp_employee_status       // String: active/inactive
+vb_user_id                   // String: Employee ID
+
+<strong>Order Meta:</strong>
+_primary_agent_id            // Int: Agent user ID
+_processor_user_id           // Int: Processor user ID
+_commission_data             // Array: Commission breakdown
+							</div>
+						</div>
+
+						<!-- Support Section -->
+						<div class="wc-tp-docs-section">
+							<h3>💬 Need More Help?</h3>
+							<p>If you can't find what you're looking for in this documentation:</p>
+							<ul>
+								<li><strong>GitHub Issues:</strong> <a href="https://github.com/imranduzzlo/woocommerce-team-payroll/issues" target="_blank">Report bugs or request features</a></li>
+								<li><strong>Check README:</strong> View the complete README file on GitHub</li>
+								<li><strong>Review Code:</strong> All code is well-commented for developers</li>
+							</ul>
+							
+							<div class="wc-tp-docs-success">
+								<strong>✅ Plugin Version:</strong> <?php echo esc_html( WC_TEAM_PAYROLL_VERSION ); ?><br>
+								<strong>✅ Made with ❤️ by Imran</strong>
+							</div>
+						</div>
+					</div>
 				<?php endif; ?>
 
 				<?php if ( $current_tab === 'debug' ) : ?>

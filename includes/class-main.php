@@ -57,6 +57,9 @@ class WC_Team_Payroll_Main {
 
 		// Add plugin action links
 		add_filter( 'plugin_action_links_' . plugin_basename( WC_TEAM_PAYROLL_PATH . 'woocommerce-team-payroll.php' ), array( $this, 'add_action_links' ) );
+		
+		// Handle manual update check
+		add_action( 'admin_init', array( $this, 'handle_manual_update_check' ) );
 	}
 
 	/**
@@ -64,7 +67,41 @@ class WC_Team_Payroll_Main {
 	 */
 	public function add_action_links( $links ) {
 		$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=wc-team-payroll-settings' ) ) . '">' . esc_html__( 'Settings', 'wc-team-payroll' ) . '</a>';
-		array_unshift( $links, $settings_link );
+		$update_link = '<a href="' . esc_url( admin_url( 'plugins.php?wc_tp_force_update_check=1' ) ) . '" style="color: #2271b1; font-weight: 600;">' . esc_html__( 'Check Updates', 'wc-team-payroll' ) . '</a>';
+		array_unshift( $links, $settings_link, $update_link );
 		return $links;
+	}
+
+	/**
+	 * Handle manual update check
+	 */
+	public function handle_manual_update_check() {
+		if ( ! isset( $_GET['wc_tp_force_update_check'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			return;
+		}
+
+		// Clear all update caches
+		delete_transient( 'wc_tp_github_release' );
+		delete_transient( 'wc_tp_last_update_check' );
+		delete_site_transient( 'update_plugins' );
+
+		// Force WordPress to check for updates
+		wp_update_plugins();
+
+		// Add admin notice
+		add_action( 'admin_notices', function() {
+			echo '<div class="notice notice-success is-dismissible">';
+			echo '<p><strong>' . esc_html__( 'WooCommerce Team Payroll:', 'wc-team-payroll' ) . '</strong> ';
+			echo esc_html__( 'Update check completed! If an update is available, it will appear below.', 'wc-team-payroll' );
+			echo '</p></div>';
+		} );
+
+		// Redirect to remove query parameter
+		wp_safe_redirect( admin_url( 'plugins.php' ) );
+		exit;
 	}
 }
