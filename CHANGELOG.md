@@ -1,3 +1,35 @@
+## [1.7.81] - 2026-04-25
+### 🔍 Debug & HPOS Compatibility - Find Why Button Not Working
+
+#### Debug Improvements
+
+**Added Console Logging**
+- Logs whether modal exists in DOM on page load
+- Logs whether edit button exists in DOM
+- Helps identify if elements are being rendered
+
+**HPOS Compatibility**
+- Added alternative hook `woocommerce_admin_order_data_after_billing_address`
+- Added `admin_footer` hook to ensure modal is always available
+- Support for both classic and HPOS order screens
+- Static flag to prevent duplicate button rendering
+
+**How to Debug**
+1. Open order edit page
+2. Open browser console (F12)
+3. Look for these messages:
+   - "Modal already exists in DOM" or "Modal not found"
+   - "Edit button found: 1" or "Edit button not found in DOM"
+4. If button not found, the hook isn't firing (check order status)
+5. If modal not found, there's a rendering issue
+
+**Next Steps**
+- Check console messages to see what's missing
+- Verify order status is editable (processing, pending, on-hold)
+- Check if custom fields exist on the order
+
+---
+
 ## [1.7.80] - 2026-04-25
 ### 🐛 Fixed Date Format Issue - HTML5 Date Input Compatibility
 

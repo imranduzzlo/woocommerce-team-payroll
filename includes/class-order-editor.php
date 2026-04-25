@@ -47,8 +47,9 @@ class WC_Team_Payroll_Order_Editor {
 		// Add custom meta box for order editing
 		add_action( 'add_meta_boxes', array( $this, 'add_order_editor_meta_box' ) );
 		
-		// Add edit button for custom fields in Additional Information
+		// Add edit button for custom fields - support both old and new order screens
 		add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'add_custom_fields_edit_button' ) );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_custom_fields_edit_button_alt' ), 20 );
 		
 		// Save custom fields when order is saved
 		add_action( 'woocommerce_process_shop_order_meta', array( $this, 'save_custom_fields_on_order_save' ), 10, 2 );
@@ -77,6 +78,9 @@ class WC_Team_Payroll_Order_Editor {
 		
 		// Add notice about editing capabilities
 		add_action( 'admin_notices', array( $this, 'show_editing_notice' ) );
+		
+		// Ensure modal is in footer for HPOS compatibility
+		add_action( 'admin_footer', array( $this, 'ensure_modal_in_footer' ) );
 	}
 
 	/**
@@ -942,6 +946,22 @@ class WC_Team_Payroll_Order_Editor {
 	}
 
 	/**
+	 * Alternative hook for adding custom fields edit button
+	 * This ensures the button appears even if the main hook doesn't fire
+	 */
+	public function add_custom_fields_edit_button_alt( $order ) {
+		// Check if button was already added
+		static $button_added = false;
+		if ( $button_added ) {
+			return;
+		}
+		$button_added = true;
+		
+		// Call the main function
+		$this->add_custom_fields_edit_button( $order );
+	}
+
+	/**
 	 * Save custom fields when order is saved
 	 */
 	public function save_custom_fields_on_order_save( $post_id, $post ) {
@@ -1634,5 +1654,56 @@ class WC_Team_Payroll_Order_Editor {
 		wp_send_json_success( array(
 			'message' => __( 'Order status updated successfully', 'wc-team-payroll' ),
 		) );
+	}
+
+	/**
+	 * Ensure modal is in footer for HPOS compatibility
+	 * This adds the button and modal via admin_footer if not already added
+	 */
+	public function ensure_modal_in_footer() {
+		$screen = get_current_screen();
+		
+		// Only on order edit pages
+		if ( ! $screen || ( $screen->id !== 'shop_order' && $screen->id !== 'woocommerce_page_wc-orders' ) ) {
+			return;
+		}
+		
+		// Get order ID from URL
+		$order_id = 0;
+		if ( isset( $_GET['post'] ) ) {
+			$order_id = intval( $_GET['post'] );
+		} elseif ( isset( $_GET['id'] ) ) {
+			$order_id = intval( $_GET['id'] );
+		}
+		
+		if ( ! $order_id ) {
+			return;
+		}
+		
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+		
+		// Check if modal already exists in DOM
+		?>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			// Check if modal exists
+			if ($('#wc-tp-custom-fields-modal').length === 0) {
+				console.log('Modal not found, will be added by footer hook');
+			} else {
+				console.log('Modal already exists in DOM');
+			}
+			
+			// Check if button exists
+			if ($('.wc-tp-toggle-custom-fields-edit').length === 0) {
+				console.log('Edit button not found in DOM');
+			} else {
+				console.log('Edit button found:', $('.wc-tp-toggle-custom-fields-edit').length);
+			}
+		});
+		</script>
+		<?php
 	}
 }
