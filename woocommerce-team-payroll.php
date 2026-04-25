@@ -201,6 +201,7 @@ add_action( 'plugins_loaded', function() {
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-myaccount.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-order-details-modal.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-update-debug.php';
+	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-location-formatter.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-automation.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-display-helper.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-debug.php';
