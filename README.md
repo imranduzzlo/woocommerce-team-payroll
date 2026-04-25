@@ -292,9 +292,7 @@ Salary Types:
 3. Track progress toward goals
 4. See achievement unlocks
 
-### **For Customers**
-
-At checkout, customers can:
+At checkout, current employee can:
 - Select an agent from the dropdown (if configured)
 - Agent selection determines commission allocation
 - If logged-in user is an agent, they're auto-assigned
