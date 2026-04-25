@@ -891,6 +891,12 @@ class WC_Team_Payroll_Order_Editor {
 						foreach ( $custom_fields as $meta_key => $meta_value ) {
 							$label = $this->format_label( $meta_key );
 							$field_type = $this->detect_field_type( $meta_value );
+							
+							// Convert date format if needed (dd/mm/yyyy to yyyy-mm-dd)
+							$display_value = $meta_value;
+							if ( $field_type === 'date' && preg_match( '/^(\d{2})\/(\d{2})\/(\d{4})$/', $meta_value, $matches ) ) {
+								$display_value = $matches[3] . '-' . $matches[2] . '-' . $matches[1]; // yyyy-mm-dd
+							}
 							?>
 							<div class="wc-tp-form-group">
 								<label for="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>"><?php echo esc_html( $label ); ?></label>
@@ -911,7 +917,12 @@ class WC_Team_Payroll_Order_Editor {
 										$input_type = 'number';
 									}
 									?>
-									<input type="<?php echo esc_attr( $input_type ); ?>" id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" value="<?php echo esc_attr( $meta_value ); ?>" class="wc-tp-field-input">
+									<input type="<?php echo esc_attr( $input_type ); ?>" 
+										id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" 
+										name="<?php echo esc_attr( $meta_key ); ?>" 
+										value="<?php echo esc_attr( $display_value ); ?>" 
+										data-original-format="<?php echo esc_attr( $meta_value ); ?>"
+										class="wc-tp-field-input">
 									<?php
 								}
 								?>

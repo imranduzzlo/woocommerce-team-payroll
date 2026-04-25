@@ -235,6 +235,18 @@
         var fields = {};
         
         formData.forEach(function(value, key) {
+            // Check if this is a date field that needs format conversion
+            var $input = $form.find('[name="' + key + '"]');
+            if ($input.attr('type') === 'date' && $input.data('original-format')) {
+                // Convert yyyy-mm-dd back to dd/mm/yyyy if original was in that format
+                var originalFormat = $input.data('original-format');
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(originalFormat)) {
+                    var dateParts = value.split('-');
+                    if (dateParts.length === 3) {
+                        value = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+                    }
+                }
+            }
             fields[key] = value;
         });
         
@@ -252,12 +264,12 @@
             success: function(response) {
                 if (response.success) {
                     $modal.fadeOut(200);
-                    OrderEditor.showNotice('success', 'Custom fields saved. Refresh the page to see changes.');
+                    OrderEditor.showNotice('success', 'Custom fields saved. Refreshing page...');
                     $btn.prop('disabled', false).text('Save Changes');
                     // Reload the page after a short delay
                     setTimeout(function() {
                         location.reload();
-                    }, 1500);
+                    }, 1000);
                 } else {
                     alert(response.data.message || 'Error saving fields');
                     $btn.prop('disabled', false).text('Save Changes');

@@ -1,3 +1,34 @@
+## [1.7.80] - 2026-04-25
+### 🐛 Fixed Date Format Issue - HTML5 Date Input Compatibility
+
+#### Critical Fix
+
+**Date Format Conversion**
+- Fixed HTML5 date input format error: "The specified value does not conform to the required format"
+- Automatically converts dates from dd/mm/yyyy to yyyy-mm-dd for HTML5 date inputs
+- Preserves original date format when saving back to database
+- Stores original format in data attribute for proper conversion on save
+
+**How It Works**
+- Detects date fields with dd/mm/yyyy format (e.g., "24/04/2026")
+- Converts to yyyy-mm-dd format for HTML5 date input (e.g., "2026-04-24")
+- When saving, converts back to original format (dd/mm/yyyy)
+- Maintains data consistency across the system
+
+**Technical Details**
+- Added date format detection in PHP
+- Added format conversion in JavaScript on save
+- Uses data-original-format attribute to track original format
+- Regex pattern matching for reliable conversion
+
+**User Experience**
+- Date fields now work properly in the modal
+- No more browser console errors
+- Dates display correctly in date picker
+- Original format preserved in database
+
+---
+
 ## [1.7.79] - 2026-04-25
 ### 🔧 Fixed Modal Not Opening - Debug & Improvements
 
