@@ -90,34 +90,56 @@ Before installing the plugin, ensure your system meets these requirements:
 
 ## 🚀 Installation Guide
 
-### **Method 1: Manual Installation (Recommended)**
+### **Method 1: Automatic Updates (Recommended for Existing Users)**
+
+Once installed, the plugin automatically checks for updates from GitHub:
+
+1. Updates appear in `Dashboard > Updates` like any WordPress plugin
+2. Click `Update Now` to install the latest version
+3. The plugin automatically handles folder naming and updates
+4. No manual download or configuration needed!
+
+### **Method 2: Manual Installation (First-Time Installation)**
 
 1. **Download the Plugin**
    - Visit [GitHub Releases](https://github.com/imranduzzlo/woocommerce-team-payroll/releases)
-   - Download the latest version ZIP file
+   - Download the latest version ZIP file (e.g., `woocommerce-team-payroll-1.0.6.zip`)
 
-2. **Upload to WordPress**
+2. **Extract and Rename** ⚠️ **IMPORTANT STEP**
+   - Extract the ZIP file on your computer
+   - You'll see a folder named `woocommerce-team-payroll-1.0.6` (with version number)
+   - **Rename** the folder to `woocommerce-team-payroll` (remove the version number)
+   - This step is crucial for the plugin to work correctly!
+
+3. **Upload to WordPress**
    - Login to your WordPress admin panel
    - Go to `Plugins > Add New`
    - Click `Upload Plugin` button
-   - Choose the downloaded ZIP file
-   - Click `Install Now`
+   - **Option A**: Re-zip the renamed folder and upload it
+   - **Option B**: Use FTP to upload the renamed folder to `/wp-content/plugins/`
 
-3. **Activate the Plugin**
+4. **Activate the Plugin**
    - After installation completes, click `Activate Plugin`
    - You'll see "WooCommerce Team Payroll" in your admin menu
 
-4. **Flush Permalinks** (Important!)
+5. **Flush Permalinks** (Important!)
    - Go to `Settings > Permalinks`
    - Click `Save Changes` (no need to modify anything)
    - This ensures My Account endpoints work correctly
 
-### **Method 2: FTP Installation**
+> **⚠️ Why Rename the Folder?**  
+> GitHub automatically adds the version number to downloaded releases (e.g., `woocommerce-team-payroll-1.0.6`).  
+> WordPress expects the folder to be named `woocommerce-team-payroll` (without version).  
+> If you don't rename it, the plugin won't activate correctly.  
+> **Note**: Automatic updates handle this renaming automatically!
 
-1. **Extract the ZIP file** on your computer
-2. **Upload via FTP** to `/wp-content/plugins/woocommerce-team-payroll/`
-3. **Activate** the plugin from `Plugins` menu in WordPress admin
-4. **Flush permalinks** as described above
+### **Method 3: FTP Installation**
+
+1. **Download and extract** the ZIP file on your computer
+2. **Rename** the folder from `woocommerce-team-payroll-x.x.x` to `woocommerce-team-payroll`
+3. **Upload via FTP** to `/wp-content/plugins/woocommerce-team-payroll/`
+4. **Activate** the plugin from `Plugins` menu in WordPress admin
+5. **Flush permalinks** as described above
 
 ### **Post-Installation Checklist**
 
@@ -136,6 +158,7 @@ The plugin supports automatic updates from GitHub:
 - Updates appear in WordPress admin like native plugins
 - Click "Update Now" to install the latest version
 - Changelog is displayed before updating
+- Folder renaming is handled automatically during updates
 - No need to manually download and upload
 
 ---

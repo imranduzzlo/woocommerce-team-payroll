@@ -127,19 +127,34 @@ WooCommerce Team Payroll & Commission System is a powerful solution for business
 
 ## 🚀 Installation
 
-### **Method 1: Manual Installation**
+### **Method 1: Automatic Updates (Recommended)**
 
-1. **Download** the plugin from [GitHub Releases](https://github.com/imranduzzlo/woocommerce-team-payroll/releases)
-2. **Upload** to `/wp-content/plugins/woocommerce-team-payroll/`
-3. **Activate** the plugin through the 'Plugins' menu in WordPress
-4. **Configure** settings at `Team Payroll > Settings`
+Once installed, the plugin will automatically check for updates from GitHub:
+1. Updates appear in `Dashboard > Updates` like any WordPress plugin
+2. Click `Update Now` to install the latest version
+3. No manual download needed!
 
-### **Method 2: WordPress Admin**
+### **Method 2: Manual Installation**
+
+1. **Download** the latest release from [GitHub Releases](https://github.com/imranduzzlo/woocommerce-team-payroll/releases)
+2. **Extract** the ZIP file on your computer
+3. **IMPORTANT**: Rename the extracted folder from `woocommerce-team-payroll-x.x.x` to `woocommerce-team-payroll` (remove the version number)
+4. **Upload** the renamed folder to `/wp-content/plugins/`
+5. **Activate** the plugin through the 'Plugins' menu in WordPress
+6. **Configure** settings at `Team Payroll > Settings`
+
+> **⚠️ Important Note for Manual Installation:**  
+> GitHub automatically adds the version number to the folder name (e.g., `woocommerce-team-payroll-1.0.6`).  
+> You **must rename** it to `woocommerce-team-payroll` (without version number) for the plugin to work correctly.
+
+### **Method 3: WordPress Admin Upload**
 
 1. Go to `Plugins > Add New`
 2. Click `Upload Plugin`
 3. Choose the downloaded ZIP file
-4. Click `Install Now` and then `Activate`
+4. Click `Install Now`
+5. **After installation**, go to your file manager and rename the folder from `woocommerce-team-payroll-x.x.x` to `woocommerce-team-payroll`
+6. Return to WordPress and click `Activate`
 
 ### **Post-Installation**
 

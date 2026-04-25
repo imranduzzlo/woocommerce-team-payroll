@@ -1,3 +1,30 @@
+## [1.0.7] - 2026-04-25
+### 📚 Documentation & Distribution Improvements
+
+**Updated Installation Documentation**
+- Added clear instructions for manual installation with folder renaming
+- Explained why GitHub adds version numbers to folder names
+- Documented automatic update process
+- Added warnings about folder naming requirements
+
+**New Manual Installation Script**
+- Created `create_manual_install_zip.ps1` for generating properly named ZIP files
+- Generates ZIP with correct folder structure (no version in folder name)
+- Ready for direct WordPress upload without renaming
+- Includes only necessary files (excludes dev files)
+
+**Files Changed**
+- `README.md` (updated installation section)
+- `DOCUMENTATION.md` (comprehensive installation guide)
+- `create_manual_install_zip.ps1` (new script)
+
+**For Users:**
+- Use automatic updates (recommended) - no manual work needed
+- For manual install: Use the `-manual-install.zip` file from releases
+- Or follow the renaming instructions in documentation
+
+---
+
 ## [1.0.6] - 2026-04-25
 ### 🐛 Critical Fix
 
