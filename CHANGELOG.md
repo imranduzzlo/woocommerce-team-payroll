@@ -1,3 +1,30 @@
+## [1.7.83] - 2026-04-25
+### 📋 Added Dropdown Support for Select Fields
+
+#### New Features
+
+**Dropdown Fields**
+- Fields with predefined options now show as dropdowns instead of text inputs
+- Automatically detects known select fields
+- Supports both internal (_field_name) and public (field_name) field names
+
+**Supported Dropdown Fields**
+- order_source: Facebook, WhatsApp, Website, Phone, Instagram, Other
+- order_priority: Low, Medium, High, Urgent
+- payment_method: bKash, Nagad, Rocket, Cash, Bank Transfer
+- order_status: Pending, Processing, Completed, Cancelled, On Hold
+- delivery_status: Not Shipped, Shipped, In Transit, Delivered, Returned
+- payment_status: Unpaid, Partially Paid, Paid, Refunded
+
+**Agent/User Fields**
+- Fields containing "agent", "user", or "employee" automatically show user dropdown
+- Populated with all WordPress users
+
+**How to Add More Dropdowns**
+Edit `get_field_options()` function in `class-order-editor.php` and add your field name with options array.
+
+---
+
 ## [1.7.82] - 2026-04-25
 ### ✅ PROPER IMPLEMENTATION - WordPress Meta Box (No More Guessing!)
 

@@ -155,6 +155,7 @@ class WC_Team_Payroll_Order_Editor {
 		foreach ( $custom_fields as $meta_key => $meta_value ) {
 			$label = $this->format_label( $meta_key );
 			$field_type = $this->detect_field_type( $meta_value );
+			$field_options = $this->get_field_options( $meta_key, $meta_value );
 			
 			// Convert date format if needed
 			$display_value = $meta_value;
@@ -165,7 +166,15 @@ class WC_Team_Payroll_Order_Editor {
 			echo '<p class="form-field">';
 			echo '<label for="wc_tp_field_' . esc_attr( $meta_key ) . '">' . esc_html( $label ) . '</label>';
 			
-			if ( $field_type === 'textarea' ) {
+			// Check if this field has dropdown options
+			if ( ! empty( $field_options ) ) {
+				echo '<select id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" style="width: 100%;">';
+				foreach ( $field_options as $option_value => $option_label ) {
+					$selected = ( $meta_value == $option_value ) ? ' selected="selected"' : '';
+					echo '<option value="' . esc_attr( $option_value ) . '"' . $selected . '>' . esc_html( $option_label ) . '</option>';
+				}
+				echo '</select>';
+			} elseif ( $field_type === 'textarea' ) {
 				echo '<textarea id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" rows="3" style="width: 100%;">' . esc_textarea( $meta_value ) . '</textarea>';
 			} else {
 				$input_type = 'text';
@@ -1167,11 +1176,17 @@ class WC_Team_Payroll_Order_Editor {
 	 * Get field options for select fields
 	 */
 	private function get_field_options( $key, $value ) {
-		// Check if this is a known select field
+		// Check if this is a known select field (with or without underscore)
 		$select_fields = array(
 			'_order_source' => array( 'Facebook', 'WhatsApp', 'Website', 'Phone', 'Instagram', 'Other' ),
+			'order_source' => array( 'Facebook', 'WhatsApp', 'Website', 'Phone', 'Instagram', 'Other' ),
 			'_order_priority' => array( 'Low', 'Medium', 'High', 'Urgent' ),
+			'order_priority' => array( 'Low', 'Medium', 'High', 'Urgent' ),
 			'_payment_method' => array( 'bKash', 'Nagad', 'Rocket', 'Cash', 'Bank Transfer' ),
+			'payment_method' => array( 'bKash', 'Nagad', 'Rocket', 'Cash', 'Bank Transfer' ),
+			'order_status' => array( 'Pending', 'Processing', 'Completed', 'Cancelled', 'On Hold' ),
+			'delivery_status' => array( 'Not Shipped', 'Shipped', 'In Transit', 'Delivered', 'Returned' ),
+			'payment_status' => array( 'Unpaid', 'Partially Paid', 'Paid', 'Refunded' ),
 		);
 
 		if ( isset( $select_fields[ $key ] ) ) {
@@ -1179,7 +1194,7 @@ class WC_Team_Payroll_Order_Editor {
 		}
 
 		// Check if it's an agent/user field
-		if ( strpos( $key, 'agent' ) !== false || strpos( $key, 'user' ) !== false ) {
+		if ( strpos( $key, 'agent' ) !== false || strpos( $key, 'user' ) !== false || strpos( $key, 'employee' ) !== false ) {
 			return $this->get_agent_options();
 		}
 
