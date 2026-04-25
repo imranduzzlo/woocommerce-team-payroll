@@ -857,9 +857,23 @@ class WC_Team_Payroll_Order_Editor {
 		}
 
 		?>
-		<div class="wc-tp-custom-fields-edit-section" style="margin-top: 15px; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+		<style>
+			.wc-tp-custom-fields-edit-section {
+				margin-top: 15px;
+				padding: 12px;
+				background: #f9f9f9;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+			}
+			.wc-tp-toggle-custom-fields-edit {
+				display: inline-flex !important;
+				align-items: center;
+				gap: 5px;
+			}
+		</style>
+		<div class="wc-tp-custom-fields-edit-section">
 			<button type="button" class="button wc-tp-toggle-custom-fields-edit" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
-				<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px; margin: 0; margin-right: 5px;"></span>
+				<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
 				<?php esc_html_e( 'Edit Custom Fields', 'wc-team-payroll' ); ?>
 			</button>
 		</div>
@@ -883,7 +897,7 @@ class WC_Team_Payroll_Order_Editor {
 								<?php
 								if ( $field_type === 'textarea' ) {
 									?>
-									<textarea id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"><?php echo esc_textarea( $meta_value ); ?></textarea>
+									<textarea id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" rows="4" class="wc-tp-field-input"><?php echo esc_textarea( $meta_value ); ?></textarea>
 									<?php
 								} else {
 									$input_type = 'text';
@@ -897,7 +911,7 @@ class WC_Team_Payroll_Order_Editor {
 										$input_type = 'number';
 									}
 									?>
-									<input type="<?php echo esc_attr( $input_type ); ?>" id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" value="<?php echo esc_attr( $meta_value ); ?>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;">
+									<input type="<?php echo esc_attr( $input_type ); ?>" id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" value="<?php echo esc_attr( $meta_value ); ?>" class="wc-tp-field-input">
 									<?php
 								}
 								?>

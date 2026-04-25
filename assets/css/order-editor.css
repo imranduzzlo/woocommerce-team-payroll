@@ -318,20 +318,26 @@
 }
 
 .wc-tp-form-group input[type="text"],
+.wc-tp-form-group input[type="email"],
+.wc-tp-form-group input[type="url"],
+.wc-tp-form-group input[type="date"],
 .wc-tp-form-group input[type="number"],
 .wc-tp-form-group select,
-.wc-tp-form-group textarea {
+.wc-tp-form-group textarea,
+.wc-tp-field-input {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    font-family: inherit;
     transition: border-color 0.2s;
 }
 
 .wc-tp-form-group input:focus,
 .wc-tp-form-group select:focus,
-.wc-tp-form-group textarea:focus {
+.wc-tp-form-group textarea:focus,
+.wc-tp-field-input:focus {
     border-color: #2271b1;
     outline: none;
     box-shadow: 0 0 0 1px #2271b1;

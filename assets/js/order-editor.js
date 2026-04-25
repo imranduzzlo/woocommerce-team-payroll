@@ -52,9 +52,18 @@
 
         handleToggleCustomFieldsEdit: function(e) {
             e.preventDefault();
+            console.log('Edit Custom Fields button clicked');
             var $modal = $('#wc-tp-custom-fields-modal');
-            $modal.fadeIn(200);
-            $modal.find('input:first').focus();
+            console.log('Modal found:', $modal.length);
+            if ($modal.length) {
+                $modal.fadeIn(200);
+                setTimeout(function() {
+                    $modal.find('input:first, textarea:first').focus();
+                }, 250);
+            } else {
+                console.error('Modal not found in DOM');
+                alert('Error: Modal not found. Please refresh the page and try again.');
+            }
         },
 
         handleEditCustomField: function(e, btnElement) {
