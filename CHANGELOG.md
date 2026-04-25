@@ -1,3 +1,45 @@
+## [1.7.73] - 2026-04-25
+### ✨ Enhanced Custom Field Editing UI
+
+#### Improvements
+
+**Cleaner Native Display**
+- Custom meta fields now display as plain text by default
+- Subtle background on hover for better visual feedback
+- Edit icons only appear on hover, keeping UI minimal and uncluttered
+
+**Icon-Based Inline Editing**
+- Click the edit icon to activate inline editing mode
+- Fields transform into editable inputs with Save/Cancel buttons
+- Smooth transitions and animations for better UX
+
+**Enhanced Keyboard Support**
+- Press **Enter** to save field changes (except in textareas)
+- Press **Escape** to cancel editing
+- Auto-focus on input field when editing starts
+
+**Improved Styling**
+- Custom fields grouped in bordered containers
+- Better visual hierarchy with proper spacing and colors
+- Edit buttons styled with green (save) and gray (cancel)
+- Responsive layout that works on all screen sizes
+- Blue border on active editing state for clear indication
+
+**Better Organization**
+- Custom fields, billing custom fields, and shipping custom fields in separate sections
+- Each section has its own container with proper styling
+- Consistent formatting across all field types
+
+#### Technical Details
+
+- Added keyboard event handlers for Enter/Escape keys
+- Improved CSS with hover states and transitions
+- Better inline styling for field containers
+- Refactored JavaScript to reduce code duplication
+- Maintained all existing functionality while improving UX
+
+---
+
 ## [1.7.72] - 2026-04-26
 ### 🚀 Major Refactor - WooCommerce Native Custom Field Editing
 

@@ -62,35 +62,32 @@
             }
             
             var metaKey = $row.data('meta-key');
-            var label = $row.data('label');
             var value = $btn.data('value');
             var fieldType = $row.data('field-type');
             var orderId = $row.data('order-id');
-            
-            console.log('Edit clicked:', { metaKey, label, value, fieldType, orderId });
             
             // Hide display and button
             $row.find('.wc-tp-field-display').hide();
             $btn.hide();
             
-            // Create editable field based on type
+            // Create editable field based on type using WooCommerce native inputs
             var fieldHtml = '';
             
             if (fieldType === 'checkbox') {
                 var checked = (value === '1' || value.toLowerCase() === 'yes') ? 'checked' : '';
                 fieldHtml = '<label style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" class="wc-tp-field-value" ' + checked + ' style="margin: 0;"> <span>Yes</span></label>';
             } else if (fieldType === 'email') {
-                fieldHtml = '<input type="email" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">';
+                fieldHtml = '<input type="email" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
             } else if (fieldType === 'url') {
-                fieldHtml = '<input type="url" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">';
+                fieldHtml = '<input type="url" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
             } else if (fieldType === 'date') {
-                fieldHtml = '<input type="date" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">';
+                fieldHtml = '<input type="date" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
             } else if (fieldType === 'number') {
-                fieldHtml = '<input type="number" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">';
+                fieldHtml = '<input type="number" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
             } else if (fieldType === 'textarea') {
-                fieldHtml = '<textarea class="wc-tp-field-value" rows="3" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">' + value + '</textarea>';
+                fieldHtml = '<textarea class="wc-tp-field-value" rows="3" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">' + value + '</textarea>';
             } else {
-                fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">';
+                fieldHtml = '<input type="text" class="wc-tp-field-value" value="' + value.replace(/"/g, '&quot;') + '" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
             }
             
             // Create action buttons
@@ -104,18 +101,16 @@
             $row.append($fieldContainer);
             
             // Focus on input
-            $row.find('.wc-tp-field-value').first().focus();
+            var $input = $row.find('.wc-tp-field-value').first();
+            $input.focus();
             
-            // Save handler
-            $row.find('.wc-tp-save-field').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
+            // Helper function to save field
+            var saveField = function() {
                 var newValue = $row.find('.wc-tp-field-value').is(':checkbox') ? 
                     ($row.find('.wc-tp-field-value').is(':checked') ? '1' : '0') : 
                     $row.find('.wc-tp-field-value').val();
                 
-                var $saveBtn = $(this);
+                var $saveBtn = $row.find('.wc-tp-save-field');
                 $saveBtn.prop('disabled', true).text('Saving...');
                 
                 var ajaxData = {
@@ -147,16 +142,38 @@
                         $saveBtn.prop('disabled', false).text('Save');
                     }
                 });
+            };
+            
+            // Helper function to cancel edit
+            var cancelEdit = function() {
+                $row.find('.wc-tp-field-display').show();
+                $row.find('.wc-tp-field-editor').remove();
+                $btn.show();
+            };
+            
+            // Save handler
+            $row.find('.wc-tp-save-field').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                saveField();
             });
             
             // Cancel handler
             $row.find('.wc-tp-cancel-field').on('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                $row.find('.wc-tp-field-display').show();
-                $row.find('.wc-tp-field-editor').remove();
-                $btn.show();
+                cancelEdit();
+            });
+            
+            // Keyboard shortcuts
+            $input.on('keydown', function(e) {
+                if (e.key === 'Enter' && fieldType !== 'textarea') {
+                    e.preventDefault();
+                    saveField();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                }
             });
         },
 

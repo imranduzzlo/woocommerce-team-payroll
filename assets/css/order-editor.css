@@ -76,22 +76,38 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.wc-tp-custom-field-row:last-child {
+    border-bottom: none;
 }
 
 .wc-tp-custom-field-row label {
     flex: 0 0 auto;
     min-width: 150px;
     font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    margin: 0;
 }
 
 .wc-tp-field-display {
     flex: 1;
     padding: 8px 12px;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: 4px;
     font-size: 14px;
     color: #333;
+    word-break: break-word;
+    transition: all 0.2s ease;
+}
+
+.wc-tp-custom-field-row:hover .wc-tp-field-display {
+    background: #f9f9f9;
+    border-color: #e0e0e0;
 }
 
 .wc-tp-edit-custom-field-btn {
@@ -101,17 +117,19 @@
     justify-content: center;
     background: none;
     border: none;
-    padding: 0;
+    padding: 4px 8px;
     margin: 0;
     cursor: pointer;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease, pointer-events 0.2s ease;
-    color: #666;
+    transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease;
+    color: #999;
+    border-radius: 4px;
 }
 
 .wc-tp-edit-custom-field-btn:hover {
     color: #2271b1;
+    background: #f0f0f0;
 }
 
 .wc-tp-custom-field-row:hover .wc-tp-edit-custom-field-btn {
@@ -123,6 +141,59 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
+}
+
+/* Field Editor */
+.wc-tp-field-editor {
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+}
+
+.wc-tp-field-editor input,
+.wc-tp-field-editor textarea {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    font-size: 14px;
+    box-shadow: 0 0 0 1px rgba(34, 113, 177, 0.1);
+}
+
+.wc-tp-field-editor input:focus,
+.wc-tp-field-editor textarea:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+}
+
+.wc-tp-field-editor .button-small {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.wc-tp-save-field {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.wc-tp-save-field:hover:not(:disabled) {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+.wc-tp-cancel-field {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.wc-tp-cancel-field:hover:not(:disabled) {
+    background-color: #5a6268;
+    border-color: #5a6268;
 }
 
 @keyframes fadeIn {

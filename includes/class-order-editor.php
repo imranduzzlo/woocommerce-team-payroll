@@ -909,76 +909,35 @@ class WC_Team_Payroll_Order_Editor {
 		?>
 		<div class="wc-tp-custom-fields-section">
 			<h3><?php esc_html_e( 'Custom Fields', 'wc-team-payroll' ); ?></h3>
-			<?php
-			foreach ( $custom_fields as $meta_key => $meta_value ) {
-				// Format label from meta key
-				$label = $this->format_label( $meta_key );
+			<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+				<?php
+				$index = 0;
+				foreach ( $custom_fields as $meta_key => $meta_value ) {
+					// Format label from meta key
+					$label = $this->format_label( $meta_key );
 
-				// Skip standard fields
-				if ( in_array( $label, $standard_fields ) ) {
-					continue;
+					// Skip standard fields
+					if ( in_array( $label, $standard_fields ) ) {
+						continue;
+					}
+
+					// Detect field type
+					$field_type = $this->detect_field_type( $meta_value );
+
+					// Display readonly field with edit button
+					?>
+					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="margin: 0; padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+						<label style="flex: 0 0 auto; min-width: 150px; font-weight: 600; margin: 0; color: #333; font-size: 14px;"><?php echo esc_html( $label ); ?>:</label>
+						<span class="wc-tp-field-display" style="flex: 1; padding: 0; background: transparent; border: none; color: #333; font-size: 14px; word-break: break-word;"><?php echo esc_html( $meta_value ); ?></span>
+						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>" style="flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 4px 8px; margin: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease; color: #999; border-radius: 4px;">
+							<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						</button>
+					</p>
+					<?php
+					$index++;
 				}
-
-				// Detect field type
-				$field_type = $this->detect_field_type( $meta_value );
-
-				// Use WooCommerce native functions for proper rendering
-				if ( $field_type === 'checkbox' ) {
-					woocommerce_wp_checkbox( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'cbvalue' => '1',
-					) );
-				} elseif ( $field_type === 'textarea' ) {
-					woocommerce_wp_textarea_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'date' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'date',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'email' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'email',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'url' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'url',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'number' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'number',
-						'placeholder' => '',
-					) );
-				} else {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'placeholder' => '',
-					) );
-				}
-			}
-			?>
+				?>
+			</div>
 		</div>
 		<?php
 	}
@@ -1031,68 +990,25 @@ class WC_Team_Payroll_Order_Editor {
 		?>
 		<div class="wc-tp-billing-custom-fields-section">
 			<h4><?php esc_html_e( 'Billing Custom Fields', 'wc-team-payroll' ); ?></h4>
-			<?php
-			foreach ( $billing_custom_fields as $meta_key => $meta_value ) {
-				$label = $this->format_label( str_replace( '_billing_', '', $meta_key ) );
-				$field_type = $this->detect_field_type( $meta_value );
+			<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+				<?php
+				foreach ( $billing_custom_fields as $meta_key => $meta_value ) {
+					$label = $this->format_label( str_replace( '_billing_', '', $meta_key ) );
+					$field_type = $this->detect_field_type( $meta_value );
 
-				// Use WooCommerce native functions for proper rendering
-				if ( $field_type === 'checkbox' ) {
-					woocommerce_wp_checkbox( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'cbvalue' => '1',
-					) );
-				} elseif ( $field_type === 'textarea' ) {
-					woocommerce_wp_textarea_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'date' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'date',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'email' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'email',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'url' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'url',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'number' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'number',
-						'placeholder' => '',
-					) );
-				} else {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'placeholder' => '',
-					) );
+					// Display readonly field with edit button
+					?>
+					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="margin: 0; padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+						<label style="flex: 0 0 auto; min-width: 150px; font-weight: 600; margin: 0; color: #333; font-size: 14px;"><?php echo esc_html( $label ); ?>:</label>
+						<span class="wc-tp-field-display" style="flex: 1; padding: 0; background: transparent; border: none; color: #333; font-size: 14px; word-break: break-word;"><?php echo esc_html( $meta_value ); ?></span>
+						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>" style="flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 4px 8px; margin: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease; color: #999; border-radius: 4px;">
+							<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						</button>
+					</p>
+					<?php
 				}
-			}
-			?>
+				?>
+			</div>
 		</div>
 		<?php
 	}
@@ -1145,68 +1061,25 @@ class WC_Team_Payroll_Order_Editor {
 		?>
 		<div class="wc-tp-shipping-custom-fields-section">
 			<h4><?php esc_html_e( 'Shipping Custom Fields', 'wc-team-payroll' ); ?></h4>
-			<?php
-			foreach ( $shipping_custom_fields as $meta_key => $meta_value ) {
-				$label = $this->format_label( str_replace( '_shipping_', '', $meta_key ) );
-				$field_type = $this->detect_field_type( $meta_value );
+			<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+				<?php
+				foreach ( $shipping_custom_fields as $meta_key => $meta_value ) {
+					$label = $this->format_label( str_replace( '_shipping_', '', $meta_key ) );
+					$field_type = $this->detect_field_type( $meta_value );
 
-				// Use WooCommerce native functions for proper rendering
-				if ( $field_type === 'checkbox' ) {
-					woocommerce_wp_checkbox( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'cbvalue' => '1',
-					) );
-				} elseif ( $field_type === 'textarea' ) {
-					woocommerce_wp_textarea_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'date' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'date',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'email' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'email',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'url' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'url',
-						'placeholder' => '',
-					) );
-				} elseif ( $field_type === 'number' ) {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'type' => 'number',
-						'placeholder' => '',
-					) );
-				} else {
-					woocommerce_wp_text_input( array(
-						'id' => $meta_key,
-						'label' => $label,
-						'value' => $meta_value,
-						'placeholder' => '',
-					) );
+					// Display readonly field with edit button
+					?>
+					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="margin: 0; padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+						<label style="flex: 0 0 auto; min-width: 150px; font-weight: 600; margin: 0; color: #333; font-size: 14px;"><?php echo esc_html( $label ); ?>:</label>
+						<span class="wc-tp-field-display" style="flex: 1; padding: 0; background: transparent; border: none; color: #333; font-size: 14px; word-break: break-word;"><?php echo esc_html( $meta_value ); ?></span>
+						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>" style="flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 4px 8px; margin: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease; color: #999; border-radius: 4px;">
+							<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						</button>
+					</p>
+					<?php
 				}
-			}
-			?>
+				?>
+			</div>
 		</div>
 		<?php
 	}
