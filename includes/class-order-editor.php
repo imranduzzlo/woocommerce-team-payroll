@@ -47,9 +47,8 @@ class WC_Team_Payroll_Order_Editor {
 		// Add custom meta box for order editing
 		add_action( 'add_meta_boxes', array( $this, 'add_order_editor_meta_box' ) );
 		
-		// Add edit button for custom fields - support both old and new order screens
-		add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'add_custom_fields_edit_button' ) );
-		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_custom_fields_edit_button_alt' ), 20 );
+		// Add meta box for custom fields editing (PROPER WAY)
+		add_action( 'add_meta_boxes', array( $this, 'add_custom_fields_meta_box' ) );
 		
 		// Save custom fields when order is saved
 		add_action( 'woocommerce_process_shop_order_meta', array( $this, 'save_custom_fields_on_order_save' ), 10, 2 );
@@ -78,9 +77,6 @@ class WC_Team_Payroll_Order_Editor {
 		
 		// Add notice about editing capabilities
 		add_action( 'admin_notices', array( $this, 'show_editing_notice' ) );
-		
-		// Ensure modal is in footer for HPOS compatibility
-		add_action( 'admin_footer', array( $this, 'ensure_modal_in_footer' ) );
 	}
 
 	/**
@@ -96,6 +92,100 @@ class WC_Team_Payroll_Order_Editor {
 	private function is_order_editing_enabled() {
 		$settings = get_option( 'wc_team_payroll_order_editor', array() );
 		return isset( $settings['enabled'] ) && $settings['enabled'] === '1';
+	}
+
+	/**
+	 * Add meta box for custom fields editing (PROPER WAY - WordPress Meta Box)
+	 */
+	public function add_custom_fields_meta_box() {
+		$screen = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+			? wc_get_page_screen_id( 'shop-order' )
+			: 'shop_order';
+
+		add_meta_box(
+			'wc_tp_custom_fields',
+			__( 'Edit Custom Fields', 'wc-team-payroll' ),
+			array( $this, 'render_custom_fields_meta_box' ),
+			$screen,
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render custom fields meta box
+	 */
+	public function render_custom_fields_meta_box( $post_or_order_object ) {
+		$order = ( $post_or_order_object instanceof \WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
+
+		if ( ! $order ) {
+			return;
+		}
+
+		// Get all order meta
+		$all_meta = $order->get_meta_data();
+		$custom_fields = array();
+
+		foreach ( $all_meta as $meta ) {
+			$key = $meta->key;
+			$value = $meta->value;
+
+			// Skip internal WooCommerce meta (starts with _)
+			if ( strpos( $key, '_' ) === 0 ) {
+				continue;
+			}
+
+			// Skip if value is empty or array
+			if ( empty( $value ) || is_array( $value ) ) {
+				continue;
+			}
+
+			$custom_fields[ $key ] = $value;
+		}
+
+		if ( empty( $custom_fields ) ) {
+			echo '<p>' . esc_html__( 'No custom fields found.', 'wc-team-payroll' ) . '</p>';
+			return;
+		}
+
+		wp_nonce_field( 'wc_tp_custom_fields_nonce', 'wc_tp_custom_fields_nonce' );
+
+		echo '<div class="wc-tp-custom-fields-editor">';
+		
+		foreach ( $custom_fields as $meta_key => $meta_value ) {
+			$label = $this->format_label( $meta_key );
+			$field_type = $this->detect_field_type( $meta_value );
+			
+			// Convert date format if needed
+			$display_value = $meta_value;
+			if ( $field_type === 'date' && preg_match( '/^(\d{2})\/(\d{2})\/(\d{4})$/', $meta_value, $matches ) ) {
+				$display_value = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
+			}
+			
+			echo '<p class="form-field">';
+			echo '<label for="wc_tp_field_' . esc_attr( $meta_key ) . '">' . esc_html( $label ) . '</label>';
+			
+			if ( $field_type === 'textarea' ) {
+				echo '<textarea id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" rows="3" style="width: 100%;">' . esc_textarea( $meta_value ) . '</textarea>';
+			} else {
+				$input_type = 'text';
+				if ( $field_type === 'email' ) {
+					$input_type = 'email';
+				} elseif ( $field_type === 'url' ) {
+					$input_type = 'url';
+				} elseif ( $field_type === 'date' ) {
+					$input_type = 'date';
+				} elseif ( $field_type === 'number' ) {
+					$input_type = 'number';
+				}
+				
+				echo '<input type="' . esc_attr( $input_type ) . '" id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" value="' . esc_attr( $display_value ) . '" style="width: 100%;" data-original-format="' . esc_attr( $meta_value ) . '" />';
+			}
+			
+			echo '</p>';
+		}
+		
+		echo '</div>';
 	}
 
 	/**
@@ -965,58 +1055,34 @@ class WC_Team_Payroll_Order_Editor {
 	 * Save custom fields when order is saved
 	 */
 	public function save_custom_fields_on_order_save( $post_id, $post ) {
-		if ( ! isset( $_POST ) || empty( $_POST ) ) {
-			return;
-		}
-
-		$order = wc_get_order( $post_id );
-		if ( ! $order ) {
-			return;
-		}
-
-		// Get all order meta keys to identify custom fields
-		$all_meta = $order->get_meta_data();
-		$meta_keys = array();
-
-		foreach ( $all_meta as $meta ) {
-			$meta_keys[] = $meta->key;
-		}
-
-		// Save custom fields from POST
-		foreach ( $meta_keys as $meta_key ) {
-			// Skip internal WooCommerce fields
-			if ( strpos( $meta_key, '_' ) === 0 ) {
-				continue;
+		// Check nonce for meta box
+		if ( isset( $_POST['wc_tp_custom_fields_nonce'] ) && wp_verify_nonce( $_POST['wc_tp_custom_fields_nonce'], 'wc_tp_custom_fields_nonce' ) ) {
+			$order = wc_get_order( $post_id );
+			if ( ! $order ) {
+				return;
 			}
 
-			// Check if field exists in POST
-			if ( isset( $_POST[ $meta_key ] ) ) {
-				$value = sanitize_text_field( $_POST[ $meta_key ] );
-				$order->update_meta_data( $meta_key, $value );
-			}
-		}
-
-		// Also handle billing and shipping custom fields
-		foreach ( $_POST as $key => $value ) {
-			if ( strpos( $key, '_billing_' ) === 0 || strpos( $key, '_shipping_' ) === 0 ) {
-				// Skip standard WooCommerce fields
-				$standard_fields = array(
-					'_billing_first_name', '_billing_last_name', '_billing_company',
-					'_billing_address_1', '_billing_address_2', '_billing_city', '_billing_state',
-					'_billing_postcode', '_billing_country', '_billing_email', '_billing_phone',
-					'_shipping_first_name', '_shipping_last_name', '_shipping_company',
-					'_shipping_address_1', '_shipping_address_2', '_shipping_city', '_shipping_state',
-					'_shipping_postcode', '_shipping_country'
-				);
-
-				if ( ! in_array( $key, $standard_fields ) ) {
-					$value = sanitize_text_field( $value );
-					$order->update_meta_data( $key, $value );
+			// Save custom fields from meta box
+			if ( isset( $_POST['wc_tp_custom_fields'] ) && is_array( $_POST['wc_tp_custom_fields'] ) ) {
+				foreach ( $_POST['wc_tp_custom_fields'] as $meta_key => $meta_value ) {
+					// Sanitize value
+					$meta_value = sanitize_text_field( $meta_value );
+					
+					// Convert date format back if needed (yyyy-mm-dd to dd/mm/yyyy)
+					if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $meta_value ) ) {
+						$date_parts = explode( '-', $meta_value );
+						if ( count( $date_parts ) === 3 ) {
+							$meta_value = $date_parts[2] . '/' . $date_parts[1] . '/' . $date_parts[0];
+						}
+					}
+					
+					// Update order meta
+					$order->update_meta_data( $meta_key, $meta_value );
 				}
+				
+				$order->save();
 			}
 		}
-
-		$order->save();
 	}
 
 	/**
