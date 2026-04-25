@@ -26,6 +26,11 @@ define( 'WC_TEAM_PAYROLL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_TEAM_PAYROLL_URL', plugin_dir_url( __FILE__ ) );
 
 // ============================================================================
+// LOAD GITHUB UPDATER EARLY (works even when plugin is inactive)
+// ============================================================================
+require_once WC_TEAM_PAYROLL_PATH . 'includes/class-github-updater.php';
+
+// ============================================================================
 // PLUGIN ACTIVATION - FLUSH REWRITE RULES
 // ============================================================================
 
@@ -194,7 +199,6 @@ add_action( 'plugins_loaded', function() {
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-custom-fields.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-myaccount.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-order-details-modal.php';
-	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-github-updater.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-update-debug.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-automation.php';
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-salary-display-helper.php';

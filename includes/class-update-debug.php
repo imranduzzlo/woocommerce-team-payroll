@@ -11,21 +11,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Team_Payroll_Update_Debug {
 
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_debug_page' ), 100 );
+		add_action( 'admin_menu', array( $this, 'add_debug_page' ), 999 );
 	}
 
 	/**
 	 * Add debug page to admin menu
 	 */
 	public function add_debug_page() {
-		add_submenu_page(
-			'wc-team-payroll-dashboard',
-			__( 'Update Debug', 'wc-team-payroll' ),
-			__( 'Update Debug', 'wc-team-payroll' ),
-			'manage_options',
-			'wc-team-payroll-update-debug',
-			array( $this, 'render_debug_page' )
-		);
+		// Add as a top-level menu if parent doesn't exist
+		$parent_slug = 'wc-team-payroll-dashboard';
+		
+		// Check if parent menu exists
+		global $menu;
+		$parent_exists = false;
+		if ( is_array( $menu ) ) {
+			foreach ( $menu as $item ) {
+				if ( isset( $item[2] ) && $item[2] === $parent_slug ) {
+					$parent_exists = true;
+					break;
+				}
+			}
+		}
+		
+		if ( $parent_exists ) {
+			add_submenu_page(
+				$parent_slug,
+				__( 'Update Debug', 'wc-team-payroll' ),
+				__( 'Update Debug', 'wc-team-payroll' ),
+				'manage_options',
+				'wc-team-payroll-update-debug',
+				array( $this, 'render_debug_page' )
+			);
+		} else {
+			// Add under Tools menu as fallback
+			add_management_page(
+				__( 'WC Team Payroll Update Debug', 'wc-team-payroll' ),
+				__( 'WC Payroll Updates', 'wc-team-payroll' ),
+				'manage_options',
+				'wc-team-payroll-update-debug',
+				array( $this, 'render_debug_page' )
+			);
+		}
 	}
 
 	/**

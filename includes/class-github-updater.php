@@ -412,7 +412,21 @@ class WC_Team_Payroll_GitHub_Updater {
 	}
 }
 
-// Initialize updater on plugins_loaded to ensure plugin version is defined
-add_action( 'plugins_loaded', function() {
-	new WC_Team_Payroll_GitHub_Updater();
-}, 25 );
+// Initialize updater ALWAYS (even when plugin is inactive)
+// This allows WordPress to check for updates even if plugin is not active
+if ( ! function_exists( 'wc_tp_init_github_updater' ) ) {
+	function wc_tp_init_github_updater() {
+		// Only initialize once
+		static $initialized = false;
+		if ( $initialized ) {
+			return;
+		}
+		$initialized = true;
+		
+		new WC_Team_Payroll_GitHub_Updater();
+	}
+}
+
+// Hook early to ensure updates work even when plugin is inactive
+add_action( 'init', 'wc_tp_init_github_updater', 1 );
+add_action( 'admin_init', 'wc_tp_init_github_updater', 1 );
