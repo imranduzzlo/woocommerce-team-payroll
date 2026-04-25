@@ -1,3 +1,30 @@
+## [1.7.85] - 2026-04-25
+### 🚨 CRITICAL FIX - Error Handling
+
+#### Emergency Fix
+
+**Added Comprehensive Error Handling**
+- Wrapped all field detection logic in try-catch blocks
+- Added type checking for all variables before use
+- Prevents fatal errors from breaking order pages
+- Logs errors to debug.log instead of crashing
+
+**What Was Fixed**
+- Fatal error when detecting field options
+- Type errors from unexpected data formats
+- Crashes from malformed field configurations
+- Issues with non-array return values
+
+**Safety Improvements**
+- All array checks now verify is_array() first
+- String operations check is_string() first
+- Empty checks before accessing array keys
+- Graceful fallback to text input on any error
+
+**This is a critical stability fix. Update immediately if you experienced crashes on v1.7.84.**
+
+---
+
 ## [1.7.84] - 2026-04-25
 ### 🔌 Auto-Detect Dropdowns from Checkout Field Editor
 
