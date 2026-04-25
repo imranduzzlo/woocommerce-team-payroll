@@ -52,78 +52,9 @@
 
         handleToggleCustomFieldsEdit: function(e) {
             e.preventDefault();
-            var $btn = $(e.currentTarget);
-            var orderId = $btn.data('order-id');
-            var $section = $btn.closest('.wc-tp-custom-fields-edit-section');
-            
-            // Find all p tags in Additional Information that contain custom fields
-            var $additionalInfo = $section.closest('.order_data_column').find('p');
-            var isEditing = $btn.hasClass('editing');
-            
-            if (!isEditing) {
-                // Make fields editable
-                $additionalInfo.each(function() {
-                    var $p = $(this);
-                    var text = $p.text().trim();
-                    
-                    // Skip empty or section headers
-                    if (!text || text.length === 0) {
-                        return;
-                    }
-                    
-                    // Make the content editable
-                    $p.attr('contenteditable', 'true');
-                    $p.css({
-                        'background': '#fffbea',
-                        'border': '1px solid #ffb81c',
-                        'padding': '8px',
-                        'border-radius': '4px',
-                        'cursor': 'text'
-                    });
-                });
-                
-                $btn.addClass('editing');
-                $btn.html('<span class="dashicons dashicons-yes" style="font-size: 16px; width: 16px; height: 16px; margin: 0;"></span> Save Custom Fields');
-                $btn.css('background-color', '#28a745');
-                $btn.css('border-color', '#28a745');
-                $btn.css('color', '#fff');
-                
-                OrderEditor.showNotice('info', 'Click on any field to edit. Click Save when done.');
-            } else {
-                // Save and disable editing
-                var fieldsData = {};
-                $additionalInfo.each(function() {
-                    var $p = $(this);
-                    var originalText = $p.attr('data-original-text');
-                    var newText = $p.text().trim();
-                    
-                    if (originalText && originalText !== newText) {
-                        // Parse field name and value
-                        var match = newText.match(/^([^:]+):\s*(.*)$/);
-                        if (match) {
-                            var fieldName = match[1].trim().toLowerCase().replace(/\s+/g, '_');
-                            fieldsData[fieldName] = match[2].trim();
-                        }
-                    }
-                    
-                    $p.removeAttr('contenteditable');
-                    $p.css({
-                        'background': '',
-                        'border': '',
-                        'padding': '',
-                        'border-radius': '',
-                        'cursor': ''
-                    });
-                });
-                
-                $btn.removeClass('editing');
-                $btn.html('<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px; margin: 0;"></span> Edit Custom Fields');
-                $btn.css('background-color', '');
-                $btn.css('border-color', '');
-                $btn.css('color', '');
-                
-                OrderEditor.showNotice('success', 'Custom fields updated. Save the order to apply changes.');
-            }
+            var $modal = $('#wc-tp-custom-fields-modal');
+            $modal.fadeIn(200);
+            $modal.find('input:first').focus();
         },
 
         handleEditCustomField: function(e, btnElement) {
@@ -268,6 +199,67 @@
             }, 5000);
         }
     };
+
+    // Modal close handlers
+    $(document).on('click', '[data-dismiss="modal"]', function(e) {
+        e.preventDefault();
+        $('#wc-tp-custom-fields-modal').fadeOut(200);
+    });
+
+    // Modal overlay click to close
+    $(document).on('click', '.wc-tp-modal-overlay', function(e) {
+        if (e.target === this) {
+            $(this).fadeOut(200);
+        }
+    });
+
+    // Save custom fields
+    $(document).on('click', '.wc-tp-save-custom-fields', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var orderId = $btn.data('order-id');
+        var $form = $('#wc-tp-custom-fields-form');
+        var $modal = $('#wc-tp-custom-fields-modal');
+        
+        // Collect form data
+        var formData = new FormData($form[0]);
+        var fields = {};
+        
+        formData.forEach(function(value, key) {
+            fields[key] = value;
+        });
+        
+        $btn.prop('disabled', true).text('Saving...');
+        
+        $.ajax({
+            url: wcTpOrderEditor.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wc_tp_save_custom_fields',
+                nonce: wcTpOrderEditor.nonce,
+                order_id: orderId,
+                fields: fields
+            },
+            success: function(response) {
+                if (response.success) {
+                    $modal.fadeOut(200);
+                    OrderEditor.showNotice('success', 'Custom fields saved. Refresh the page to see changes.');
+                    $btn.prop('disabled', false).text('Save Changes');
+                    // Reload the page after a short delay
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alert(response.data.message || 'Error saving fields');
+                    $btn.prop('disabled', false).text('Save Changes');
+                }
+            },
+            error: function() {
+                alert('Error saving fields');
+                $btn.prop('disabled', false).text('Save Changes');
+            }
+        });
+    });
 
     $(document).ready(function() {
         OrderEditor.init();

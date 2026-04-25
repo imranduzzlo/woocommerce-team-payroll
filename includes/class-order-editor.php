@@ -833,7 +833,7 @@ class WC_Team_Payroll_Order_Editor {
 
 		// Get all order meta to check if there are custom fields
 		$all_meta = $order->get_meta_data();
-		$has_custom_fields = false;
+		$custom_fields = array();
 
 		foreach ( $all_meta as $meta ) {
 			$key = $meta->key;
@@ -849,20 +849,69 @@ class WC_Team_Payroll_Order_Editor {
 				continue;
 			}
 
-			$has_custom_fields = true;
-			break;
+			$custom_fields[ $key ] = $value;
 		}
 
-		if ( ! $has_custom_fields ) {
+		if ( empty( $custom_fields ) ) {
 			return;
 		}
 
 		?>
 		<div class="wc-tp-custom-fields-edit-section" style="margin-top: 15px; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
-			<button type="button" class="button wc-tp-toggle-custom-fields-edit" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="display: inline-flex; align-items: center; gap: 5px;">
-				<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px; margin: 0;"></span>
+			<button type="button" class="button wc-tp-toggle-custom-fields-edit" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+				<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px; margin: 0; margin-right: 5px;"></span>
 				<?php esc_html_e( 'Edit Custom Fields', 'wc-team-payroll' ); ?>
 			</button>
+		</div>
+
+		<!-- Modal for editing custom fields -->
+		<div id="wc-tp-custom-fields-modal" class="wc-tp-modal-overlay" style="display: none;">
+			<div class="wc-tp-modal">
+				<div class="wc-tp-modal-header">
+					<h2><?php esc_html_e( 'Edit Custom Fields', 'wc-team-payroll' ); ?></h2>
+					<button type="button" class="wc-tp-modal-close" data-dismiss="modal">&times;</button>
+				</div>
+				<div class="wc-tp-modal-body">
+					<form id="wc-tp-custom-fields-form">
+						<?php
+						foreach ( $custom_fields as $meta_key => $meta_value ) {
+							$label = $this->format_label( $meta_key );
+							$field_type = $this->detect_field_type( $meta_value );
+							?>
+							<div class="wc-tp-form-group">
+								<label for="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>"><?php echo esc_html( $label ); ?></label>
+								<?php
+								if ( $field_type === 'textarea' ) {
+									?>
+									<textarea id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"><?php echo esc_textarea( $meta_value ); ?></textarea>
+									<?php
+								} else {
+									$input_type = 'text';
+									if ( $field_type === 'email' ) {
+										$input_type = 'email';
+									} elseif ( $field_type === 'url' ) {
+										$input_type = 'url';
+									} elseif ( $field_type === 'date' ) {
+										$input_type = 'date';
+									} elseif ( $field_type === 'number' ) {
+										$input_type = 'number';
+									}
+									?>
+									<input type="<?php echo esc_attr( $input_type ); ?>" id="wc-tp-field-<?php echo esc_attr( $meta_key ); ?>" name="<?php echo esc_attr( $meta_key ); ?>" value="<?php echo esc_attr( $meta_value ); ?>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;">
+									<?php
+								}
+								?>
+							</div>
+							<?php
+						}
+						?>
+					</form>
+				</div>
+				<div class="wc-tp-modal-footer">
+					<button type="button" class="button" data-dismiss="modal"><?php esc_html_e( 'Cancel', 'wc-team-payroll' ); ?></button>
+					<button type="button" class="button button-primary wc-tp-save-custom-fields" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>"><?php esc_html_e( 'Save Changes', 'wc-team-payroll' ); ?></button>
+				</div>
+			</div>
 		</div>
 		<?php
 	}
