@@ -1,3 +1,32 @@
+## [1.0.1] - 2026-04-25
+### 🔧 Bug Fixes & Improvements
+
+**Update System Enhancements**
+- ✅ Fixed update cache clearing mechanism
+- ✅ Improved WordPress update transient handling
+- ✅ Enhanced version detection and comparison
+- ✅ Better error handling and debug logging
+
+**New Features**
+- ✅ Added Update Debug page (Team Payroll > Update Debug)
+- ✅ One-click cache clearing functionality
+- ✅ Real-time update status monitoring
+- ✅ Comprehensive troubleshooting guide
+
+**Improvements**
+- ✅ Enhanced "Check Updates" button functionality
+- ✅ Better cache management (clears all update caches)
+- ✅ Improved GitHub API integration
+- ✅ Added current version display in update notices
+
+**Technical**
+- ✅ Added `wp_clean_plugins_cache()` call
+- ✅ Clear `update_plugins_last_checked` transient
+- ✅ Ensure plugin is in checked array
+- ✅ Better debug logging when WP_DEBUG enabled
+
+---
+
 ## [1.0.0] - 2026-04-25
 ### 🎉 Initial Public Release
 
