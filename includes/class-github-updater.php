@@ -135,7 +135,7 @@ class WC_Team_Payroll_GitHub_Updater {
 			return false;
 		}
 
-		// Cache for 6 hours
+		// Cache for 6 hours (use 5 minutes for testing: 5 * MINUTE_IN_SECONDS)
 		set_transient( $transient_key, $release, 6 * HOUR_IN_SECONDS );
 
 		return $release;

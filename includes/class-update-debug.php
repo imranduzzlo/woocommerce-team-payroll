@@ -61,6 +61,7 @@ class WC_Team_Payroll_Update_Debug {
 		// Handle clear cache action
 		if ( isset( $_POST['clear_cache'] ) && check_admin_referer( 'wc_tp_clear_cache' ) ) {
 			delete_transient( 'wc_tp_github_release' );
+			delete_transient( 'wc_tp_github_release_v2' ); // New transient key
 			delete_transient( 'wc_tp_last_update_check' );
 			delete_site_transient( 'update_plugins' );
 			delete_site_transient( 'update_plugins_last_checked' );
@@ -74,7 +75,26 @@ class WC_Team_Payroll_Update_Debug {
 		if ( ! function_exists( 'get_plugin_data' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		$plugin_file = WP_PLUGIN_DIR . '/woocommerce-team-payroll/woocommerce-team-payroll.php';
+		
+		// Try multiple paths to find the plugin file
+		$possible_paths = array(
+			WP_PLUGIN_DIR . '/woocommerce-team-payroll/woocommerce-team-payroll.php',
+			dirname( dirname( __FILE__ ) ) . '/woocommerce-team-payroll.php',
+		);
+		
+		$plugin_file = '';
+		foreach ( $possible_paths as $path ) {
+			if ( file_exists( $path ) ) {
+				$plugin_file = $path;
+				break;
+			}
+		}
+		
+		if ( empty( $plugin_file ) ) {
+			echo '<div class="notice notice-error"><p><strong>Error:</strong> Could not locate plugin file.</p></div>';
+			return;
+		}
+		
 		$plugin_data = get_plugin_data( $plugin_file );
 		$current_version = $plugin_data['Version'];
 
@@ -121,7 +141,10 @@ class WC_Team_Payroll_Update_Debug {
 		$in_checked = isset( $update_plugins->checked[ $plugin_basename ] );
 
 		// Get cached release
-		$cached_release = get_transient( 'wc_tp_github_release' );
+		$cached_release = get_transient( 'wc_tp_github_release_v2' );
+		if ( ! $cached_release ) {
+			$cached_release = get_transient( 'wc_tp_github_release' ); // Fallback to old key
+		}
 
 		?>
 		<div class="wrap">

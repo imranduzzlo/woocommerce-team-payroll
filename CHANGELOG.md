@@ -1,3 +1,17 @@
+## [1.0.5] - 2026-04-25
+### 🐛 Bug Fixes
+
+**Update Debug Page Improvements**
+- Fixed plugin file path detection (now tries multiple paths)
+- Fixed transient key mismatch (now clears both old and new keys)
+- Better error handling when plugin file not found
+- Improved cache clearing functionality
+
+**Files Changed**
+- `includes/class-update-debug.php` (path detection + transient fixes)
+
+---
+
 ## [1.0.4] - 2026-04-25
 ### ✨ Premium Achievement Badges
 
