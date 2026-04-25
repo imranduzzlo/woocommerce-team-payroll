@@ -1,3 +1,41 @@
+## [1.7.75] - 2026-04-25
+### 🔄 Switched to WooCommerce Native Custom Field Editing
+
+#### Complete Refactor
+
+**Removed Custom UI**
+- Eliminated custom field display sections with edit icons
+- Removed unnecessary custom CSS and JavaScript
+- Cleaner, simpler codebase
+
+**Using WooCommerce Native Functions**
+- `woocommerce_wp_text_input()` for text, email, url, date, number fields
+- `woocommerce_wp_checkbox()` for checkboxes
+- `woocommerce_wp_textarea_input()` for textareas
+- Automatic field type detection
+
+**Seamless Integration**
+- Custom fields appear in their respective sections:
+  - General section for order meta
+  - Billing section for billing custom fields
+  - Shipping section for shipping custom fields
+- Fields render exactly like WooCommerce's native fields
+- Consistent styling and behavior
+
+**Native Saving**
+- Fields save through WooCommerce's standard order save hook
+- No custom AJAX handlers needed
+- Automatic value sanitization
+
+**Benefits**
+- Matches WooCommerce's native UI perfectly
+- Works with any custom field from any plugin/theme
+- Simpler, more maintainable code
+- Better compatibility and stability
+- No custom JavaScript required
+
+---
+
 ## [1.7.74] - 2026-04-25
 ### 🐛 Bug Fix - Custom Field Display and Editing
 

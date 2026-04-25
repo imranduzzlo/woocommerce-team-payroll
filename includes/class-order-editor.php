@@ -838,28 +838,46 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
-		// Get all custom field keys from POST
+		// Get all order meta keys to identify custom fields
+		$all_meta = $order->get_meta_data();
+		$meta_keys = array();
+
+		foreach ( $all_meta as $meta ) {
+			$meta_keys[] = $meta->key;
+		}
+
+		// Save custom fields from POST
+		foreach ( $meta_keys as $meta_key ) {
+			// Skip internal WooCommerce fields
+			if ( strpos( $meta_key, '_' ) === 0 ) {
+				continue;
+			}
+
+			// Check if field exists in POST
+			if ( isset( $_POST[ $meta_key ] ) ) {
+				$value = sanitize_text_field( $_POST[ $meta_key ] );
+				$order->update_meta_data( $meta_key, $value );
+			}
+		}
+
+		// Also handle billing and shipping custom fields
 		foreach ( $_POST as $key => $value ) {
-			// Skip WooCommerce standard fields and internal fields
-			if ( strpos( $key, '_' ) === 0 || strpos( $key, 'woocommerce' ) === 0 || strpos( $key, 'post' ) === 0 ) {
-				continue;
+			if ( strpos( $key, '_billing_' ) === 0 || strpos( $key, '_shipping_' ) === 0 ) {
+				// Skip standard WooCommerce fields
+				$standard_fields = array(
+					'_billing_first_name', '_billing_last_name', '_billing_company',
+					'_billing_address_1', '_billing_address_2', '_billing_city', '_billing_state',
+					'_billing_postcode', '_billing_country', '_billing_email', '_billing_phone',
+					'_shipping_first_name', '_shipping_last_name', '_shipping_company',
+					'_shipping_address_1', '_shipping_address_2', '_shipping_city', '_shipping_state',
+					'_shipping_postcode', '_shipping_country'
+				);
+
+				if ( ! in_array( $key, $standard_fields ) ) {
+					$value = sanitize_text_field( $value );
+					$order->update_meta_data( $key, $value );
+				}
 			}
-
-			// Skip known WooCommerce fields
-			$skip_fields = array(
-				'action', 'post_type', 'post_ID', 'post_title', 'post_name', 'post_status',
-				'post_author', 'post_password', 'post_parent', 'menu_order', 'post_excerpt',
-				'post_content', 'user_ID', 'referredby', 'auto_draft', 'original_post_status',
-				'nonce', 'wp-preview', '_wpnonce', '_wp_http_referer'
-			);
-
-			if ( in_array( $key, $skip_fields ) ) {
-				continue;
-			}
-
-			// Save custom field
-			$value = sanitize_text_field( $value );
-			$order->update_meta_data( $key, $value );
 		}
 
 		$order->save();
@@ -873,16 +891,8 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
-		// Standard WooCommerce fields that should not be made editable
-		$standard_fields = array(
-			'Email', 'Phone', 'Payment method', 'First name', 'Last name', 
-			'Company', 'Address', 'City', 'Postcode', 'Country', 'State',
-			'Date created', 'Status', 'Customer'
-		);
-
 		// Get all order meta
 		$all_meta = $order->get_meta_data();
-		$custom_fields = array();
 
 		foreach ( $all_meta as $meta ) {
 			$key = $meta->key;
@@ -898,46 +908,76 @@ class WC_Team_Payroll_Order_Editor {
 				continue;
 			}
 
-			$custom_fields[ $key ] = $value;
+			// Format label from meta key
+			$label = $this->format_label( $key );
+
+			// Detect field type
+			$field_type = $this->detect_field_type( $value );
+
+			// Use WooCommerce native functions to render editable fields
+			switch ( $field_type ) {
+				case 'checkbox':
+					woocommerce_wp_checkbox( array(
+						'id' => $key,
+						'label' => $label,
+						'value' => $value,
+						'cbvalue' => '1',
+					) );
+					break;
+
+				case 'email':
+					woocommerce_wp_text_input( array(
+						'id' => $key,
+						'label' => $label,
+						'type' => 'email',
+						'value' => $value,
+					) );
+					break;
+
+				case 'url':
+					woocommerce_wp_text_input( array(
+						'id' => $key,
+						'label' => $label,
+						'type' => 'url',
+						'value' => $value,
+					) );
+					break;
+
+				case 'date':
+					woocommerce_wp_text_input( array(
+						'id' => $key,
+						'label' => $label,
+						'type' => 'date',
+						'value' => $value,
+					) );
+					break;
+
+				case 'number':
+					woocommerce_wp_text_input( array(
+						'id' => $key,
+						'label' => $label,
+						'type' => 'number',
+						'value' => $value,
+					) );
+					break;
+
+				case 'textarea':
+					woocommerce_wp_textarea_input( array(
+						'id' => $key,
+						'label' => $label,
+						'value' => $value,
+					) );
+					break;
+
+				default:
+					woocommerce_wp_text_input( array(
+						'id' => $key,
+						'label' => $label,
+						'value' => $value,
+					) );
+					break;
+			}
 		}
-
-		// If no custom fields, don't render anything
-		if ( empty( $custom_fields ) ) {
-			return;
-		}
-
-		?>
-		<div class="wc-tp-custom-fields-section">
-			<h3><?php esc_html_e( 'Custom Fields', 'wc-team-payroll' ); ?></h3>
-			<div class="wc-tp-custom-fields-container">
-				<?php
-				foreach ( $custom_fields as $meta_key => $meta_value ) {
-					// Format label from meta key
-					$label = $this->format_label( $meta_key );
-
-					// Skip standard fields
-					if ( in_array( $label, $standard_fields ) ) {
-						continue;
-					}
-
-					// Detect field type
-					$field_type = $this->detect_field_type( $meta_value );
-
-					// Display readonly field with edit button
-					?>
-					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
-						<label><?php echo esc_html( $label ); ?>:</label>
-						<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
-						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>">
-							<span class="dashicons dashicons-edit"></span>
-						</button>
-					</p>
-					<?php
-				}
-				?>
-			</div>
-		</div>
-		<?php
 	}
 
 	/**
@@ -948,14 +988,7 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
-		// Standard WooCommerce billing fields
-		$standard_fields = array(
-			'Email', 'Phone', 'Payment method', 'First name', 'Last name', 
-			'Company', 'Address', 'City', 'Postcode', 'Country', 'State'
-		);
-
 		// Get billing custom meta fields
-		$billing_custom_fields = array();
 		$all_meta = $order->get_meta_data();
 
 		foreach ( $all_meta as $meta ) {
@@ -964,10 +997,12 @@ class WC_Team_Payroll_Order_Editor {
 
 			// Only get billing custom fields (start with _billing_ but not standard)
 			if ( strpos( $key, '_billing_' ) === 0 ) {
-				$label = $this->format_label( str_replace( '_billing_', '', $key ) );
+				// Skip standard WooCommerce billing fields
+				$standard_billing = array( '_billing_first_name', '_billing_last_name', '_billing_company', 
+					'_billing_address_1', '_billing_address_2', '_billing_city', '_billing_state', 
+					'_billing_postcode', '_billing_country', '_billing_email', '_billing_phone' );
 				
-				// Skip standard fields
-				if ( in_array( $label, $standard_fields ) ) {
+				if ( in_array( $key, $standard_billing ) ) {
 					continue;
 				}
 
@@ -976,39 +1011,74 @@ class WC_Team_Payroll_Order_Editor {
 					continue;
 				}
 
-				$billing_custom_fields[ $key ] = $value;
+				$label = $this->format_label( str_replace( '_billing_', '', $key ) );
+				$field_type = $this->detect_field_type( $value );
+
+				// Use WooCommerce native functions
+				switch ( $field_type ) {
+					case 'checkbox':
+						woocommerce_wp_checkbox( array(
+							'id' => $key,
+							'label' => $label,
+							'value' => $value,
+							'cbvalue' => '1',
+						) );
+						break;
+
+					case 'email':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'email',
+							'value' => $value,
+						) );
+						break;
+
+					case 'url':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'url',
+							'value' => $value,
+						) );
+						break;
+
+					case 'date':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'date',
+							'value' => $value,
+						) );
+						break;
+
+					case 'number':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'number',
+							'value' => $value,
+						) );
+						break;
+
+					case 'textarea':
+						woocommerce_wp_textarea_input( array(
+							'id' => $key,
+							'label' => $label,
+							'value' => $value,
+						) );
+						break;
+
+					default:
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'value' => $value,
+						) );
+						break;
+				}
 			}
 		}
-
-		// If no custom fields, don't render anything
-		if ( empty( $billing_custom_fields ) ) {
-			return;
-		}
-
-		?>
-		<div class="wc-tp-billing-custom-fields-section">
-			<h4><?php esc_html_e( 'Billing Custom Fields', 'wc-team-payroll' ); ?></h4>
-			<div class="wc-tp-custom-fields-container">
-				<?php
-				foreach ( $billing_custom_fields as $meta_key => $meta_value ) {
-					$label = $this->format_label( str_replace( '_billing_', '', $meta_key ) );
-					$field_type = $this->detect_field_type( $meta_value );
-
-					// Display readonly field with edit button
-					?>
-					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
-						<label><?php echo esc_html( $label ); ?>:</label>
-						<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
-						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>">
-							<span class="dashicons dashicons-edit"></span>
-						</button>
-					</p>
-					<?php
-				}
-				?>
-			</div>
-		</div>
-		<?php
 	}
 
 	/**
@@ -1019,14 +1089,7 @@ class WC_Team_Payroll_Order_Editor {
 			return;
 		}
 
-		// Standard WooCommerce shipping fields
-		$standard_fields = array(
-			'First name', 'Last name', 'Company', 'Address', 'City', 
-			'Postcode', 'Country', 'State'
-		);
-
 		// Get shipping custom meta fields
-		$shipping_custom_fields = array();
 		$all_meta = $order->get_meta_data();
 
 		foreach ( $all_meta as $meta ) {
@@ -1035,10 +1098,12 @@ class WC_Team_Payroll_Order_Editor {
 
 			// Only get shipping custom fields (start with _shipping_ but not standard)
 			if ( strpos( $key, '_shipping_' ) === 0 ) {
-				$label = $this->format_label( str_replace( '_shipping_', '', $key ) );
+				// Skip standard WooCommerce shipping fields
+				$standard_shipping = array( '_shipping_first_name', '_shipping_last_name', '_shipping_company', 
+					'_shipping_address_1', '_shipping_address_2', '_shipping_city', '_shipping_state', 
+					'_shipping_postcode', '_shipping_country' );
 				
-				// Skip standard fields
-				if ( in_array( $label, $standard_fields ) ) {
+				if ( in_array( $key, $standard_shipping ) ) {
 					continue;
 				}
 
@@ -1047,39 +1112,74 @@ class WC_Team_Payroll_Order_Editor {
 					continue;
 				}
 
-				$shipping_custom_fields[ $key ] = $value;
+				$label = $this->format_label( str_replace( '_shipping_', '', $key ) );
+				$field_type = $this->detect_field_type( $value );
+
+				// Use WooCommerce native functions
+				switch ( $field_type ) {
+					case 'checkbox':
+						woocommerce_wp_checkbox( array(
+							'id' => $key,
+							'label' => $label,
+							'value' => $value,
+							'cbvalue' => '1',
+						) );
+						break;
+
+					case 'email':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'email',
+							'value' => $value,
+						) );
+						break;
+
+					case 'url':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'url',
+							'value' => $value,
+						) );
+						break;
+
+					case 'date':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'date',
+							'value' => $value,
+						) );
+						break;
+
+					case 'number':
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'type' => 'number',
+							'value' => $value,
+						) );
+						break;
+
+					case 'textarea':
+						woocommerce_wp_textarea_input( array(
+							'id' => $key,
+							'label' => $label,
+							'value' => $value,
+						) );
+						break;
+
+					default:
+						woocommerce_wp_text_input( array(
+							'id' => $key,
+							'label' => $label,
+							'value' => $value,
+						) );
+						break;
+				}
 			}
 		}
-
-		// If no custom fields, don't render anything
-		if ( empty( $shipping_custom_fields ) ) {
-			return;
-		}
-
-		?>
-		<div class="wc-tp-shipping-custom-fields-section">
-			<h4><?php esc_html_e( 'Shipping Custom Fields', 'wc-team-payroll' ); ?></h4>
-			<div class="wc-tp-custom-fields-container">
-				<?php
-				foreach ( $shipping_custom_fields as $meta_key => $meta_value ) {
-					$label = $this->format_label( str_replace( '_shipping_', '', $meta_key ) );
-					$field_type = $this->detect_field_type( $meta_value );
-
-					// Display readonly field with edit button
-					?>
-					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
-						<label><?php echo esc_html( $label ); ?>:</label>
-						<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
-						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>">
-							<span class="dashicons dashicons-edit"></span>
-						</button>
-					</p>
-					<?php
-				}
-				?>
-			</div>
-		</div>
-		<?php
 	}
 
 	/**
