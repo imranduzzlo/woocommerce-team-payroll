@@ -1,86 +1,29 @@
-## [1.7.85] - 2026-04-25
-### 🚨 CRITICAL FIX - Error Handling
-
-#### Emergency Fix
-
-**Added Comprehensive Error Handling**
-- Wrapped all field detection logic in try-catch blocks
-- Added type checking for all variables before use
-- Prevents fatal errors from breaking order pages
-- Logs errors to debug.log instead of crashing
-
-**What Was Fixed**
-- Fatal error when detecting field options
-- Type errors from unexpected data formats
-- Crashes from malformed field configurations
-- Issues with non-array return values
-
-**Safety Improvements**
-- All array checks now verify is_array() first
-- String operations check is_string() first
-- Empty checks before accessing array keys
-- Graceful fallback to text input on any error
-
-**This is a critical stability fix. Update immediately if you experienced crashes on v1.7.84.**
-
----
-
-## [1.7.84] - 2026-04-25
-### 🔌 Auto-Detect Dropdowns from Checkout Field Editor
-
-#### Universal Compatibility
-
-**Auto-Detection from Multiple Sources**
-- Automatically detects dropdown options from Checkout Field Editor plugins
-- No hardcoded fields - works with ANY custom fields
-- Compatible with multiple checkout field editor plugins
-
-**Supported Plugins**
-- Checkout Field Editor by ThemeHigh
-- Flexible Checkout Fields
-- WooCommerce Checkout Field Editor (various)
-- Advanced Custom Fields (ACF)
-- Any plugin storing field options in standard format
-
-**How It Works**
-1. Meta box scans ALL custom fields on the order (auto-detect)
-2. For each field, checks if it has dropdown options defined
-3. If options found → renders as dropdown
-4. If no options → renders as text/date/email/number input
-5. Completely dynamic - no hardcoded field names
-
-**Benefits**
-- Works on any site with any checkout field editor
-- No configuration needed
-- Automatically adapts to your field definitions
-- Future-proof for new fields
-
----
-
 ## [1.7.83] - 2026-04-25
-### 📋 Added Dropdown Support for Select Fields
+### 🔧 WooCommerce 10.7.0 Compatibility Fix
 
-#### New Features
+#### Fixed Compatibility Warning
 
-**Dropdown Fields**
-- Fields with predefined options now show as dropdowns instead of text inputs
-- Automatically detects known select fields
-- Supports both internal (_field_name) and public (field_name) field names
+**WooCommerce HPOS Compatibility**
+- Added proper HPOS (High-Performance Order Storage) compatibility declaration
+- Declared support for `custom_order_tables` feature
+- Declared support for `orders_cache` feature
+- Updated "WC tested up to" header to 10.7.0
+- Added "Requires Plugins: woocommerce" header for better dependency management
 
-**Supported Dropdown Fields**
-- order_source: Facebook, WhatsApp, Website, Phone, Instagram, Other
-- order_priority: Low, Medium, High, Urgent
-- payment_method: bKash, Nagad, Rocket, Cash, Bank Transfer
-- order_status: Pending, Processing, Completed, Cancelled, On Hold
-- delivery_status: Not Shipped, Shipped, In Transit, Delivered, Returned
-- payment_status: Unpaid, Partially Paid, Paid, Refunded
+**What This Fixes**
+- Removes the "incompatible plugins" warning in WooCommerce 10.7.0+
+- Ensures full compatibility with WooCommerce's new order storage system
+- Plugin now properly declares its compatibility with modern WooCommerce features
 
-**Agent/User Fields**
-- Fields containing "agent", "user", or "employee" automatically show user dropdown
-- Populated with all WordPress users
+**Technical Implementation**
+- Uses `before_woocommerce_init` hook to declare compatibility early
+- Checks for `FeaturesUtil` class existence before declaring compatibility
+- Follows WooCommerce's official compatibility declaration guidelines
 
-**How to Add More Dropdowns**
-Edit `get_field_options()` function in `class-order-editor.php` and add your field name with options array.
+**No Breaking Changes**
+- This is purely a compatibility declaration update
+- All existing functionality remains unchanged
+- Plugin continues to work with both traditional and HPOS order storage
 
 ---
 

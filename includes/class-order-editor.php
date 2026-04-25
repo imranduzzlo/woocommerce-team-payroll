@@ -116,90 +116,76 @@ class WC_Team_Payroll_Order_Editor {
 	 * Render custom fields meta box
 	 */
 	public function render_custom_fields_meta_box( $post_or_order_object ) {
-		try {
-			$order = ( $post_or_order_object instanceof \WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
+		$order = ( $post_or_order_object instanceof \WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
 
-			if ( ! $order ) {
-				return;
-			}
-
-			// Get all order meta
-			$all_meta = $order->get_meta_data();
-			$custom_fields = array();
-
-			foreach ( $all_meta as $meta ) {
-				$key = $meta->key;
-				$value = $meta->value;
-
-				// Skip internal WooCommerce meta (starts with _)
-				if ( strpos( $key, '_' ) === 0 ) {
-					continue;
-				}
-
-				// Skip if value is empty or array
-				if ( empty( $value ) || is_array( $value ) ) {
-					continue;
-				}
-
-				$custom_fields[ $key ] = $value;
-			}
-
-			if ( empty( $custom_fields ) ) {
-				echo '<p>' . esc_html__( 'No custom fields found.', 'wc-team-payroll' ) . '</p>';
-				return;
-			}
-
-			wp_nonce_field( 'wc_tp_custom_fields_nonce', 'wc_tp_custom_fields_nonce' );
-
-			echo '<div class="wc-tp-custom-fields-editor">';
-			
-			foreach ( $custom_fields as $meta_key => $meta_value ) {
-				$label = $this->format_label( $meta_key );
-				$field_type = $this->detect_field_type( $meta_value );
-				$field_options = $this->get_field_options( $meta_key, $meta_value );
-				
-				// Convert date format if needed
-				$display_value = $meta_value;
-				if ( $field_type === 'date' && preg_match( '/^(\d{2})\/(\d{2})\/(\d{4})$/', $meta_value, $matches ) ) {
-					$display_value = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
-				}
-				
-				echo '<p class="form-field">';
-				echo '<label for="wc_tp_field_' . esc_attr( $meta_key ) . '">' . esc_html( $label ) . '</label>';
-				
-				// Check if this field has dropdown options
-				if ( is_array( $field_options ) && ! empty( $field_options ) ) {
-					echo '<select id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" style="width: 100%;">';
-					foreach ( $field_options as $option_value => $option_label ) {
-						$selected = ( $meta_value == $option_value ) ? ' selected="selected"' : '';
-						echo '<option value="' . esc_attr( $option_value ) . '"' . $selected . '>' . esc_html( $option_label ) . '</option>';
-					}
-					echo '</select>';
-				} elseif ( $field_type === 'textarea' ) {
-					echo '<textarea id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" rows="3" style="width: 100%;">' . esc_textarea( $meta_value ) . '</textarea>';
-				} else {
-					$input_type = 'text';
-					if ( $field_type === 'email' ) {
-						$input_type = 'email';
-					} elseif ( $field_type === 'url' ) {
-						$input_type = 'url';
-					} elseif ( $field_type === 'date' ) {
-						$input_type = 'date';
-					} elseif ( $field_type === 'number' ) {
-						$input_type = 'number';
-					}
-					
-					echo '<input type="' . esc_attr( $input_type ) . '" id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" value="' . esc_attr( $display_value ) . '" style="width: 100%;" data-original-format="' . esc_attr( $meta_value ) . '" />';
-				}
-				
-				echo '</p>';
-			}
-			
-			echo '</div>';
-		} catch ( Exception $e ) {
-			echo '<p style="color: red;">' . esc_html__( 'Error loading custom fields. Please check error log.', 'wc-team-payroll' ) . '</p>';
-			error_log( 'WC Team Payroll - Error rendering custom fields meta box: ' . $e->getMessage() );
+		if ( ! $order ) {
+			return;
 		}
+
+		// Get all order meta
+		$all_meta = $order->get_meta_data();
+		$custom_fields = array();
+
+		foreach ( $all_meta as $meta ) {
+			$key = $meta->key;
+			$value = $meta->value;
+
+			// Skip internal WooCommerce meta (starts with _)
+			if ( strpos( $key, '_' ) === 0 ) {
+				continue;
+			}
+
+			// Skip if value is empty or array
+			if ( empty( $value ) || is_array( $value ) ) {
+				continue;
+			}
+
+			$custom_fields[ $key ] = $value;
+		}
+
+		if ( empty( $custom_fields ) ) {
+			echo '<p>' . esc_html__( 'No custom fields found.', 'wc-team-payroll' ) . '</p>';
+			return;
+		}
+
+		wp_nonce_field( 'wc_tp_custom_fields_nonce', 'wc_tp_custom_fields_nonce' );
+
+		echo '<div class="wc-tp-custom-fields-editor">';
+		
+		foreach ( $custom_fields as $meta_key => $meta_value ) {
+			$label = $this->format_label( $meta_key );
+			$field_type = $this->detect_field_type( $meta_value );
+			
+			// Convert date format if needed
+			$display_value = $meta_value;
+			if ( $field_type === 'date' && preg_match( '/^(\d{2})\/(\d{2})\/(\d{4})$/', $meta_value, $matches ) ) {
+				$display_value = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
+			}
+			
+			echo '<p class="form-field">';
+			echo '<label for="wc_tp_field_' . esc_attr( $meta_key ) . '">' . esc_html( $label ) . '</label>';
+			
+			if ( $field_type === 'textarea' ) {
+				echo '<textarea id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" rows="3" style="width: 100%;">' . esc_textarea( $meta_value ) . '</textarea>';
+			} else {
+				$input_type = 'text';
+				if ( $field_type === 'email' ) {
+					$input_type = 'email';
+				} elseif ( $field_type === 'url' ) {
+					$input_type = 'url';
+				} elseif ( $field_type === 'date' ) {
+					$input_type = 'date';
+				} elseif ( $field_type === 'number' ) {
+					$input_type = 'number';
+				}
+				
+				echo '<input type="' . esc_attr( $input_type ) . '" id="wc_tp_field_' . esc_attr( $meta_key ) . '" name="wc_tp_custom_fields[' . esc_attr( $meta_key ) . ']" value="' . esc_attr( $display_value ) . '" style="width: 100%;" data-original-format="' . esc_attr( $meta_value ) . '" />';
+			}
+			
+			echo '</p>';
+		}
+		
+		echo '</div>';
 	}
 
 	/**
@@ -1179,95 +1165,24 @@ class WC_Team_Payroll_Order_Editor {
 
 	/**
 	 * Get field options for select fields
-	 * Auto-detects from Checkout Field Editor plugins or ACF
 	 */
 	private function get_field_options( $key, $value ) {
-		try {
-			// Try to get from WooCommerce Checkout Field Editor (various plugins)
-			
-			// Method 1: Check WooCommerce checkout fields settings (common format)
-			$checkout_fields = get_option( 'wc_fields_' . $key, array() );
-			if ( is_array( $checkout_fields ) && ! empty( $checkout_fields ) && isset( $checkout_fields['options'] ) ) {
-				if ( is_array( $checkout_fields['options'] ) ) {
-					return $checkout_fields['options'];
-				}
-			}
-			
-			// Method 2: Check Checkout Field Editor by ThemeHigh
-			$thwcfe_sections = get_option( 'thwcfe_sections', array() );
-			if ( is_array( $thwcfe_sections ) && ! empty( $thwcfe_sections ) ) {
-				foreach ( $thwcfe_sections as $section ) {
-					if ( isset( $section['fields'] ) && is_array( $section['fields'] ) ) {
-						foreach ( $section['fields'] as $field ) {
-							if ( isset( $field['name'] ) && $field['name'] === $key ) {
-								if ( isset( $field['options'] ) && is_array( $field['options'] ) ) {
-									// Options might be in format "value|label" or just "value"
-									$options = array();
-									foreach ( $field['options'] as $option ) {
-										if ( is_array( $option ) && isset( $option['key'] ) && isset( $option['text'] ) ) {
-											$options[ $option['key'] ] = $option['text'];
-										} elseif ( is_string( $option ) && strpos( $option, '|' ) !== false ) {
-											$parts = explode( '|', $option, 2 );
-											if ( count( $parts ) === 2 ) {
-												$options[ $parts[0] ] = $parts[1];
-											}
-										} elseif ( is_string( $option ) ) {
-											$options[ $option ] = $option;
-										}
-									}
-									if ( ! empty( $options ) ) {
-										return $options;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			// Method 3: Check Flexible Checkout Fields
-			$fcf_settings = get_option( 'inspire_checkout_fields_settings', array() );
-			if ( is_array( $fcf_settings ) && ! empty( $fcf_settings ) ) {
-				foreach ( $fcf_settings as $section => $fields ) {
-					if ( is_array( $fields ) ) {
-						foreach ( $fields as $field_key => $field_data ) {
-							if ( $field_key === $key && isset( $field_data['options'] ) && is_array( $field_data['options'] ) ) {
-								return $field_data['options'];
-							}
-						}
-					}
-				}
-			}
-			
-			// Method 4: Try to get ACF field object if ACF is active
-			if ( function_exists( 'acf_get_field' ) ) {
-				$field_object = acf_get_field( $key );
-				
-				if ( is_array( $field_object ) && isset( $field_object['type'] ) ) {
-					// Check if it's a select, radio, or checkbox field
-					if ( in_array( $field_object['type'], array( 'select', 'radio', 'checkbox' ) ) ) {
-						if ( isset( $field_object['choices'] ) && is_array( $field_object['choices'] ) ) {
-							return $field_object['choices'];
-						}
-					}
-					
-					// Check if it's a user field
-					if ( $field_object['type'] === 'user' ) {
-						return $this->get_agent_options();
-					}
-				}
-			}
-			
-			// Method 5: Check if it's an agent/user/employee field by name
-			if ( is_string( $key ) && ( strpos( $key, 'agent' ) !== false || strpos( $key, 'user' ) !== false || strpos( $key, 'employee' ) !== false ) ) {
-				return $this->get_agent_options();
-			}
-		} catch ( Exception $e ) {
-			// Silently fail and return empty array
-			error_log( 'WC Team Payroll - Error getting field options for ' . $key . ': ' . $e->getMessage() );
+		// Check if this is a known select field
+		$select_fields = array(
+			'_order_source' => array( 'Facebook', 'WhatsApp', 'Website', 'Phone', 'Instagram', 'Other' ),
+			'_order_priority' => array( 'Low', 'Medium', 'High', 'Urgent' ),
+			'_payment_method' => array( 'bKash', 'Nagad', 'Rocket', 'Cash', 'Bank Transfer' ),
+		);
+
+		if ( isset( $select_fields[ $key ] ) ) {
+			return array_combine( $select_fields[ $key ], $select_fields[ $key ] );
 		}
 
-		// No dropdown options found - will render as text input
+		// Check if it's an agent/user field
+		if ( strpos( $key, 'agent' ) !== false || strpos( $key, 'user' ) !== false ) {
+			return $this->get_agent_options();
+		}
+
 		return array();
 	}
 

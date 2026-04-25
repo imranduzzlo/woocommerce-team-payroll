@@ -3,13 +3,14 @@
  * Plugin Name: WooCommerce Team Payroll & Commission System
  * Plugin URI: https://github.com/imranduzzlo/pv-team-payroll
  * Description: Manage team-based commission and payroll system with agents and processors
- * Version: 1.7.85
+ * Version: 1.7.83
  * Author: Imran
  * Author URI: https://imranhossain.me/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * WC requires at least: 5.0
- * WC tested up to: 8.0
+ * WC tested up to: 10.7.0
+ * Requires Plugins: woocommerce
  * Text Domain: wc-team-payroll
  * Domain Path: /languages
  * GitHub Plugin URI: imranduzzlo/pv-team-payroll
@@ -20,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_TEAM_PAYROLL_VERSION', '1.7.85' );
+define( 'WC_TEAM_PAYROLL_VERSION', '1.7.83' );
 define( 'WC_TEAM_PAYROLL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_TEAM_PAYROLL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -171,6 +172,14 @@ add_action( 'plugins_loaded', function() {
 		} );
 		return;
 	}
+
+	// Declare WooCommerce HPOS compatibility
+	add_action( 'before_woocommerce_init', function() {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'orders_cache', __FILE__, true );
+		}
+	} );
 
 	// Load all classes
 	require_once WC_TEAM_PAYROLL_PATH . 'includes/class-core-engine.php';
