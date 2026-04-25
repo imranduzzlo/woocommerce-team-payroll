@@ -1,3 +1,35 @@
+## [1.7.84] - 2026-04-25
+### 🔌 Auto-Detect Dropdowns from Checkout Field Editor
+
+#### Universal Compatibility
+
+**Auto-Detection from Multiple Sources**
+- Automatically detects dropdown options from Checkout Field Editor plugins
+- No hardcoded fields - works with ANY custom fields
+- Compatible with multiple checkout field editor plugins
+
+**Supported Plugins**
+- Checkout Field Editor by ThemeHigh
+- Flexible Checkout Fields
+- WooCommerce Checkout Field Editor (various)
+- Advanced Custom Fields (ACF)
+- Any plugin storing field options in standard format
+
+**How It Works**
+1. Meta box scans ALL custom fields on the order (auto-detect)
+2. For each field, checks if it has dropdown options defined
+3. If options found → renders as dropdown
+4. If no options → renders as text/date/email/number input
+5. Completely dynamic - no hardcoded field names
+
+**Benefits**
+- Works on any site with any checkout field editor
+- No configuration needed
+- Automatically adapts to your field definitions
+- Future-proof for new fields
+
+---
+
 ## [1.7.83] - 2026-04-25
 ### 📋 Added Dropdown Support for Select Fields
 

@@ -1174,30 +1174,86 @@ class WC_Team_Payroll_Order_Editor {
 
 	/**
 	 * Get field options for select fields
+	 * Auto-detects from Checkout Field Editor plugins or ACF
 	 */
 	private function get_field_options( $key, $value ) {
-		// Check if this is a known select field (with or without underscore)
-		$select_fields = array(
-			'_order_source' => array( 'Facebook', 'WhatsApp', 'Website', 'Phone', 'Instagram', 'Other' ),
-			'order_source' => array( 'Facebook', 'WhatsApp', 'Website', 'Phone', 'Instagram', 'Other' ),
-			'_order_priority' => array( 'Low', 'Medium', 'High', 'Urgent' ),
-			'order_priority' => array( 'Low', 'Medium', 'High', 'Urgent' ),
-			'_payment_method' => array( 'bKash', 'Nagad', 'Rocket', 'Cash', 'Bank Transfer' ),
-			'payment_method' => array( 'bKash', 'Nagad', 'Rocket', 'Cash', 'Bank Transfer' ),
-			'order_status' => array( 'Pending', 'Processing', 'Completed', 'Cancelled', 'On Hold' ),
-			'delivery_status' => array( 'Not Shipped', 'Shipped', 'In Transit', 'Delivered', 'Returned' ),
-			'payment_status' => array( 'Unpaid', 'Partially Paid', 'Paid', 'Refunded' ),
-		);
-
-		if ( isset( $select_fields[ $key ] ) ) {
-			return array_combine( $select_fields[ $key ], $select_fields[ $key ] );
+		// Try to get from WooCommerce Checkout Field Editor (various plugins)
+		
+		// Method 1: Check WooCommerce checkout fields settings (common format)
+		$checkout_fields = get_option( 'wc_fields_' . $key, array() );
+		if ( ! empty( $checkout_fields ) && isset( $checkout_fields['options'] ) ) {
+			return $checkout_fields['options'];
 		}
-
-		// Check if it's an agent/user field
+		
+		// Method 2: Check Checkout Field Editor by ThemeHigh
+		$thwcfe_sections = get_option( 'thwcfe_sections', array() );
+		if ( ! empty( $thwcfe_sections ) ) {
+			foreach ( $thwcfe_sections as $section ) {
+				if ( isset( $section['fields'] ) && is_array( $section['fields'] ) ) {
+					foreach ( $section['fields'] as $field ) {
+						if ( isset( $field['name'] ) && $field['name'] === $key ) {
+							if ( isset( $field['options'] ) && is_array( $field['options'] ) ) {
+								// Options might be in format "value|label" or just "value"
+								$options = array();
+								foreach ( $field['options'] as $option ) {
+									if ( is_array( $option ) && isset( $option['key'] ) && isset( $option['text'] ) ) {
+										$options[ $option['key'] ] = $option['text'];
+									} elseif ( strpos( $option, '|' ) !== false ) {
+										list( $opt_value, $opt_label ) = explode( '|', $option, 2 );
+										$options[ $opt_value ] = $opt_label;
+									} else {
+										$options[ $option ] = $option;
+									}
+								}
+								if ( ! empty( $options ) ) {
+									return $options;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// Method 3: Check Flexible Checkout Fields
+		$fcf_settings = get_option( 'inspire_checkout_fields_settings', array() );
+		if ( ! empty( $fcf_settings ) ) {
+			foreach ( $fcf_settings as $section => $fields ) {
+				if ( is_array( $fields ) ) {
+					foreach ( $fields as $field_key => $field_data ) {
+						if ( $field_key === $key && isset( $field_data['options'] ) ) {
+							return $field_data['options'];
+						}
+					}
+				}
+			}
+		}
+		
+		// Method 4: Try to get ACF field object if ACF is active
+		if ( function_exists( 'acf_get_field' ) ) {
+			$field_object = acf_get_field( $key );
+			
+			if ( $field_object && isset( $field_object['type'] ) ) {
+				// Check if it's a select, radio, or checkbox field
+				if ( in_array( $field_object['type'], array( 'select', 'radio', 'checkbox' ) ) ) {
+					if ( isset( $field_object['choices'] ) && is_array( $field_object['choices'] ) ) {
+						return $field_object['choices'];
+					}
+				}
+				
+				// Check if it's a user field
+				if ( $field_object['type'] === 'user' ) {
+					return $this->get_agent_options();
+				}
+			}
+		}
+		
+		// Method 5: Check if it's an agent/user/employee field by name
 		if ( strpos( $key, 'agent' ) !== false || strpos( $key, 'user' ) !== false || strpos( $key, 'employee' ) !== false ) {
 			return $this->get_agent_options();
 		}
 
+		// No dropdown options found - will render as text input
 		return array();
 	}
 
