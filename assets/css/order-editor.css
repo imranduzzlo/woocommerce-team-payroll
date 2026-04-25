@@ -73,10 +73,11 @@
 
 /* Custom Field Row */
 .wc-tp-custom-field-row {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 10px;
-    padding: 10px 0;
+    margin: 0 !important;
+    padding: 12px 15px !important;
     border-bottom: 1px solid #eee;
 }
 
@@ -90,35 +91,36 @@
     font-weight: 600;
     color: #333;
     font-size: 14px;
-    margin: 0;
+    margin: 0 !important;
 }
 
 .wc-tp-field-display {
     flex: 1;
-    padding: 8px 12px;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
     color: #333;
+    font-size: 14px;
     word-break: break-word;
     transition: all 0.2s ease;
 }
 
 .wc-tp-custom-field-row:hover .wc-tp-field-display {
-    background: #f9f9f9;
-    border-color: #e0e0e0;
+    background: #f9f9f9 !important;
+    padding: 8px 12px !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 4px;
 }
 
 .wc-tp-edit-custom-field-btn {
     flex: 0 0 auto;
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
-    padding: 4px 8px;
-    margin: 0;
+    background: none !important;
+    border: none !important;
+    padding: 4px 8px !important;
+    margin: 0 !important;
     cursor: pointer;
     opacity: 0;
     pointer-events: none;
@@ -129,7 +131,7 @@
 
 .wc-tp-edit-custom-field-btn:hover {
     color: #2271b1;
-    background: #f0f0f0;
+    background: #f0f0f0 !important;
 }
 
 .wc-tp-custom-field-row:hover .wc-tp-edit-custom-field-btn {
@@ -141,6 +143,14 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
+}
+
+/* Custom Fields Container */
+.wc-tp-custom-fields-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0;
 }
 
 /* Field Editor */

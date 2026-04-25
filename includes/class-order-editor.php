@@ -909,9 +909,8 @@ class WC_Team_Payroll_Order_Editor {
 		?>
 		<div class="wc-tp-custom-fields-section">
 			<h3><?php esc_html_e( 'Custom Fields', 'wc-team-payroll' ); ?></h3>
-			<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+			<div class="wc-tp-custom-fields-container">
 				<?php
-				$index = 0;
 				foreach ( $custom_fields as $meta_key => $meta_value ) {
 					// Format label from meta key
 					$label = $this->format_label( $meta_key );
@@ -926,15 +925,14 @@ class WC_Team_Payroll_Order_Editor {
 
 					// Display readonly field with edit button
 					?>
-					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="margin: 0; padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
-						<label style="flex: 0 0 auto; min-width: 150px; font-weight: 600; margin: 0; color: #333; font-size: 14px;"><?php echo esc_html( $label ); ?>:</label>
-						<span class="wc-tp-field-display" style="flex: 1; padding: 0; background: transparent; border: none; color: #333; font-size: 14px; word-break: break-word;"><?php echo esc_html( $meta_value ); ?></span>
-						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>" style="flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 4px 8px; margin: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease; color: #999; border-radius: 4px;">
-							<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
+					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+						<label><?php echo esc_html( $label ); ?>:</label>
+						<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
+						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>">
+							<span class="dashicons dashicons-edit"></span>
 						</button>
 					</p>
 					<?php
-					$index++;
 				}
 				?>
 			</div>
@@ -990,7 +988,7 @@ class WC_Team_Payroll_Order_Editor {
 		?>
 		<div class="wc-tp-billing-custom-fields-section">
 			<h4><?php esc_html_e( 'Billing Custom Fields', 'wc-team-payroll' ); ?></h4>
-			<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+			<div class="wc-tp-custom-fields-container">
 				<?php
 				foreach ( $billing_custom_fields as $meta_key => $meta_value ) {
 					$label = $this->format_label( str_replace( '_billing_', '', $meta_key ) );
@@ -998,11 +996,11 @@ class WC_Team_Payroll_Order_Editor {
 
 					// Display readonly field with edit button
 					?>
-					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="margin: 0; padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
-						<label style="flex: 0 0 auto; min-width: 150px; font-weight: 600; margin: 0; color: #333; font-size: 14px;"><?php echo esc_html( $label ); ?>:</label>
-						<span class="wc-tp-field-display" style="flex: 1; padding: 0; background: transparent; border: none; color: #333; font-size: 14px; word-break: break-word;"><?php echo esc_html( $meta_value ); ?></span>
-						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>" style="flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 4px 8px; margin: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease; color: #999; border-radius: 4px;">
-							<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
+					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+						<label><?php echo esc_html( $label ); ?>:</label>
+						<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
+						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>">
+							<span class="dashicons dashicons-edit"></span>
 						</button>
 					</p>
 					<?php
@@ -1061,7 +1059,7 @@ class WC_Team_Payroll_Order_Editor {
 		?>
 		<div class="wc-tp-shipping-custom-fields-section">
 			<h4><?php esc_html_e( 'Shipping Custom Fields', 'wc-team-payroll' ); ?></h4>
-			<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+			<div class="wc-tp-custom-fields-container">
 				<?php
 				foreach ( $shipping_custom_fields as $meta_key => $meta_value ) {
 					$label = $this->format_label( str_replace( '_shipping_', '', $meta_key ) );
@@ -1069,11 +1067,11 @@ class WC_Team_Payroll_Order_Editor {
 
 					// Display readonly field with edit button
 					?>
-					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>" style="margin: 0; padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
-						<label style="flex: 0 0 auto; min-width: 150px; font-weight: 600; margin: 0; color: #333; font-size: 14px;"><?php echo esc_html( $label ); ?>:</label>
-						<span class="wc-tp-field-display" style="flex: 1; padding: 0; background: transparent; border: none; color: #333; font-size: 14px; word-break: break-word;"><?php echo esc_html( $meta_value ); ?></span>
-						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>" style="flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; padding: 4px 8px; margin: 0; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, pointer-events 0.2s ease, color 0.2s ease; color: #999; border-radius: 4px;">
-							<span class="dashicons dashicons-edit" style="font-size: 16px; width: 16px; height: 16px;"></span>
+					<p class="form-field form-field-wide wc-tp-custom-field-row" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" data-order-id="<?php echo esc_attr( $order->get_id() ); ?>">
+						<label><?php echo esc_html( $label ); ?>:</label>
+						<span class="wc-tp-field-display"><?php echo esc_html( $meta_value ); ?></span>
+						<button type="button" class="wc-tp-edit-custom-field-btn" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-label="<?php echo esc_attr( $label ); ?>" data-value="<?php echo esc_attr( $meta_value ); ?>" data-field-type="<?php echo esc_attr( $field_type ); ?>" title="<?php esc_attr_e( 'Edit field', 'wc-team-payroll' ); ?>">
+							<span class="dashicons dashicons-edit"></span>
 						</button>
 					</p>
 					<?php

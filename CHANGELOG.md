@@ -1,3 +1,25 @@
+## [1.7.74] - 2026-04-25
+### 🐛 Bug Fix - Custom Field Display and Editing
+
+#### Fixed Issues
+
+**Layout Breaking**
+- Removed excessive inline styles that were breaking the custom field layout
+- Fields now display cleanly with proper text wrapping
+- Fixed flex layout issues that prevented proper field display
+
+**Edit Functionality**
+- Custom fields are now properly editable when clicking the edit icon
+- Edit icons appear on hover as intended
+- Save/Cancel buttons work correctly
+
+**Styling**
+- All styling now handled through CSS classes instead of inline styles
+- Cleaner, more maintainable code
+- Better compatibility with WooCommerce admin styles
+
+---
+
 ## [1.7.73] - 2026-04-25
 ### ✨ Enhanced Custom Field Editing UI
 
