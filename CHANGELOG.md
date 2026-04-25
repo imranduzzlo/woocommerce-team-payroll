@@ -1,3 +1,55 @@
+## [1.7.72] - 2026-04-26
+### 🚀 Major Refactor - WooCommerce Native Custom Field Editing
+
+#### COMPLETE REWRITE
+
+**Switched to WooCommerce Native Functions**
+- Replaced custom inline editing with WooCommerce's built-in `woocommerce_wp_*` functions
+- Uses `woocommerce_wp_text_input()`, `woocommerce_wp_textarea_input()`, `woocommerce_wp_checkbox()`, etc.
+- Proper field rendering that matches WooCommerce admin UI perfectly
+- Automatic field type detection and rendering
+
+#### HOW IT WORKS NOW
+
+**1. Automatic Field Discovery**
+- Scans all order meta data
+- Filters out internal WooCommerce fields (starting with `_`)
+- Skips standard WooCommerce fields already editable in billing/shipping
+
+**2. Smart Field Type Detection**
+- Checkbox: "1", "0", "yes", "no"
+- Email: Matches email pattern
+- URL: Matches URL pattern
+- Date: Matches date pattern
+- Textarea: Long text or multi-line content
+- Number: Numeric values
+- Text: Default fallback
+
+**3. Native WooCommerce Rendering**
+- Uses WooCommerce's form field functions
+- Consistent styling with WooCommerce admin
+- Proper label formatting
+- Automatic value handling
+
+**4. Seamless Integration**
+- Custom fields appear in their respective sections:
+  - General section for order meta
+  - Billing section for billing custom fields
+  - Shipping section for shipping custom fields
+- Fields are fully editable inline
+- Saves via WooCommerce's native save hook
+
+#### BENEFITS
+
+- No custom styling needed - uses WooCommerce defaults
+- Proper accessibility and form handling
+- Consistent with WooCommerce patterns
+- Robust and maintainable code
+- Works with any custom field from any plugin/theme
+- Automatic saving when order is saved
+
+---
+
 ## [1.7.71] - 2026-04-26
 ### 🐛 Critical Fix - Button Element Context
 
