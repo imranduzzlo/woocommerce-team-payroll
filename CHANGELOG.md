@@ -1,3 +1,17 @@
+## [1.0.6] - 2026-04-25
+### 🐛 Critical Fix
+
+**Update Debug Page - Fixed Version Detection**
+- Fixed blank "Current Version" display in debug page
+- Now uses WC_TEAM_PAYROLL_PATH constant for reliable file detection
+- Added better error messages with debug information
+- Added fallback to 'Unknown' if version can't be read
+
+**Files Changed**
+- `includes/class-update-debug.php` (improved path detection)
+
+---
+
 ## [1.0.5] - 2026-04-25
 ### 🐛 Bug Fixes
 

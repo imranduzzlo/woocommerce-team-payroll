@@ -76,27 +76,33 @@ class WC_Team_Payroll_Update_Debug {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 		
-		// Try multiple paths to find the plugin file
-		$possible_paths = array(
-			WP_PLUGIN_DIR . '/woocommerce-team-payroll/woocommerce-team-payroll.php',
-			dirname( dirname( __FILE__ ) ) . '/woocommerce-team-payroll.php',
-		);
+		// Use the constant that's already defined in the main plugin file
+		$plugin_file = WC_TEAM_PAYROLL_PATH . 'woocommerce-team-payroll.php';
 		
-		$plugin_file = '';
-		foreach ( $possible_paths as $path ) {
-			if ( file_exists( $path ) ) {
-				$plugin_file = $path;
-				break;
+		if ( ! file_exists( $plugin_file ) ) {
+			// Fallback: try to find it
+			$possible_paths = array(
+				WP_PLUGIN_DIR . '/woocommerce-team-payroll/woocommerce-team-payroll.php',
+				dirname( dirname( __FILE__ ) ) . '/woocommerce-team-payroll.php',
+			);
+			
+			foreach ( $possible_paths as $path ) {
+				if ( file_exists( $path ) ) {
+					$plugin_file = $path;
+					break;
+				}
 			}
 		}
 		
-		if ( empty( $plugin_file ) ) {
-			echo '<div class="notice notice-error"><p><strong>Error:</strong> Could not locate plugin file.</p></div>';
+		if ( ! file_exists( $plugin_file ) ) {
+			echo '<div class="notice notice-error"><p><strong>Error:</strong> Could not locate plugin file at: ' . esc_html( $plugin_file ) . '</p></div>';
+			echo '<div class="notice notice-info"><p>WC_TEAM_PAYROLL_PATH: ' . esc_html( WC_TEAM_PAYROLL_PATH ) . '</p></div>';
+			echo '<div class="notice notice-info"><p>__FILE__: ' . esc_html( __FILE__ ) . '</p></div>';
 			return;
 		}
 		
 		$plugin_data = get_plugin_data( $plugin_file );
-		$current_version = $plugin_data['Version'];
+		$current_version = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : 'Unknown';
 
 		// Get GitHub release info
 		$github_api_url = 'https://api.github.com/repos/imranduzzlo/woocommerce-team-payroll/releases/latest';
