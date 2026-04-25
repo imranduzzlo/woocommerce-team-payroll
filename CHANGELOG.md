@@ -1,3 +1,25 @@
+## [1.0.2] - 2026-04-25
+### 🔥 Critical Fixes
+
+**Update System - Major Improvements**
+- ✅ **FIXED: Updates now show even when plugin is inactive** (like other WordPress plugins)
+- ✅ **FIXED: Debug menu now appears correctly** (under Tools menu if main menu not available)
+- ✅ GitHub updater now loads early (before plugins_loaded)
+- ✅ Update detection works regardless of plugin activation status
+
+**Technical Changes**
+- ✅ Moved GitHub updater initialization outside plugins_loaded hook
+- ✅ Added fallback menu registration for Update Debug page
+- ✅ Improved hook timing for better compatibility
+- ✅ Enhanced menu detection logic
+
+**Why This Matters**
+- Users can now see available updates without activating the plugin first
+- Matches standard WordPress plugin update behavior
+- Better user experience and update visibility
+
+---
+
 ## [1.0.1] - 2026-04-25
 ### 🔧 Bug Fixes & Improvements
 
