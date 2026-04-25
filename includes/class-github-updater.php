@@ -107,6 +107,11 @@ class WC_Team_Payroll_GitHub_Updater {
 			$transient->response = array();
 		}
 
+		// Make sure our plugin is in the checked array
+		if ( ! isset( $transient->checked[ $this->plugin_file ] ) ) {
+			$transient->checked[ $this->plugin_file ] = $this->get_current_version();
+		}
+
 		$current_version = $this->get_current_version();
 
 		// Get latest release from GitHub
@@ -114,7 +119,9 @@ class WC_Team_Payroll_GitHub_Updater {
 
 		if ( ! $latest_release ) {
 			// Remove from response if no release found
-			unset( $transient->response[ $this->plugin_file ] );
+			if ( isset( $transient->response[ $this->plugin_file ] ) ) {
+				unset( $transient->response[ $this->plugin_file ] );
+			}
 			return $transient;
 		}
 
@@ -175,6 +182,11 @@ class WC_Team_Payroll_GitHub_Updater {
 				'banners'       => array(),
 				'compatibility' => new stdClass(),
 			);
+			
+			// Debug logging
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'WC Team Payroll: Plugin is up to date - ' . $current_version_normalized );
+			}
 		}
 
 		return $transient;

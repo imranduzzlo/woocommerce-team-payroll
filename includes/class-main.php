@@ -84,19 +84,34 @@ class WC_Team_Payroll_Main {
 			return;
 		}
 
-		// Clear all update caches
+		// Clear ALL update caches
 		delete_transient( 'wc_tp_github_release' );
 		delete_transient( 'wc_tp_last_update_check' );
 		delete_site_transient( 'update_plugins' );
-
+		
+		// Also clear the timeout transient
+		delete_site_transient( 'update_plugins_last_checked' );
+		
+		// Clear any plugin-specific transients
+		wp_cache_delete( 'plugins', 'plugins' );
+		
 		// Force WordPress to check for updates
+		wp_clean_plugins_cache();
 		wp_update_plugins();
 
-		// Add admin notice
+		// Add admin notice with current status
 		add_action( 'admin_notices', function() {
+			// Get current version
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/woocommerce-team-payroll/woocommerce-team-payroll.php' );
+			$current_version = $plugin_data['Version'];
+			
 			echo '<div class="notice notice-success is-dismissible">';
 			echo '<p><strong>' . esc_html__( 'WooCommerce Team Payroll:', 'wc-team-payroll' ) . '</strong> ';
-			echo esc_html__( 'Update check completed! If an update is available, it will appear below.', 'wc-team-payroll' );
+			echo esc_html__( 'Update check completed!', 'wc-team-payroll' );
+			echo '<br><small>Current version: ' . esc_html( $current_version ) . '</small>';
 			echo '</p></div>';
 		} );
 
