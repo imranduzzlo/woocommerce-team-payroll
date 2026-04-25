@@ -1,3 +1,28 @@
+## [1.7.76] - 2026-04-25
+### 🧹 Cleanup - Removed Custom Field Rendering
+
+#### Changes
+
+**Removed Custom Functions**
+- Removed `make_custom_fields_editable()` function
+- Removed `make_billing_custom_fields_editable()` function
+- Removed `make_shipping_custom_fields_editable()` function
+- Removed associated hooks that were rendering duplicate fields
+
+**Simplified Approach**
+- Let WooCommerce display read-only meta fields naturally in "Additional Information" section
+- Fields save through standard WooCommerce save hook
+- No custom UI clutter or duplicate sections
+- Cleaner, simpler codebase
+
+**Result**
+- Only WooCommerce's native "Additional Information" section displays
+- All meta fields shown as read-only by default
+- Fields are editable when order is saved through standard WooCommerce mechanism
+- No unnecessary custom rendering
+
+---
+
 ## [1.7.75] - 2026-04-25
 ### 🔄 Switched to WooCommerce Native Custom Field Editing
 
