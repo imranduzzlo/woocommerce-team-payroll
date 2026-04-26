@@ -743,7 +743,20 @@ class WC_Team_Payroll_Order_Editor {
 		switch ( $action_type ) {
 			case 'add':
 			case 'update':
+				// Update order meta for the original key
 				$order->update_meta_data( $meta_key, $meta_value );
+				
+				// DUAL VERSION SYNC: Update both with and without underscore prefix
+				// If key starts with underscore, also update without underscore
+				if ( strpos( $meta_key, '_' ) === 0 ) {
+					$alt_key = ltrim( $meta_key, '_' );
+					$order->update_meta_data( $alt_key, $meta_value );
+				} else {
+					// If key doesn't start with underscore, also update with underscore
+					$alt_key = '_' . $meta_key;
+					$order->update_meta_data( $alt_key, $meta_value );
+				}
+				
 				$order->save();
 				$message = __( 'Order meta updated successfully', 'wc-team-payroll' );
 				
@@ -756,7 +769,18 @@ class WC_Team_Payroll_Order_Editor {
 				break;
 
 			case 'delete':
+				// Delete both versions
 				$order->delete_meta_data( $meta_key );
+				
+				// DUAL VERSION SYNC: Delete both with and without underscore prefix
+				if ( strpos( $meta_key, '_' ) === 0 ) {
+					$alt_key = ltrim( $meta_key, '_' );
+					$order->delete_meta_data( $alt_key );
+				} else {
+					$alt_key = '_' . $meta_key;
+					$order->delete_meta_data( $alt_key );
+				}
+				
 				$order->save();
 				$message = __( 'Order meta deleted successfully', 'wc-team-payroll' );
 				
@@ -813,7 +837,19 @@ class WC_Team_Payroll_Order_Editor {
 			$meta_key = sanitize_text_field( $meta_key );
 			$meta_value = sanitize_text_field( $meta_value );
 
+			// Update order meta for the original key
 			$order->update_meta_data( $meta_key, $meta_value );
+			
+			// DUAL VERSION SYNC: Update both with and without underscore prefix
+			// If key starts with underscore, also update without underscore
+			if ( strpos( $meta_key, '_' ) === 0 ) {
+				$alt_key = ltrim( $meta_key, '_' );
+				$order->update_meta_data( $alt_key, $meta_value );
+			} else {
+				// If key doesn't start with underscore, also update with underscore
+				$alt_key = '_' . $meta_key;
+				$order->update_meta_data( $alt_key, $meta_value );
+			}
 		}
 
 		$order->save();
@@ -1076,8 +1112,19 @@ class WC_Team_Payroll_Order_Editor {
 						}
 					}
 					
-					// Update order meta
+					// Update order meta for the original key
 					$order->update_meta_data( $meta_key, $meta_value );
+					
+					// DUAL VERSION SYNC: Update both with and without underscore prefix
+					// If key starts with underscore, also update without underscore
+					if ( strpos( $meta_key, '_' ) === 0 ) {
+						$alt_key = ltrim( $meta_key, '_' );
+						$order->update_meta_data( $alt_key, $meta_value );
+					} else {
+						// If key doesn't start with underscore, also update with underscore
+						$alt_key = '_' . $meta_key;
+						$order->update_meta_data( $alt_key, $meta_value );
+					}
 				}
 				
 				$order->save();

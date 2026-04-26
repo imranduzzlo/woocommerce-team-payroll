@@ -1,3 +1,24 @@
+## [1.0.8] - 2026-04-26
+### ✨ Custom Fields Dual Version Sync
+
+**Order Editor - Custom Fields Enhancement**
+- Custom fields now automatically sync both with and without underscore prefix
+- When saving `_shipping_thana`, also updates `shipping_thana` with same value
+- When saving `shipping_thana`, also updates `_shipping_thana` with same value
+- Ensures compatibility with different meta key naming conventions
+- Works in both metabox editor and AJAX save handlers
+
+**Files Changed**
+- `includes/class-order-editor.php` (added dual version sync logic)
+
+**Technical Details**
+- Updated `save_custom_fields_on_order_save()` method
+- Updated `ajax_save_custom_fields()` method
+- Updated `ajax_update_order_meta()` method
+- Handles both add/update and delete operations
+
+---
+
 ## [1.0.7] - 2026-04-25
 ### 📚 Documentation & Distribution Improvements
 
