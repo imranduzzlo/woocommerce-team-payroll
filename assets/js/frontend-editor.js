@@ -111,14 +111,14 @@
 				type: 'button',
 				class: 'wc-tp-action-btn wc-tp-save-btn',
 				title: wcTpEditor.i18n.save,
-				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+				html: '<i class="ph ph-check"></i>'
 			});
 			
 			const $cancelBtn = $('<button>', {
 				type: 'button',
 				class: 'wc-tp-action-btn wc-tp-cancel-btn',
 				title: wcTpEditor.i18n.cancel,
-				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+				html: '<i class="ph ph-x"></i>'
 			});
 			
 			$actions.append($saveBtn, $cancelBtn);
@@ -348,14 +348,14 @@
 				type: 'button',
 				class: 'wc-tp-action-btn wc-tp-save-btn',
 				title: wcTpEditor.i18n.save,
-				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+				html: '<i class="ph ph-check"></i>'
 			});
 			
 			const $cancelBtn = $('<button>', {
 				type: 'button',
 				class: 'wc-tp-action-btn wc-tp-cancel-btn',
 				title: wcTpEditor.i18n.cancel,
-				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+				html: '<i class="ph ph-x"></i>'
 			});
 			
 			$actions.append($saveBtn, $cancelBtn);
@@ -442,12 +442,19 @@
 				},
 				success: (response) => {
 					if (response.success) {
+						$wrapper.find('.wc-tp-shipping-display').html(response.data.new_cost_html);
+						$wrapper.data('current-cost', response.data.new_cost);
+						
+						this.exitEditMode($wrapper);
+						
+						$wrapper.addClass('success');
+						setTimeout(() => $wrapper.removeClass('success'), 600);
+						
 						showToast(response.data.message, 'success');
 						
-						// Reload page to show updated shipping (session needs page reload)
-						setTimeout(() => {
-							window.location.reload();
-						}, 500);
+						// Trigger WooCommerce cart update (no reload needed)
+						$(document.body).trigger('wc_fragment_refresh');
+						$(document.body).trigger('update_checkout');
 					} else {
 						this.handleError($wrapper, response.data.message);
 					}
@@ -500,8 +507,8 @@
 		$('.wc-tp-toast').remove();
 		
 		const icon = type === 'success' 
-			? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
-			: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+			? '<i class="ph ph-check-circle"></i>'
+			: '<i class="ph ph-warning-circle"></i>';
 		
 		const $toast = $('<div>', {
 			class: 'wc-tp-toast ' + type,

@@ -1,6 +1,7 @@
 /**
  * Frontend Editor Styles
  * For cart item prices and shipping costs
+ * Minimal design with Phosphor icons
  */
 
 /* ============================================================================
@@ -11,29 +12,23 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	background: #2271b1;
+	background: transparent;
 	border: none;
-	border-radius: 3px;
-	padding: 3px 5px;
+	padding: 0;
 	cursor: pointer;
-	color: #fff;
 	line-height: 1;
-	transition: all 0.2s ease;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+	transition: opacity 0.2s ease;
 	margin-left: 6px;
-	opacity: 1; /* Always visible */
+	opacity: 0.6;
 	vertical-align: middle;
 }
 
 .wc-tp-edit-btn:hover {
-	background: #135e96;
-	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	opacity: 1;
 }
 
-.wc-tp-edit-btn svg {
-	display: block;
-	width: 12px;
-	height: 12px;
+.wc-tp-edit-btn i {
+	font-size: 14px;
 }
 
 /* Show edit button on hover */
@@ -65,7 +60,7 @@
 .wc-tp-price-input {
 	display: none;
 	padding: 4px 8px;
-	border: 2px solid #2271b1;
+	border: 1px solid #ddd;
 	border-radius: 3px;
 	font-size: inherit;
 	font-family: inherit;
@@ -79,8 +74,7 @@
 }
 
 .wc-tp-price-input:focus {
-	border-color: #135e96;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+	border-color: #999;
 }
 
 .wc-tp-price-actions {
@@ -96,47 +90,39 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	background: transparent;
 	border: none;
-	border-radius: 3px;
 	cursor: pointer;
-	transition: all 0.2s ease;
+	transition: opacity 0.2s ease;
 	padding: 0;
+	opacity: 0.6;
 }
 
-.wc-tp-action-btn svg {
-	width: 14px;
-	height: 14px;
+.wc-tp-action-btn:hover {
+	opacity: 1;
 }
 
-.wc-tp-save-btn {
-	background: #00a32a;
-	color: #fff;
+.wc-tp-action-btn i {
+	font-size: 16px;
 }
 
-.wc-tp-save-btn:hover {
-	background: #008a20;
+.wc-tp-save-btn i {
+	color: #00a32a;
 }
 
-.wc-tp-cancel-btn {
-	background: #d63638;
-	color: #fff;
-}
-
-.wc-tp-cancel-btn:hover {
-	background: #b32d2e;
+.wc-tp-cancel-btn i {
+	color: #d63638;
 }
 
 .wc-tp-cart-price-wrapper.loading .wc-tp-price-input,
 .wc-tp-cart-price-wrapper.loading .wc-tp-action-btn {
-	opacity: 0.6;
+	opacity: 0.4;
 	pointer-events: none;
 }
 
 @keyframes wc-tp-success {
 	0%, 100% { background-color: transparent; }
-	50% { background-color: rgba(0, 163, 42, 0.2); }
+	50% { background-color: rgba(0, 163, 42, 0.1); }
 }
 
 .wc-tp-cart-price-wrapper.success {
@@ -145,7 +131,6 @@
 
 .wc-tp-cart-price-wrapper.error .wc-tp-price-input {
 	border-color: #d63638;
-	box-shadow: 0 0 0 2px rgba(214, 54, 56, 0.2);
 }
 
 /* ============================================================================
@@ -171,7 +156,7 @@
 .wc-tp-shipping-input {
 	display: none;
 	padding: 4px 8px;
-	border: 2px solid #2271b1;
+	border: 1px solid #ddd;
 	border-radius: 3px;
 	font-size: inherit;
 	font-family: inherit;
@@ -185,8 +170,7 @@
 }
 
 .wc-tp-shipping-input:focus {
-	border-color: #135e96;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+	border-color: #999;
 }
 
 .wc-tp-shipping-actions {
@@ -200,7 +184,7 @@
 
 .wc-tp-shipping-wrapper.loading .wc-tp-shipping-input,
 .wc-tp-shipping-wrapper.loading .wc-tp-action-btn {
-	opacity: 0.6;
+	opacity: 0.4;
 	pointer-events: none;
 }
 
@@ -210,7 +194,6 @@
 
 .wc-tp-shipping-wrapper.error .wc-tp-shipping-input {
 	border-color: #d63638;
-	box-shadow: 0 0 0 2px rgba(214, 54, 56, 0.2);
 }
 
 /* ============================================================================
@@ -242,16 +225,15 @@
 	flex-shrink: 0;
 }
 
-.wc-tp-toast-icon svg {
-	width: 20px;
-	height: 20px;
+.wc-tp-toast-icon i {
+	font-size: 20px;
 }
 
-.wc-tp-toast.success .wc-tp-toast-icon {
+.wc-tp-toast.success .wc-tp-toast-icon i {
 	color: #00a32a;
 }
 
-.wc-tp-toast.error .wc-tp-toast-icon {
+.wc-tp-toast.error .wc-tp-toast-icon i {
 	color: #d63638;
 }
 
@@ -293,14 +275,8 @@
    ============================================================================ */
 
 @media (max-width: 768px) {
-	.wc-tp-edit-btn {
-		opacity: 1;
-		padding: 2px 4px;
-	}
-	
-	.wc-tp-edit-btn svg {
-		width: 10px;
-		height: 10px;
+	.wc-tp-edit-btn i {
+		font-size: 12px;
 	}
 	
 	.wc-tp-price-input,
@@ -309,14 +285,8 @@
 		font-size: 14px;
 	}
 	
-	.wc-tp-action-btn {
-		width: 22px;
-		height: 22px;
-	}
-	
-	.wc-tp-action-btn svg {
-		width: 12px;
-		height: 12px;
+	.wc-tp-action-btn i {
+		font-size: 14px;
 	}
 	
 	.wc-tp-toast {

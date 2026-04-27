@@ -175,7 +175,7 @@ class WC_Team_Payroll_Frontend_Editor {
 		$wrapper = '<span class="wc-tp-cart-price-wrapper" data-cart-key="' . esc_attr( $cart_item_key ) . '" data-current-price="' . esc_attr( $current_price ) . '">';
 		$wrapper .= '<span class="wc-tp-price-display">' . $price_html . '</span>';
 		$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-cart-price-edit" title="' . esc_attr__( 'Edit Price', 'wc-team-payroll' ) . '">';
-		$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+		$wrapper .= '<i class="ph ph-pencil"></i>';
 		$wrapper .= '</button>';
 		$wrapper .= '</span>';
 
@@ -235,7 +235,7 @@ class WC_Team_Payroll_Frontend_Editor {
 		$wrapper = '<span class="wc-tp-cart-price-wrapper" data-cart-key="' . esc_attr( $cart_item_key ) . '" data-current-price="' . esc_attr( $current_price ) . '">';
 		$wrapper .= '<span class="wc-tp-price-display">' . $subtotal_html . '</span>';
 		$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-cart-price-edit" title="' . esc_attr__( 'Edit Price', 'wc-team-payroll' ) . '">';
-		$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+		$wrapper .= '<i class="ph ph-pencil"></i>';
 		$wrapper .= '</button>';
 		$wrapper .= '</span>';
 
@@ -267,7 +267,7 @@ class WC_Team_Payroll_Frontend_Editor {
 			$wrapper = '<span class="wc-tp-shipping-wrapper" data-method-id="' . esc_attr( $method_id ) . '" data-current-cost="' . esc_attr( $cost ) . '">';
 			$wrapper .= '<span class="wc-tp-shipping-display">' . $label . '</span>';
 			$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-shipping-edit" title="' . esc_attr__( 'Edit Shipping Cost', 'wc-team-payroll' ) . '">';
-			$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+			$wrapper .= '<i class="ph ph-pencil"></i>';
 			$wrapper .= '</button>';
 			$wrapper .= '</span>';
 			return $wrapper;
@@ -289,6 +289,20 @@ class WC_Team_Payroll_Frontend_Editor {
 			return;
 		}
 
+		// Enqueue Phosphor Icons (reuse existing handle if already loaded)
+		if ( ! wp_script_is( 'phosphor-icons', 'enqueued' ) && ! wp_script_is( 'phosphor-icons', 'registered' ) ) {
+			wp_enqueue_script(
+				'phosphor-icons',
+				'https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2',
+				array(),
+				'2.1.2',
+				false
+			);
+		} else {
+			// Just enqueue if already registered
+			wp_enqueue_script( 'phosphor-icons' );
+		}
+
 		// Enqueue CSS
 		wp_enqueue_style(
 			'wc-tp-frontend-editor',
@@ -301,10 +315,16 @@ class WC_Team_Payroll_Frontend_Editor {
 		wp_enqueue_script(
 			'wc-tp-frontend-editor',
 			WC_TEAM_PAYROLL_URL . 'assets/js/frontend-editor.js',
-			array( 'jquery' ),
+			array( 'jquery', 'phosphor-icons' ),
 			WC_TEAM_PAYROLL_VERSION,
 			true
 		);
+
+		// Get text color from WordPress settings (body text color)
+		$text_color = get_theme_mod( 'text_color', '#000000' );
+		if ( empty( $text_color ) || $text_color === 'blank' ) {
+			$text_color = '#000000'; // Default to black
+		}
 
 		// Localize script
 		wp_localize_script( 'wc-tp-frontend-editor', 'wcTpEditor', array(
@@ -315,6 +335,7 @@ class WC_Team_Payroll_Frontend_Editor {
 			'decimal_separator' => wc_get_price_decimal_separator(),
 			'thousand_separator' => wc_get_price_thousand_separator(),
 			'decimals' => wc_get_price_decimals(),
+			'text_color' => $text_color,
 			'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'i18n' => array(
 				'edit_price' => __( 'Edit Price', 'wc-team-payroll' ),
@@ -448,7 +469,7 @@ class WC_Team_Payroll_Frontend_Editor {
 			'message' => __( 'Shipping cost updated successfully!', 'wc-team-payroll' ),
 			'new_cost' => $new_cost,
 			'new_cost_html' => wc_price( $new_cost ),
-			'reload_required' => true, // Tell JS to reload
+			'reload_required' => false, // No reload needed
 		) );
 	}
 

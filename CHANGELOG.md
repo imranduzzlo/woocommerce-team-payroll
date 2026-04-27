@@ -1,3 +1,64 @@
+## [1.0.20] - 2026-04-27
+### 🎨 Frontend Editor - UI Redesign with Phosphor Icons
+
+**Complete UI Redesign - Minimal & Clean**
+- Replaced all SVG icons with Phosphor icons for consistency
+- Minimal design with no backgrounds on buttons
+- Smaller, cleaner icon sizes (14px edit, 16px actions)
+- Transparent buttons with opacity hover effects
+- Professional, modern appearance
+
+**Phosphor Icons Integration**
+- Edit button: `<i class="ph ph-pencil"></i>`
+- Save button: `<i class="ph ph-check"></i>` (green)
+- Cancel button: `<i class="ph ph-x"></i>` (red)
+- Success toast: `<i class="ph ph-check-circle"></i>`
+- Error toast: `<i class="ph ph-warning-circle"></i>`
+- Reuses existing Phosphor icons CDN (version 2.1.2) to avoid conflicts
+
+**Dynamic Colors**
+- Icons inherit text color from WordPress theme settings
+- Save button uses green (#00a32a)
+- Cancel button uses red (#d63638)
+- Edit button uses theme text color with opacity
+
+**Shipping Update Improvement**
+- Removed page reload requirement for shipping cost updates
+- Now uses AJAX refresh like cart price updates
+- Smoother, faster user experience
+- No more page reload interruption
+
+**Consistent Design**
+- Same icon style across all editing features
+- Cart price editing
+- Checkout price editing
+- Shipping cost editing
+- Toast notifications
+- All action buttons
+
+**Technical Improvements**
+- Smart Phosphor icons loading (checks if already loaded)
+- Uses same version (2.1.2) as MyAccount and Employee Detail
+- Proper script dependencies to ensure icons load first
+- No duplicate CDN loading
+- Follows WordPress best practices
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (Phosphor icons in PHP, smart loading, no reload)
+- `assets/js/frontend-editor.js` (Phosphor icons in JS, AJAX refresh for shipping)
+- `assets/css/frontend-editor.css` (complete rewrite for minimal design)
+- `woocommerce-team-payroll.php` (version bump to 1.0.20)
+
+**User Experience:**
+- Clean, minimal edit icons with no background
+- Subtle opacity effects on hover
+- Consistent icon design everywhere
+- No page reload for any updates
+- Professional, modern appearance
+- Works seamlessly with existing Phosphor icons in plugin
+
+---
+
 ## [1.0.19] - 2026-04-27
 ### ✅ Frontend Editor - Cart Price Persistence Fix
 
