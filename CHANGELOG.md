@@ -1,3 +1,54 @@
+## [1.0.21] - 2026-04-27
+### 🎯 Frontend Editor - Perfect Button Styling & Mobile Optimization
+
+**Forced Transparent Button Styling**
+- All buttons now have forced transparent backgrounds with !important flags
+- Removed all borders, outlines, and box-shadows completely
+- Zero padding on all buttons (icons only)
+- Works perfectly even with aggressive theme CSS
+- Clean, minimal appearance guaranteed
+
+**Dynamic Color System**
+- Icons inherit text color from WordPress theme settings
+- Save button: Turns green (#00a32a) on hover
+- Cancel button: Turns red (#d63638) on hover
+- Smooth color transitions for professional feel
+- Respects theme customizer text color
+
+**Confirmed: No Page Reload**
+- Shipping updates use AJAX refresh (no reload)
+- Cart price updates use AJAX refresh (no reload)
+- Smooth, instant updates without interruption
+- Triggers WooCommerce fragment refresh
+
+**Enhanced Mobile Responsiveness**
+- Tablet (≤768px): Icon sizes 13px/15px, smaller inputs
+- Mobile (≤480px): Icon sizes 12px/14px, compact layout
+- Reduced gaps and padding for small screens
+- Smaller toast notifications on mobile
+- Touch-friendly button sizes
+
+**CSS Improvements**
+- Used !important flags to override any theme CSS
+- Applied to all button states (normal, hover, focus, active)
+- Consistent styling across all editing features
+- Better theme compatibility
+- Cleaner, more minimal design
+
+**Files Changed:**
+- `assets/css/frontend-editor.css` (forced transparent styling, mobile responsive)
+- `woocommerce-team-payroll.php` (version bump to 1.0.21)
+
+**User Experience:**
+- Buttons are completely transparent with no backgrounds
+- Icons inherit theme text color naturally
+- Hover effects: green for save, red for cancel
+- No page reloads for any updates
+- Perfect mobile experience
+- Works with any theme CSS
+
+---
+
 ## [1.0.20] - 2026-04-27
 ### 🎨 Frontend Editor - UI Redesign with Phosphor Icons
 

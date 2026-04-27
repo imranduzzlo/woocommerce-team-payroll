@@ -9,32 +9,41 @@
    ============================================================================ */
 
 .wc-tp-edit-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background: transparent;
-	border: none;
-	padding: 0;
-	cursor: pointer;
-	line-height: 1;
-	transition: opacity 0.2s ease;
-	margin-left: 6px;
-	opacity: 0.6;
-	vertical-align: middle;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	background: transparent !important;
+	border: none !important;
+	outline: none !important;
+	padding: 0 !important;
+	margin: 0 0 0 6px !important;
+	cursor: pointer !important;
+	line-height: 1 !important;
+	transition: opacity 0.2s ease !important;
+	opacity: 0.6 !important;
+	vertical-align: middle !important;
+	box-shadow: none !important;
 }
 
-.wc-tp-edit-btn:hover {
-	opacity: 1;
+.wc-tp-edit-btn:hover,
+.wc-tp-edit-btn:focus,
+.wc-tp-edit-btn:active {
+	opacity: 1 !important;
+	background: transparent !important;
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
 
 .wc-tp-edit-btn i {
-	font-size: 14px;
+	font-size: 14px !important;
+	line-height: 1 !important;
 }
 
 /* Show edit button on hover */
 .wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn,
 .wc-tp-shipping-wrapper:hover .wc-tp-edit-btn {
-	opacity: 1;
+	opacity: 1 !important;
 }
 
 /* ============================================================================
@@ -87,36 +96,49 @@
 }
 
 .wc-tp-action-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	transition: opacity 0.2s ease;
-	padding: 0;
-	opacity: 0.6;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	background: transparent !important;
+	border: none !important;
+	outline: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	cursor: pointer !important;
+	transition: opacity 0.2s ease, color 0.2s ease !important;
+	opacity: 0.7 !important;
+	box-shadow: none !important;
 }
 
-.wc-tp-action-btn:hover {
-	opacity: 1;
+.wc-tp-action-btn:hover,
+.wc-tp-action-btn:focus,
+.wc-tp-action-btn:active {
+	opacity: 1 !important;
+	background: transparent !important;
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
 
 .wc-tp-action-btn i {
-	font-size: 16px;
+	font-size: 16px !important;
+	line-height: 1 !important;
+	transition: color 0.2s ease !important;
 }
 
-.wc-tp-save-btn i {
-	color: #00a32a;
+/* Save button - green on hover */
+.wc-tp-save-btn:hover i {
+	color: #00a32a !important;
 }
 
-.wc-tp-cancel-btn i {
-	color: #d63638;
+/* Cancel button - red on hover */
+.wc-tp-cancel-btn:hover i {
+	color: #d63638 !important;
 }
 
 .wc-tp-cart-price-wrapper.loading .wc-tp-price-input,
 .wc-tp-cart-price-wrapper.loading .wc-tp-action-btn {
-	opacity: 0.4;
+	opacity: 0.4 !important;
 	pointer-events: none;
 }
 
@@ -184,7 +206,7 @@
 
 .wc-tp-shipping-wrapper.loading .wc-tp-shipping-input,
 .wc-tp-shipping-wrapper.loading .wc-tp-action-btn {
-	opacity: 0.4;
+	opacity: 0.4 !important;
 	pointer-events: none;
 }
 
@@ -276,17 +298,18 @@
 
 @media (max-width: 768px) {
 	.wc-tp-edit-btn i {
-		font-size: 12px;
+		font-size: 13px !important;
 	}
 	
 	.wc-tp-price-input,
 	.wc-tp-shipping-input {
 		width: 70px;
 		font-size: 14px;
+		padding: 3px 6px;
 	}
 	
 	.wc-tp-action-btn i {
-		font-size: 14px;
+		font-size: 15px !important;
 	}
 	
 	.wc-tp-toast {
@@ -294,6 +317,33 @@
 		right: 10px;
 		left: 10px;
 		min-width: auto;
+		font-size: 13px;
+	}
+	
+	.wc-tp-toast-icon i {
+		font-size: 18px;
+	}
+}
+
+@media (max-width: 480px) {
+	.wc-tp-edit-btn i {
+		font-size: 12px !important;
+	}
+	
+	.wc-tp-price-input,
+	.wc-tp-shipping-input {
+		width: 60px;
+		font-size: 13px;
+		padding: 2px 4px;
+	}
+	
+	.wc-tp-action-btn i {
+		font-size: 14px !important;
+	}
+	
+	.wc-tp-price-actions,
+	.wc-tp-shipping-actions {
+		gap: 2px;
 	}
 }
 
