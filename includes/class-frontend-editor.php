@@ -33,6 +33,9 @@ class WC_Team_Payroll_Frontend_Editor {
 			return;
 		}
 
+		// Apply custom prices from session BEFORE displaying
+		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_custom_prices' ), 10, 1 );
+
 		// Cart Item Price Editing - try multiple hooks with different priorities
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 9999, 3 );
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 999, 3 );
@@ -61,6 +64,26 @@ class WC_Team_Payroll_Frontend_Editor {
 		// Debug: Log that hooks are set up
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( 'WC TP Frontend Editor: Hooks setup complete for user ' . wp_get_current_user()->user_login );
+		}
+	}
+
+	/**
+	 * Apply custom prices from session to cart items
+	 */
+	public function apply_custom_prices( $cart ) {
+		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
+			return;
+		}
+
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+			$custom_price = WC()->session->get( 'wc_tp_custom_price_' . $cart_item_key );
+			if ( $custom_price !== null && $custom_price !== false ) {
+				$cart_item['data']->set_price( floatval( $custom_price ) );
+			}
 		}
 	}
 
@@ -344,7 +367,18 @@ class WC_Team_Payroll_Frontend_Editor {
 			wp_send_json_error( array( 'message' => __( 'Price must be a positive number.', 'wc-team-payroll' ) ) );
 		}
 
-		// Update the cart item price
+		// Ensure session is initialized
+		if ( ! WC()->session ) {
+			wp_send_json_error( array( 'message' => __( 'Session not available.', 'wc-team-payroll' ) ) );
+		}
+
+		// Store the custom price in session so it persists through AJAX updates
+		WC()->session->set( 'wc_tp_custom_price_' . $cart_key, $new_price );
+		
+		// Force session save
+		WC()->session->save_data();
+
+		// Update the cart item price in memory
 		$cart_item['data']->set_price( $new_price );
 		
 		// Recalculate cart totals

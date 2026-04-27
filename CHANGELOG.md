@@ -1,3 +1,37 @@
+## [1.0.19] - 2026-04-27
+### ✅ Frontend Editor - Cart Price Persistence Fix
+
+**Fixed Price Changes Reverting on Checkout**
+- Cart price changes now persist through AJAX updates on checkout page
+- Prices are stored in WooCommerce session (like shipping costs)
+- Session-based persistence ensures prices survive page refreshes and AJAX updates
+- Fixes issue where prices would revert after checkout AJAX refresh
+
+**How It Works:**
+- When you edit a cart item price, it's saved to WooCommerce session
+- Session key: `wc_tp_custom_price_{cart_item_key}`
+- `woocommerce_before_calculate_totals` hook applies custom prices from session
+- Prices persist across AJAX updates, page reloads, and checkout refreshes
+- Works identically to shipping cost persistence
+
+**Technical Details:**
+- Updated `ajax_update_cart_item_price()` to save price to session
+- Added `WC()->session->set()` and `WC()->session->save_data()` calls
+- Existing `apply_custom_prices()` method reads from session on every cart calculation
+- Session-based approach is WooCommerce's recommended method for cart modifications
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added session persistence to AJAX handler)
+- `woocommerce-team-payroll.php` (version bump to 1.0.19)
+
+**User Experience:**
+- Edit cart prices on checkout page
+- Prices stay updated through all AJAX refreshes
+- Consistent behavior with shipping cost editing
+- No more price reversions
+
+---
+
 ## [1.0.18] - 2026-04-27
 ### ✅ Frontend Editor - Fixed Checkout Page Price Editing
 
