@@ -83,50 +83,54 @@ class WC_Team_Payroll_Frontend_Editor {
 
 	/**
 	 * Check and clear stale session data on page load
-	 * This ensures mini cart and other displays show fresh data
+	 * Only clear if cart items no longer exist in session
 	 */
 	public function check_and_clear_stale_session() {
 		if ( ! WC()->session ) {
 			return;
 		}
 
-		// Always clear ALL custom prices and shipping on page load
-		// This ensures fresh state and prevents stale data from persisting
-		$session_data = WC()->session->get_session_data();
-		if ( ! is_array( $session_data ) ) {
+		// If cart is empty, clear ALL custom values
+		if ( WC()->cart && WC()->cart->is_empty() ) {
+			$this->clear_all_custom_values();
 			return;
 		}
 
-		$cleared_any = false;
-		foreach ( $session_data as $key => $value ) {
-			if ( strpos( $key, 'wc_tp_custom_price_' ) === 0 || strpos( $key, 'wc_tp_custom_shipping_' ) === 0 ) {
-				WC()->session->set( $key, null );
-				$cleared_any = true;
+		// If we have custom values but cart items don't match, clear them
+		if ( WC()->cart ) {
+			$session_data = WC()->session->get_session_data();
+			if ( ! is_array( $session_data ) ) {
+				return;
 			}
-		}
 
-		if ( $cleared_any ) {
-			WC()->session->save_data();
+			// Get current cart item keys
+			$current_cart_keys = array_keys( WC()->cart->get_cart() );
+
+			// Check each custom price in session
+			$cleared_any = false;
+			foreach ( $session_data as $key => $value ) {
+				if ( strpos( $key, 'wc_tp_custom_price_' ) === 0 ) {
+					$cart_key = str_replace( 'wc_tp_custom_price_', '', $key );
+					// If this cart item no longer exists, clear it
+					if ( ! in_array( $cart_key, $current_cart_keys ) ) {
+						WC()->session->set( $key, null );
+						$cleared_any = true;
+					}
+				}
+			}
+
+			if ( $cleared_any ) {
+				WC()->session->save_data();
+			}
 		}
 	}
 
 	/**
 	 * Apply custom prices from session to cart items
-	 * ONLY on cart and checkout pages, NOT on mini cart or AJAX requests
+	 * Apply on ALL pages and AJAX requests to ensure persistence
 	 */
 	public function apply_custom_prices( $cart ) {
 		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
-			return;
-		}
-
-		// Don't apply custom prices during AJAX requests (mini cart updates)
-		// This prevents edited prices from showing in mini cart
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			return;
-		}
-
-		// Only apply on cart and checkout pages
-		if ( ! is_cart() && ! is_checkout() ) {
 			return;
 		}
 
@@ -144,19 +148,9 @@ class WC_Team_Payroll_Frontend_Editor {
 
 	/**
 	 * Apply custom shipping costs from session
-	 * ONLY on cart and checkout pages, NOT during AJAX requests
+	 * Apply on ALL pages and AJAX requests to ensure persistence
 	 */
 	public function apply_custom_shipping_costs( $rates ) {
-		// Don't apply custom shipping during AJAX requests (mini cart updates)
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			return $rates;
-		}
-
-		// Only apply on cart and checkout pages
-		if ( ! is_cart() && ! is_checkout() ) {
-			return $rates;
-		}
-
 		if ( ! WC()->session ) {
 			return $rates;
 		}

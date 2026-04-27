@@ -1,3 +1,41 @@
+## [1.0.26] - 2026-04-27
+### ✅ Frontend Editor - Fixed Price Persistence During AJAX Updates
+
+**Fixed Prices Reverting After AJAX Updates**
+- Edited prices now persist through ALL AJAX updates (qty change, item remove, etc.)
+- Edited shipping costs now persist through ALL AJAX updates
+- Works with ANY theme and ANY plugin configuration
+- Works with AJAX-based themes and standard themes
+- Prices stay edited until cart is emptied or page is reloaded
+
+**How It Works Now**
+- Edit price on cart page → price updates via AJAX
+- Change quantity → edited price persists ✅
+- Remove item → other edited prices persist ✅
+- Add more items → edited prices persist ✅
+- Change address → shipping persists (until address change clears it) ✅
+- Page reload → prices reset to original ✅
+
+**Technical Implementation**
+- Custom prices applied on ALL pages and AJAX requests
+- Custom shipping applied on ALL pages and AJAX requests
+- Session data persists across AJAX updates
+- Only cleared when cart is emptied or address changes
+- Works with any theme or plugin that uses WooCommerce hooks
+
+**Universal Compatibility**
+- Works with AJAX-based themes (Elementor, Divi, etc.)
+- Works with standard WooCommerce themes
+- Works with any plugin that modifies cart
+- Works with any shipping method
+- Works with any product type
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (restored price persistence, fixed AJAX handling)
+- `woocommerce-team-payroll.php` (version bump to 1.0.26)
+
+---
+
 ## [1.0.25] - 2026-04-27
 ### ✅ Frontend Editor - Fixed Mini Cart Price Display Issue
 
