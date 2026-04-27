@@ -1,3 +1,57 @@
+## [1.0.9] - 2026-04-26
+### ✨ Frontend Editor - Price & Shipping Management
+
+**New Feature: Comprehensive Frontend Editing**
+- Authorized users can now edit product prices AND shipping fees directly on the frontend
+- Only visible to users with configured employee roles (Settings → WooCommerce → Employee User Roles)
+- No way for other users to access editing features - fully secured
+
+**Product Price Editing:**
+- Hover over any product price to see an edit button (pen icon)
+- Click to edit inline with cancel and save buttons
+- Works with any theme - fully compatible
+- AJAX-powered (no page reload)
+
+**Shipping Fee Management:**
+- Add new shipping fees to cart/checkout
+- Edit existing shipping fee amounts inline
+- Remove shipping fees with confirmation
+- Modal dialog for adding new fees
+- Real-time cart updates
+
+**Features:**
+- Visual feedback with animations
+- Toast notifications for success/error
+- Audit trail for all changes (price history & fee history)
+- Keyboard shortcuts (Enter to save, Escape to cancel)
+- Click outside to cancel
+- Responsive design for mobile devices
+
+**Security:**
+- Role-based access control (uses Employee User Roles from settings)
+- Nonce verification on all AJAX requests
+- Permission checks on every request
+- Complete audit trail with user tracking
+- No access for unauthorized users
+
+**Files Added:**
+- `includes/class-frontend-editor.php` (main class - extensible for future features)
+- `assets/css/frontend-editor.css` (styles)
+- `assets/js/frontend-editor.js` (functionality)
+
+**Files Changed:**
+- `woocommerce-team-payroll.php` (added initialization)
+
+**Configuration:**
+- Uses existing "Employee User Roles" setting from Settings → WooCommerce tab
+- No additional configuration needed
+
+**Future Ready:**
+- Class structure designed to easily add more frontend editing features
+- Modular code for easy extension
+
+---
+
 ## [1.0.8] - 2026-04-26
 ### ✨ Custom Fields Dual Version Sync
 
