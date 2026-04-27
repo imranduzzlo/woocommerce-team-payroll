@@ -33,6 +33,10 @@ class WC_Team_Payroll_Frontend_Editor {
 			return;
 		}
 
+		// CRITICAL: Apply custom prices VERY EARLY - before any cart display
+		// This ensures mini cart shows edited prices on page load
+		add_action( 'wp_loaded', array( $this, 'apply_custom_prices_early' ), 1 );
+
 		// CRITICAL: Clear session BEFORE cart calculations on every page load
 		// This ensures fresh state and prevents stale data
 		add_action( 'wp_loaded', array( $this, 'check_and_clear_stale_session' ), 5 );
@@ -78,6 +82,44 @@ class WC_Team_Payroll_Frontend_Editor {
 		// Debug: Log that hooks are set up
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( 'WC TP Frontend Editor: Hooks setup complete for user ' . wp_get_current_user()->user_login );
+		}
+	}
+
+	/**
+	 * Apply custom prices VERY EARLY on page load
+	 * This ensures mini cart shows edited prices immediately
+	 */
+	public function apply_custom_prices_early() {
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		// Get the cart
+		$cart = WC()->cart;
+		if ( ! $cart ) {
+			return;
+		}
+
+		// Apply custom prices to all cart items
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+			$custom_price = WC()->session->get( 'wc_tp_custom_price_' . $cart_item_key );
+			if ( $custom_price !== null && $custom_price !== false ) {
+				$cart_item['data']->set_price( floatval( $custom_price ) );
+			}
+		}
+
+		// Apply custom shipping costs
+		$packages = $cart->get_shipping_packages();
+		foreach ( $packages as $package ) {
+			if ( isset( $package['rates'] ) ) {
+				foreach ( $package['rates'] as $rate_key => $rate ) {
+					$custom_cost = WC()->session->get( 'wc_tp_custom_shipping_' . $rate->id );
+					if ( $custom_cost !== null && $custom_cost !== false ) {
+						$rate->cost = floatval( $custom_cost );
+						$rate->taxes = array();
+					}
+				}
+			}
 		}
 	}
 

@@ -1,3 +1,54 @@
+## [1.0.27] - 2026-04-27
+### ✅ Frontend Editor - Fixed Mini Cart Price Display on Page Load
+
+**Fixed Mini Cart Showing Original Price After Reload**
+- Mini cart now shows edited prices immediately on page load
+- Added `apply_custom_prices_early()` method that runs at `wp_loaded` hook priority 1
+- Applies custom prices BEFORE any cart display rendering
+- Works with ALL themes and ALL plugins
+- Edited prices persist in mini cart after page reload
+
+**How It Works Now**
+```
+Page Load:
+  ↓
+wp_loaded hook fires (priority 1)
+  ↓
+apply_custom_prices_early() runs
+  ↓
+Custom prices applied to cart items
+Custom shipping applied to rates
+  ↓
+Mini cart renders with edited prices ✅
+  ↓
+AJAX updates trigger
+  ↓
+Custom prices persist ✅
+```
+
+**What's Fixed**
+- Mini cart shows edited prices on page load ✅
+- Mini cart shows edited prices after reload ✅
+- Mini cart shows edited prices during AJAX updates ✅
+- Shipping shows edited cost on page load ✅
+- Shipping shows edited cost after reload ✅
+- Works with AJAX-based themes ✅
+- Works with standard themes ✅
+- Works with any plugin ✅
+
+**Technical Implementation**
+- Added `apply_custom_prices_early()` method
+- Runs at `wp_loaded` hook with priority 1 (very early)
+- Applies prices directly to cart items and shipping rates
+- Ensures prices are applied BEFORE any rendering
+- Works with any theme or plugin configuration
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added early price application)
+- `woocommerce-team-payroll.php` (version bump to 1.0.27)
+
+---
+
 ## [1.0.26] - 2026-04-27
 ### ✅ Frontend Editor - Fixed Price Persistence During AJAX Updates
 
