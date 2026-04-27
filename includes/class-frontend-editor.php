@@ -54,6 +54,15 @@ class WC_Team_Payroll_Frontend_Editor {
 		// Apply custom shipping costs from session
 		add_filter( 'woocommerce_package_rates', array( $this, 'apply_custom_shipping_costs' ), 999 );
 
+		// Clear custom prices and shipping when cart is emptied
+		add_action( 'woocommerce_cart_emptied', array( $this, 'clear_all_custom_values' ) );
+		
+		// Clear custom prices when cart item is removed
+		add_action( 'woocommerce_cart_item_removed', array( $this, 'clear_custom_price_for_item' ), 10, 2 );
+		
+		// Clear custom shipping when address changes (shipping recalculation)
+		add_action( 'woocommerce_calculated_shipping', array( $this, 'clear_custom_shipping_on_address_change' ) );
+
 		// Enqueue scripts and styles
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
@@ -104,6 +113,66 @@ class WC_Team_Payroll_Frontend_Editor {
 			}
 		}
 		return $rates;
+	}
+
+	/**
+	 * Clear all custom prices and shipping when cart is emptied
+	 */
+	public function clear_all_custom_values() {
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		// Get all session keys
+		$session_data = WC()->session->get_session_data();
+		
+		// Clear all custom price keys
+		foreach ( $session_data as $key => $value ) {
+			if ( strpos( $key, 'wc_tp_custom_price_' ) === 0 ) {
+				WC()->session->set( $key, null );
+			}
+			if ( strpos( $key, 'wc_tp_custom_shipping_' ) === 0 ) {
+				WC()->session->set( $key, null );
+			}
+		}
+		
+		// Force session save
+		WC()->session->save_data();
+	}
+
+	/**
+	 * Clear custom price for a specific cart item when removed
+	 */
+	public function clear_custom_price_for_item( $cart_item_key, $cart ) {
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		// Clear the custom price for this item
+		WC()->session->set( 'wc_tp_custom_price_' . $cart_item_key, null );
+		WC()->session->save_data();
+	}
+
+	/**
+	 * Clear custom shipping when address changes (shipping recalculation)
+	 */
+	public function clear_custom_shipping_on_address_change() {
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		// Get all session keys
+		$session_data = WC()->session->get_session_data();
+		
+		// Clear all custom shipping keys
+		foreach ( $session_data as $key => $value ) {
+			if ( strpos( $key, 'wc_tp_custom_shipping_' ) === 0 ) {
+				WC()->session->set( $key, null );
+			}
+		}
+		
+		// Force session save
+		WC()->session->save_data();
 	}
 
 	/**
@@ -158,6 +227,11 @@ class WC_Team_Payroll_Frontend_Editor {
 		}
 
 		if ( ! $this->user_can_edit() ) {
+			return $price_html;
+		}
+
+		// Only show edit buttons on cart and checkout pages, NOT in mini cart
+		if ( ! is_cart() && ! is_checkout() ) {
 			return $price_html;
 		}
 

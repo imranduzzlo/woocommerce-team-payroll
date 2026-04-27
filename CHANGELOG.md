@@ -1,3 +1,55 @@
+## [1.0.23] - 2026-04-27
+### ✅ Frontend Editor - Session Clearing & Mini Cart Fix
+
+**Fixed Session Persistence Issues**
+- Custom prices now clear when cart is emptied and new products added
+- Custom shipping costs now reset when address changes
+- Edit buttons no longer show in mini cart (only on cart/checkout pages)
+
+**Session Clearing on Cart Empty**
+- Added `clear_all_custom_values()` method to clear all custom prices and shipping
+- Hooked to `woocommerce_cart_emptied` action
+- When cart is emptied, all custom values are cleared from session
+- New products added to cart will show original prices
+
+**Session Clearing on Item Removal**
+- Added `clear_custom_price_for_item()` method to clear price when item removed
+- Hooked to `woocommerce_cart_item_removed` action
+- Specific item's custom price is cleared when removed from cart
+- Other items keep their custom prices
+
+**Session Clearing on Address Change**
+- Added `clear_custom_shipping_on_address_change()` method to reset shipping
+- Hooked to `woocommerce_calculated_shipping` action
+- When customer changes address, custom shipping is cleared
+- Shipping recalculates to original amount based on new address
+- If customer changes address and then changes shipping again, new value persists
+
+**Mini Cart Fix**
+- Added `is_cart()` and `is_checkout()` checks to `add_cart_price_edit_button()`
+- Edit buttons now only show on cart and checkout pages
+- Edit buttons no longer appear in mini cart sidebar
+- Prevents confusion and accidental edits in mini cart
+
+**How It Works**
+1. **Cart Empty**: User empties cart → all custom prices/shipping cleared → new products show original prices
+2. **Item Removed**: User removes item → that item's custom price cleared → other items unaffected
+3. **Address Change**: User changes address → custom shipping cleared → recalculates to original
+4. **Mini Cart**: Mini cart sidebar shows no edit buttons → only cart/checkout pages have edit buttons
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added session clearing methods and page checks)
+- `woocommerce-team-payroll.php` (version bump to 1.0.23)
+
+**User Experience:**
+- Cart behaves predictably when emptied and refilled
+- Shipping resets when address changes (as expected)
+- Edit buttons only visible where they should be
+- No more confusion with mini cart editing
+- Clean, fresh start when cart is emptied
+
+---
+
 ## [1.0.22] - 2026-04-27
 ### 🔄 Frontend Editor - Cache Busting Fix
 
