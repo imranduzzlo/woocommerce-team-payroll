@@ -1,3 +1,38 @@
+## [1.0.12] - 2026-04-27
+### 🐛 Frontend Editor - Debugging & Cart/Checkout Page Fix
+
+**Fixed Script Loading Issues**
+- Scripts now only load on cart and checkout pages (performance improvement)
+- Added comprehensive debugging mode (enabled when WP_DEBUG is true)
+- Console logs show when scripts load and how many edit buttons are found
+- Click handlers now log when buttons are clicked (debug mode only)
+
+**Debugging Features:**
+- Check browser console (F12) to see if scripts are loading
+- See how many cart price wrappers and shipping wrappers are found
+- Track when edit buttons are clicked
+- Identify if wcTpEditor object is loaded correctly
+
+**Technical Improvements:**
+- Added `is_cart()` and `is_checkout()` checks before enqueuing scripts
+- Added debug flag to localized script data
+- Enhanced JavaScript initialization with error checking
+- Better event binding confirmation in console
+
+**How to Debug:**
+1. Enable WP_DEBUG in wp-config.php
+2. Open cart or checkout page
+3. Open browser console (F12)
+4. Look for "WC Team Payroll Frontend Editor loaded" message
+5. Check counts for cart price wrappers and shipping wrappers
+6. Try clicking edit buttons and watch console for click events
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added page checks and debug flag)
+- `assets/js/frontend-editor.js` (added debug logging)
+
+---
+
 ## [1.0.11] - 2026-04-27
 ### 🐛 Frontend Editor - Fixed Duplicate Icons
 

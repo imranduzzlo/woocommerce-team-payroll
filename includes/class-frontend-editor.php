@@ -164,6 +164,11 @@ class WC_Team_Payroll_Frontend_Editor {
 	 * Enqueue scripts and styles
 	 */
 	public function enqueue_scripts() {
+		// Only load on cart and checkout pages
+		if ( ! is_cart() && ! is_checkout() ) {
+			return;
+		}
+
 		if ( ! $this->user_can_edit() ) {
 			return;
 		}
@@ -194,6 +199,7 @@ class WC_Team_Payroll_Frontend_Editor {
 			'decimal_separator' => wc_get_price_decimal_separator(),
 			'thousand_separator' => wc_get_price_thousand_separator(),
 			'decimals' => wc_get_price_decimals(),
+			'debug' => defined( 'WP_DEBUG' ) && WP_DEBUG,
 			'i18n' => array(
 				'edit_price' => __( 'Edit Price', 'wc-team-payroll' ),
 				'edit_fee' => __( 'Edit Fee', 'wc-team-payroll' ),

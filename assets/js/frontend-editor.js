@@ -18,11 +18,19 @@
 			$(document).on('click', '.wc-tp-cancel-btn', this.handleCancelClick.bind(this));
 			$(document).on('keydown', '.wc-tp-price-input', this.handleKeyDown.bind(this));
 			$(document).on('click', this.handleClickOutside.bind(this));
+			
+			if (wcTpEditor.debug) {
+				console.log('CartPriceEditor events bound');
+			}
 		}
 
 		handleEditClick(e) {
 			e.preventDefault();
 			e.stopPropagation();
+
+			if (wcTpEditor.debug) {
+				console.log('Cart price edit button clicked');
+			}
 
 			const $btn = $(e.currentTarget);
 			const $wrapper = $btn.closest('.wc-tp-cart-price-wrapper');
@@ -202,11 +210,19 @@
 			$(document).on('click', '.wc-tp-shipping-wrapper .wc-tp-save-btn', this.handleSaveClick.bind(this));
 			$(document).on('click', '.wc-tp-shipping-wrapper .wc-tp-cancel-btn', this.handleCancelClick.bind(this));
 			$(document).on('keydown', '.wc-tp-shipping-input', this.handleKeyDown.bind(this));
+			
+			if (wcTpEditor.debug) {
+				console.log('ShippingEditor events bound');
+			}
 		}
 
 		handleEditClick(e) {
 			e.preventDefault();
 			e.stopPropagation();
+
+			if (wcTpEditor.debug) {
+				console.log('Shipping edit button clicked');
+			}
 
 			const $btn = $(e.currentTarget);
 			const $wrapper = $btn.closest('.wc-tp-shipping-wrapper');
@@ -404,8 +420,18 @@
 
 	// Initialize
 	$(document).ready(function() {
-		new CartPriceEditor();
-		new ShippingEditor();
+		if (typeof wcTpEditor !== 'undefined') {
+			if (wcTpEditor.debug) {
+				console.log('WC Team Payroll Frontend Editor loaded');
+				console.log('Cart price wrappers found:', $('.wc-tp-cart-price-wrapper').length);
+				console.log('Shipping wrappers found:', $('.wc-tp-shipping-wrapper').length);
+			}
+			
+			new CartPriceEditor();
+			new ShippingEditor();
+		} else {
+			console.error('wcTpEditor object not found - scripts may not be loaded correctly');
+		}
 	});
 
 })(jQuery);
