@@ -1,6 +1,7 @@
 /**
  * Frontend Editor
  * Inline editing for cart prices and shipping costs
+ * Works with any theme including AJAX-based themes
  */
 
 (function($) {
@@ -9,18 +10,48 @@
 	// Cart Price Editor
 	class CartPriceEditor {
 		constructor() {
+			this.init();
+		}
+
+		init() {
+			// Use event delegation on body for maximum compatibility
 			this.bindEvents();
+			
+			// Re-initialize after WooCommerce updates
+			$(document.body).on('updated_cart_totals updated_checkout', () => {
+				if (wcTpEditor.debug) {
+					console.log('WooCommerce updated - re-checking elements');
+					this.checkElements();
+				}
+			});
+			
+			if (wcTpEditor.debug) {
+				console.log('CartPriceEditor initialized');
+				this.checkElements();
+			}
+		}
+
+		checkElements() {
+			const wrappers = $('.wc-tp-cart-price-wrapper');
+			const buttons = $('.wc-tp-cart-price-edit');
+			console.log('Cart price wrappers:', wrappers.length);
+			console.log('Cart price edit buttons:', buttons.length);
+			
+			if (wrappers.length > 0) {
+				console.log('Sample wrapper HTML:', wrappers.first().html());
+			}
 		}
 
 		bindEvents() {
-			$(document).on('click', '.wc-tp-cart-price-edit', this.handleEditClick.bind(this));
-			$(document).on('click', '.wc-tp-save-btn', this.handleSaveClick.bind(this));
-			$(document).on('click', '.wc-tp-cancel-btn', this.handleCancelClick.bind(this));
-			$(document).on('keydown', '.wc-tp-price-input', this.handleKeyDown.bind(this));
-			$(document).on('click', this.handleClickOutside.bind(this));
+			// Use body as the root for event delegation to catch dynamically added elements
+			$('body').on('click', '.wc-tp-cart-price-edit', this.handleEditClick.bind(this));
+			$('body').on('click', '.wc-tp-price-actions .wc-tp-save-btn', this.handleSaveClick.bind(this));
+			$('body').on('click', '.wc-tp-price-actions .wc-tp-cancel-btn', this.handleCancelClick.bind(this));
+			$('body').on('keydown', '.wc-tp-price-input', this.handleKeyDown.bind(this));
+			$('body').on('click', this.handleClickOutside.bind(this));
 			
 			if (wcTpEditor.debug) {
-				console.log('CartPriceEditor events bound');
+				console.log('CartPriceEditor events bound to body');
 			}
 		}
 
@@ -35,10 +66,14 @@
 			const $btn = $(e.currentTarget);
 			const $wrapper = $btn.closest('.wc-tp-cart-price-wrapper');
 			
-			if ($('.wc-tp-cart-price-wrapper.editing').length > 0) {
-				showToast(wcTpEditor.i18n.error, 'error');
-				return;
+			if (wcTpEditor.debug) {
+				console.log('Wrapper found:', $wrapper.length);
 			}
+			
+			// Close any other open editors
+			$('.wc-tp-cart-price-wrapper.editing').each((i, el) => {
+				this.exitEditMode($(el));
+			});
 
 			this.enterEditMode($wrapper);
 		}
@@ -46,38 +81,43 @@
 		enterEditMode($wrapper) {
 			const currentPrice = $wrapper.data('current-price');
 			
-			$wrapper.addClass('editing');
-			
-			if ($wrapper.find('.wc-tp-price-input').length === 0) {
-				const $input = $('<input>', {
-					type: 'text',
-					class: 'wc-tp-price-input',
-					value: formatPrice(currentPrice),
-					'data-original-value': currentPrice
-				});
-				
-				const $actions = $('<span>', { class: 'wc-tp-price-actions' });
-				
-				const $saveBtn = $('<button>', {
-					type: 'button',
-					class: 'wc-tp-action-btn wc-tp-save-btn',
-					title: wcTpEditor.i18n.save,
-					html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
-				});
-				
-				const $cancelBtn = $('<button>', {
-					type: 'button',
-					class: 'wc-tp-action-btn wc-tp-cancel-btn',
-					title: wcTpEditor.i18n.cancel,
-					html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
-				});
-				
-				$actions.append($saveBtn, $cancelBtn);
-				$wrapper.append($input, $actions);
+			if (wcTpEditor.debug) {
+				console.log('Entering edit mode, current price:', currentPrice);
 			}
 			
+			$wrapper.addClass('editing');
+			
+			// Remove existing input if any
+			$wrapper.find('.wc-tp-price-input, .wc-tp-price-actions').remove();
+			
+			const $input = $('<input>', {
+				type: 'text',
+				class: 'wc-tp-price-input',
+				value: formatPrice(currentPrice),
+				'data-original-value': currentPrice
+			});
+			
+			const $actions = $('<span>', { class: 'wc-tp-price-actions' });
+			
+			const $saveBtn = $('<button>', {
+				type: 'button',
+				class: 'wc-tp-action-btn wc-tp-save-btn',
+				title: wcTpEditor.i18n.save,
+				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+			});
+			
+			const $cancelBtn = $('<button>', {
+				type: 'button',
+				class: 'wc-tp-action-btn wc-tp-cancel-btn',
+				title: wcTpEditor.i18n.cancel,
+				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+			});
+			
+			$actions.append($saveBtn, $cancelBtn);
+			$wrapper.append($input, $actions);
+			
 			setTimeout(() => {
-				$wrapper.find('.wc-tp-price-input').focus().select();
+				$input.focus().select();
 			}, 50);
 		}
 
@@ -92,6 +132,10 @@
 			const cartKey = $wrapper.data('cart-key');
 			const newPrice = $input.val().trim();
 			const originalPrice = $input.data('original-value');
+			
+			if (wcTpEditor.debug) {
+				console.log('Save clicked - Cart key:', cartKey, 'New price:', newPrice);
+			}
 			
 			if (!isValidPrice(newPrice)) {
 				showToast(wcTpEditor.i18n.invalid_price, 'error');
@@ -145,6 +189,7 @@
 
 		exitEditMode($wrapper) {
 			$wrapper.removeClass('editing error loading');
+			$wrapper.find('.wc-tp-price-input, .wc-tp-price-actions').remove();
 		}
 
 		updatePrice($wrapper, cartKey, newPrice) {
@@ -172,14 +217,17 @@
 						
 						showToast(response.data.message, 'success');
 						
-						// Update cart totals
+						// Trigger WooCommerce cart update
+						$(document.body).trigger('wc_fragment_refresh');
 						$(document.body).trigger('update_checkout');
-						$(document.body).trigger('updated_cart_totals');
 					} else {
 						this.handleError($wrapper, response.data.message);
 					}
 				},
-				error: () => {
+				error: (xhr, status, error) => {
+					if (wcTpEditor.debug) {
+						console.error('AJAX error:', status, error);
+					}
 					this.handleError($wrapper, wcTpEditor.i18n.error);
 				},
 				complete: () => {
@@ -202,17 +250,45 @@
 	// Shipping Cost Editor
 	class ShippingEditor {
 		constructor() {
+			this.init();
+		}
+
+		init() {
 			this.bindEvents();
+			
+			// Re-initialize after WooCommerce updates
+			$(document.body).on('updated_cart_totals updated_checkout updated_shipping_method', () => {
+				if (wcTpEditor.debug) {
+					console.log('WooCommerce shipping updated - re-checking elements');
+					this.checkElements();
+				}
+			});
+			
+			if (wcTpEditor.debug) {
+				console.log('ShippingEditor initialized');
+				this.checkElements();
+			}
+		}
+
+		checkElements() {
+			const wrappers = $('.wc-tp-shipping-wrapper');
+			const buttons = $('.wc-tp-shipping-edit');
+			console.log('Shipping wrappers:', wrappers.length);
+			console.log('Shipping edit buttons:', buttons.length);
+			
+			if (wrappers.length > 0) {
+				console.log('Sample shipping wrapper HTML:', wrappers.first().html());
+			}
 		}
 
 		bindEvents() {
-			$(document).on('click', '.wc-tp-shipping-edit', this.handleEditClick.bind(this));
-			$(document).on('click', '.wc-tp-shipping-wrapper .wc-tp-save-btn', this.handleSaveClick.bind(this));
-			$(document).on('click', '.wc-tp-shipping-wrapper .wc-tp-cancel-btn', this.handleCancelClick.bind(this));
-			$(document).on('keydown', '.wc-tp-shipping-input', this.handleKeyDown.bind(this));
+			$('body').on('click', '.wc-tp-shipping-edit', this.handleEditClick.bind(this));
+			$('body').on('click', '.wc-tp-shipping-actions .wc-tp-save-btn', this.handleSaveClick.bind(this));
+			$('body').on('click', '.wc-tp-shipping-actions .wc-tp-cancel-btn', this.handleCancelClick.bind(this));
+			$('body').on('keydown', '.wc-tp-shipping-input', this.handleKeyDown.bind(this));
 			
 			if (wcTpEditor.debug) {
-				console.log('ShippingEditor events bound');
+				console.log('ShippingEditor events bound to body');
 			}
 		}
 
@@ -227,10 +303,14 @@
 			const $btn = $(e.currentTarget);
 			const $wrapper = $btn.closest('.wc-tp-shipping-wrapper');
 			
-			if ($('.wc-tp-shipping-wrapper.editing').length > 0) {
-				showToast(wcTpEditor.i18n.error, 'error');
-				return;
+			if (wcTpEditor.debug) {
+				console.log('Shipping wrapper found:', $wrapper.length);
 			}
+			
+			// Close any other open editors
+			$('.wc-tp-shipping-wrapper.editing').each((i, el) => {
+				this.exitEditMode($(el));
+			});
 
 			this.enterEditMode($wrapper);
 		}
@@ -238,38 +318,43 @@
 		enterEditMode($wrapper) {
 			const currentCost = $wrapper.data('current-cost');
 			
-			$wrapper.addClass('editing');
-			
-			if ($wrapper.find('.wc-tp-shipping-input').length === 0) {
-				const $input = $('<input>', {
-					type: 'text',
-					class: 'wc-tp-shipping-input',
-					value: formatPrice(currentCost),
-					'data-original-value': currentCost
-				});
-				
-				const $actions = $('<span>', { class: 'wc-tp-shipping-actions' });
-				
-				const $saveBtn = $('<button>', {
-					type: 'button',
-					class: 'wc-tp-action-btn wc-tp-save-btn',
-					title: wcTpEditor.i18n.save,
-					html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
-				});
-				
-				const $cancelBtn = $('<button>', {
-					type: 'button',
-					class: 'wc-tp-action-btn wc-tp-cancel-btn',
-					title: wcTpEditor.i18n.cancel,
-					html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
-				});
-				
-				$actions.append($saveBtn, $cancelBtn);
-				$wrapper.append($input, $actions);
+			if (wcTpEditor.debug) {
+				console.log('Entering shipping edit mode, current cost:', currentCost);
 			}
 			
+			$wrapper.addClass('editing');
+			
+			// Remove existing input if any
+			$wrapper.find('.wc-tp-shipping-input, .wc-tp-shipping-actions').remove();
+			
+			const $input = $('<input>', {
+				type: 'text',
+				class: 'wc-tp-shipping-input',
+				value: formatPrice(currentCost),
+				'data-original-value': currentCost
+			});
+			
+			const $actions = $('<span>', { class: 'wc-tp-shipping-actions' });
+			
+			const $saveBtn = $('<button>', {
+				type: 'button',
+				class: 'wc-tp-action-btn wc-tp-save-btn',
+				title: wcTpEditor.i18n.save,
+				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+			});
+			
+			const $cancelBtn = $('<button>', {
+				type: 'button',
+				class: 'wc-tp-action-btn wc-tp-cancel-btn',
+				title: wcTpEditor.i18n.cancel,
+				html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+			});
+			
+			$actions.append($saveBtn, $cancelBtn);
+			$wrapper.append($input, $actions);
+			
 			setTimeout(() => {
-				$wrapper.find('.wc-tp-shipping-input').focus().select();
+				$input.focus().select();
 			}, 50);
 		}
 
@@ -284,6 +369,10 @@
 			const methodId = $wrapper.data('method-id');
 			const newCost = $input.val().trim();
 			const originalCost = $input.data('original-value');
+			
+			if (wcTpEditor.debug) {
+				console.log('Shipping save clicked - Method:', methodId, 'New cost:', newCost);
+			}
 			
 			if (!isValidPrice(newCost)) {
 				showToast(wcTpEditor.i18n.invalid_price, 'error');
@@ -327,6 +416,7 @@
 
 		exitEditMode($wrapper) {
 			$wrapper.removeClass('editing error loading');
+			$wrapper.find('.wc-tp-shipping-input, .wc-tp-shipping-actions').remove();
 		}
 
 		updateCost($wrapper, methodId, newCost) {
@@ -354,7 +444,10 @@
 						this.handleError($wrapper, response.data.message);
 					}
 				},
-				error: () => {
+				error: (xhr, status, error) => {
+					if (wcTpEditor.debug) {
+						console.error('AJAX error:', status, error);
+					}
 					this.handleError($wrapper, wcTpEditor.i18n.error);
 				},
 				complete: () => {
@@ -418,19 +511,39 @@
 		}, 3000);
 	}
 
-	// Initialize
-	$(document).ready(function() {
-		if (typeof wcTpEditor !== 'undefined') {
-			if (wcTpEditor.debug) {
-				console.log('WC Team Payroll Frontend Editor loaded');
-				console.log('Cart price wrappers found:', $('.wc-tp-cart-price-wrapper').length);
-				console.log('Shipping wrappers found:', $('.wc-tp-shipping-wrapper').length);
-			}
-			
-			new CartPriceEditor();
-			new ShippingEditor();
-		} else {
+	// Initialize - works with any theme including AJAX themes
+	function initialize() {
+		if (typeof wcTpEditor === 'undefined') {
 			console.error('wcTpEditor object not found - scripts may not be loaded correctly');
+			return;
+		}
+		
+		if (wcTpEditor.debug) {
+			console.log('WC Team Payroll Frontend Editor loaded');
+			console.log('jQuery version:', $.fn.jquery);
+			console.log('Current page:', window.location.href);
+		}
+		
+		new CartPriceEditor();
+		new ShippingEditor();
+		
+		if (wcTpEditor.debug) {
+			console.log('Editors initialized and ready');
+		}
+	}
+
+	// Initialize on DOM ready
+	$(document).ready(initialize);
+	
+	// Re-initialize on AJAX page loads (for AJAX themes)
+	$(document).ajaxComplete(function(event, xhr, settings) {
+		// Check if this is a WooCommerce AJAX call
+		if (settings.url && settings.url.indexOf('wc-ajax') !== -1) {
+			if (wcTpEditor.debug) {
+				console.log('WooCommerce AJAX detected, re-initializing...');
+			}
+			// Small delay to let DOM update
+			setTimeout(initialize, 100);
 		}
 	});
 

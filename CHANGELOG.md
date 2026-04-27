@@ -1,3 +1,41 @@
+## [1.0.13] - 2026-04-27
+### 🚀 Frontend Editor - Complete Rewrite for Universal Theme Compatibility
+
+**Major Rewrite for AJAX Theme Support**
+- Complete rewrite of JavaScript to work with ANY theme (including AJAX-based themes)
+- Event delegation now uses `body` as root for maximum compatibility
+- Automatically re-initializes after WooCommerce AJAX updates
+- Handles dynamic content loading properly
+
+**Enhanced Event Handling:**
+- Events bound to `body` instead of `document` for better AJAX compatibility
+- Listens to WooCommerce events: `updated_cart_totals`, `updated_checkout`, `updated_shipping_method`
+- Automatically detects WooCommerce AJAX calls and re-initializes
+- Removes and recreates input elements to prevent conflicts
+
+**Better Debugging:**
+- Shows jQuery version and current page URL
+- Logs when WooCommerce updates are detected
+- Displays sample HTML of wrappers when found
+- Tracks AJAX errors with detailed logging
+
+**Robustness Improvements:**
+- Cleans up existing inputs before creating new ones
+- Closes other open editors when opening a new one
+- Better error handling with detailed console logs
+- Works with themes that dynamically load cart content
+
+**How It Works:**
+1. Binds events to `body` (catches all current and future elements)
+2. Listens for WooCommerce AJAX completions
+3. Re-initializes editors after cart/checkout updates
+4. Handles theme-specific DOM structures automatically
+
+**Files Changed:**
+- `assets/js/frontend-editor.js` (complete rewrite)
+
+---
+
 ## [1.0.12] - 2026-04-27
 ### 🐛 Frontend Editor - Debugging & Cart/Checkout Page Fix
 
