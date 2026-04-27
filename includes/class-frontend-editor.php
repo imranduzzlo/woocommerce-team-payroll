@@ -303,20 +303,20 @@ class WC_Team_Payroll_Frontend_Editor {
 			wp_enqueue_script( 'phosphor-icons' );
 		}
 
-		// Enqueue CSS
+		// Enqueue CSS with cache busting
 		wp_enqueue_style(
 			'wc-tp-frontend-editor',
 			WC_TEAM_PAYROLL_URL . 'assets/css/frontend-editor.css',
 			array(),
-			WC_TEAM_PAYROLL_VERSION
+			WC_TEAM_PAYROLL_VERSION . '-' . time()
 		);
 
-		// Enqueue JS
+		// Enqueue JS with cache busting
 		wp_enqueue_script(
 			'wc-tp-frontend-editor',
 			WC_TEAM_PAYROLL_URL . 'assets/js/frontend-editor.js',
 			array( 'jquery', 'phosphor-icons' ),
-			WC_TEAM_PAYROLL_VERSION,
+			WC_TEAM_PAYROLL_VERSION . '-' . time(),
 			true
 		);
 

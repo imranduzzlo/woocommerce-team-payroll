@@ -1,3 +1,40 @@
+## [1.0.22] - 2026-04-27
+### 🔄 Frontend Editor - Cache Busting Fix
+
+**Fixed Browser Caching Issues**
+- Added timestamp-based cache busting to CSS and JS files
+- Files now load with version: `1.0.22-{timestamp}`
+- Forces browsers to reload latest files automatically
+- No more hard refresh needed after updates
+- Users always get the latest styles and functionality
+
+**How It Works:**
+- CSS version: `WC_TEAM_PAYROLL_VERSION . '-' . time()`
+- JS version: `WC_TEAM_PAYROLL_VERSION . '-' . time()`
+- Timestamp changes on every page load
+- Bypasses all browser and CDN caching
+- Ensures immediate updates
+
+**What This Fixes:**
+- Old CSS showing backgrounds/borders after update
+- AJAX not working due to cached old JavaScript
+- Need for hard refresh (Ctrl+F5) after plugin updates
+- Inconsistent behavior between users
+- Cached files showing old styling
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added cache busting)
+- `woocommerce-team-payroll.php` (version bump to 1.0.22)
+
+**User Experience:**
+- Updates apply immediately without hard refresh
+- Consistent experience for all users
+- No more caching issues
+- Always see latest styles and functionality
+- Reliable AJAX operations
+
+---
+
 ## [1.0.21] - 2026-04-27
 ### 🎯 Frontend Editor - Perfect Button Styling & Mobile Optimization
 
