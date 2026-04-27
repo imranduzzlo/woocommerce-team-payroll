@@ -562,4 +562,26 @@
 		}
 	});
 
+	// ============================================================================
+	// CHECKOUT ENHANCEMENT: Trigger shipping recalculation on state/country change
+	// ============================================================================
+	// WooCommerce by default only triggers update_checkout on address_1, city, postcode
+	// This enhancement ensures shipping updates when state or country changes
+	// Works with all themes and improves user experience
+	// ============================================================================
+	$(document).ready(function() {
+		// Listen for state and country changes on both billing and shipping fields
+		$('body').on('change', 'select#billing_state, select#billing_country, select#shipping_state, select#shipping_country', function() {
+			if (wcTpEditor.debug) {
+				console.log('State/Country changed, triggering checkout update');
+			}
+			// Trigger WooCommerce checkout update to recalculate shipping
+			$('body').trigger('update_checkout');
+		});
+		
+		if (wcTpEditor.debug) {
+			console.log('Checkout enhancement: State/Country change listener initialized');
+		}
+	});
+
 })(jQuery);

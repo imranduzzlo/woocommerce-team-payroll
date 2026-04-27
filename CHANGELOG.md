@@ -1,3 +1,61 @@
+## [1.0.29] - 2026-04-27
+### ✅ Checkout Enhancement - Auto-Update Shipping on State/Country Change
+
+**Fixed Shipping Not Recalculating on State/Country Change**
+- Added automatic checkout update when state or country changes
+- Shipping costs now recalculate immediately when customer selects a state
+- Works for both billing and shipping address fields
+- Improves user experience on checkout page
+
+**The Problem (WooCommerce Default Behavior)**
+- WooCommerce only triggers `update_checkout` for specific fields:
+  - `billing_address_1`, `billing_city`, `billing_postcode`
+- State and country changes don't always trigger recalculation
+- Customers had to manually change another field to see updated shipping
+- This is documented in WooCommerce GitHub issues #4520 and #26340
+
+**The Solution**
+- Added JavaScript listener for state/country select changes
+- Triggers `update_checkout` when state or country changes
+- Works with all themes and all plugins
+- Non-invasive enhancement to WooCommerce default behavior
+
+**How It Works**
+```javascript
+// Listen for state/country changes
+$('body').on('change', 'select#billing_state, select#billing_country, select#shipping_state, select#shipping_country', function() {
+    $('body').trigger('update_checkout');
+});
+```
+
+**What's Fixed**
+- ✅ Shipping recalculates when billing state changes
+- ✅ Shipping recalculates when billing country changes
+- ✅ Shipping recalculates when shipping state changes
+- ✅ Shipping recalculates when shipping country changes
+- ✅ Works with "Ship to billing address" option
+- ✅ Works with separate shipping address
+- ✅ Works with all themes
+- ✅ Works with all plugins
+
+**User Experience**
+- Customer selects state → shipping updates immediately ✅
+- Customer selects country → shipping updates immediately ✅
+- No need to change address_1 or other fields to trigger update
+- Smooth, predictable checkout experience
+
+**Technical Implementation**
+- Added event listener in `assets/js/frontend-editor.js`
+- Uses event delegation on `body` for compatibility
+- Triggers WooCommerce's native `update_checkout` event
+- ~10 lines of code, zero conflicts
+
+**Files Changed:**
+- `assets/js/frontend-editor.js` (added state/country change listener)
+- `woocommerce-team-payroll.php` (version bump to 1.0.29)
+
+---
+
 ## [1.0.28] - 2026-04-27
 ### ✅ Frontend Editor - Fixed Mini Cart Price Display Using WooCommerce Hook
 
