@@ -1,3 +1,25 @@
+## [1.0.10] - 2026-04-27
+### 🐛 Frontend Editor - Shipping Cost Update Fix
+
+**Fixed Shipping Cost Persistence Issue**
+- Fixed shipping cost updates not persisting after page reload
+- Improved session handling for custom shipping costs
+- Added proper session save and cache clearing
+- Reduced reload delay for better UX (800ms → 500ms)
+
+**Technical Improvements:**
+- Added session null check in `apply_custom_shipping_costs()`
+- Force session save after setting custom shipping cost
+- Clear shipping package cache to force recalculation
+- Better error handling for session availability
+- Improved AJAX response with reload flag
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (improved session handling)
+- `assets/js/frontend-editor.js` (reduced reload delay)
+
+---
+
 ## [1.0.9] - 2026-04-26
 ### ✨ Frontend Editor - Price & Shipping Management
 

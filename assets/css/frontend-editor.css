@@ -1,27 +1,28 @@
 /**
  * Frontend Editor Styles
- * For price and shipping fee editing
- * Compatible with any theme
+ * For cart item prices and shipping costs
  */
 
 /* ============================================================================
-   COMMON STYLES
+   COMMON EDIT BUTTON
    ============================================================================ */
 
-.wc-tp-edit-btn,
-.wc-tp-remove-btn {
+.wc-tp-edit-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	background: #2271b1;
 	border: none;
 	border-radius: 3px;
-	padding: 4px 6px;
+	padding: 3px 5px;
 	cursor: pointer;
 	color: #fff;
 	line-height: 1;
 	transition: all 0.2s ease;
 	box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+	margin-left: 6px;
+	opacity: 0;
+	vertical-align: middle;
 }
 
 .wc-tp-edit-btn:hover {
@@ -29,55 +30,35 @@
 	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-.wc-tp-remove-btn {
-	background: #d63638;
-}
-
-.wc-tp-remove-btn:hover {
-	background: #b32d2e;
-	box-shadow: 0 2px 5px rgba(214,54,56,0.3);
-}
-
-.wc-tp-edit-btn svg,
-.wc-tp-remove-btn svg {
+.wc-tp-edit-btn svg {
 	display: block;
-	width: 14px;
-	height: 14px;
+	width: 12px;
+	height: 12px;
 }
 
-/* ============================================================================
-   PRICE EDITOR
-   ============================================================================ */
-
-.wc-tp-price-wrapper {
-	position: relative;
-	display: inline-block;
-	vertical-align: middle;
-}
-
-.wc-tp-price-edit-btn {
-	display: none;
-	position: absolute;
-	right: -24px;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 10;
-	opacity: 0;
-}
-
-.wc-tp-price-wrapper:hover .wc-tp-price-edit-btn {
-	display: inline-flex;
+/* Show edit button on hover */
+.wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn,
+.wc-tp-shipping-wrapper:hover .wc-tp-edit-btn {
 	opacity: 1;
 }
 
-.wc-tp-price-wrapper.editing {
+/* ============================================================================
+   CART PRICE EDITOR
+   ============================================================================ */
+
+.wc-tp-cart-price-wrapper {
+	position: relative;
+	display: inline-block;
+}
+
+.wc-tp-cart-price-wrapper.editing {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 }
 
-.wc-tp-price-wrapper.editing .wc-tp-price-display,
-.wc-tp-price-wrapper.editing .wc-tp-price-edit-btn {
+.wc-tp-cart-price-wrapper.editing .wc-tp-price-display,
+.wc-tp-cart-price-wrapper.editing .wc-tp-edit-btn {
 	display: none;
 }
 
@@ -88,13 +69,12 @@
 	border-radius: 3px;
 	font-size: inherit;
 	font-family: inherit;
-	width: 100px;
+	width: 80px;
 	text-align: right;
 	outline: none;
-	box-shadow: 0 0 0 1px rgba(34, 113, 177, 0.1);
 }
 
-.wc-tp-price-wrapper.editing .wc-tp-price-input {
+.wc-tp-cart-price-wrapper.editing .wc-tp-price-input {
 	display: inline-block;
 }
 
@@ -108,328 +88,129 @@
 	gap: 4px;
 }
 
-.wc-tp-price-wrapper.editing .wc-tp-price-actions {
+.wc-tp-cart-price-wrapper.editing .wc-tp-price-actions {
 	display: inline-flex;
 }
 
-.wc-tp-price-action-btn {
+.wc-tp-action-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 28px;
-	height: 28px;
+	width: 24px;
+	height: 24px;
 	border: none;
 	border-radius: 3px;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	padding: 0;
-	line-height: 1;
 }
 
-.wc-tp-price-action-btn svg {
-	width: 16px;
-	height: 16px;
+.wc-tp-action-btn svg {
+	width: 14px;
+	height: 14px;
 }
 
-.wc-tp-price-save {
+.wc-tp-save-btn {
 	background: #00a32a;
 	color: #fff;
 }
 
-.wc-tp-price-save:hover {
+.wc-tp-save-btn:hover {
 	background: #008a20;
-	box-shadow: 0 2px 5px rgba(0,163,42,0.3);
 }
 
-.wc-tp-price-save:disabled {
-	background: #ccc;
-	cursor: not-allowed;
-	opacity: 0.6;
-}
-
-.wc-tp-price-cancel {
+.wc-tp-cancel-btn {
 	background: #d63638;
 	color: #fff;
 }
 
-.wc-tp-price-cancel:hover {
+.wc-tp-cancel-btn:hover {
 	background: #b32d2e;
-	box-shadow: 0 2px 5px rgba(214,54,56,0.3);
 }
 
-.wc-tp-price-wrapper.loading .wc-tp-price-input,
-.wc-tp-price-wrapper.loading .wc-tp-price-action-btn {
+.wc-tp-cart-price-wrapper.loading .wc-tp-price-input,
+.wc-tp-cart-price-wrapper.loading .wc-tp-action-btn {
 	opacity: 0.6;
 	pointer-events: none;
 }
 
 @keyframes wc-tp-success {
 	0%, 100% { background-color: transparent; }
-	50% { background-color: rgba(0, 163, 42, 0.3); }
+	50% { background-color: rgba(0, 163, 42, 0.2); }
 }
 
-.wc-tp-price-wrapper.success {
+.wc-tp-cart-price-wrapper.success {
 	animation: wc-tp-success 0.6s ease;
 }
 
-.wc-tp-price-wrapper.error .wc-tp-price-input {
+.wc-tp-cart-price-wrapper.error .wc-tp-price-input {
 	border-color: #d63638;
 	box-shadow: 0 0 0 2px rgba(214, 54, 56, 0.2);
 }
 
 /* ============================================================================
-   SHIPPING FEE EDITOR
+   SHIPPING COST EDITOR
    ============================================================================ */
 
-.wc-tp-shipping-editor-row {
-	border-top: 2px solid #e0e0e0;
-	background: #f9f9f9;
+.wc-tp-shipping-wrapper {
+	position: relative;
+	display: inline-block;
 }
 
-.wc-tp-shipping-editor {
-	padding: 15px;
-	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	margin: 10px 0;
-}
-
-.wc-tp-shipping-editor h4 {
-	margin: 0 0 15px 0;
-	font-size: 16px;
-	color: #333;
-	border-bottom: 1px solid #e0e0e0;
-	padding-bottom: 10px;
-}
-
-.wc-tp-shipping-fees-list {
-	margin-bottom: 15px;
-}
-
-.wc-tp-no-fees {
-	color: #666;
-	font-style: italic;
-	margin: 10px 0;
-}
-
-.wc-tp-shipping-fee-item {
-	padding: 10px;
-	background: #f9f9f9;
-	border: 1px solid #e0e0e0;
-	border-radius: 3px;
-	margin-bottom: 8px;
-	transition: all 0.2s ease;
-}
-
-.wc-tp-shipping-fee-item:hover {
-	background: #f0f0f0;
-	border-color: #ccc;
-}
-
-.wc-tp-fee-display {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
-}
-
-.wc-tp-fee-name {
-	flex: 1;
-	font-weight: 500;
-	color: #333;
-}
-
-.wc-tp-fee-amount {
-	font-weight: 600;
-	color: #2271b1;
-	min-width: 80px;
-	text-align: right;
-}
-
-.wc-tp-fee-actions {
-	display: flex;
-	gap: 4px;
-	opacity: 0;
-	transition: opacity 0.2s ease;
-}
-
-.wc-tp-shipping-fee-item:hover .wc-tp-fee-actions {
-	opacity: 1;
-}
-
-.wc-tp-fee-edit-btn,
-.wc-tp-fee-remove-btn {
-	width: 28px;
-	height: 28px;
-	padding: 4px;
-}
-
-.wc-tp-add-shipping-btn {
+.wc-tp-shipping-wrapper.editing {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	background: #2271b1;
-	color: #fff;
-	border: none;
-	padding: 8px 16px;
-	border-radius: 3px;
-	cursor: pointer;
-	font-size: 14px;
-	transition: all 0.2s ease;
 }
 
-.wc-tp-add-shipping-btn:hover {
-	background: #135e96;
-	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.wc-tp-add-shipping-btn svg {
-	width: 14px;
-	height: 14px;
-}
-
-/* Fee editing mode */
-.wc-tp-shipping-fee-item.editing {
-	background: #fff;
-	border-color: #2271b1;
-	box-shadow: 0 2px 5px rgba(34, 113, 177, 0.2);
-}
-
-.wc-tp-shipping-fee-item.editing .wc-tp-fee-display {
+.wc-tp-shipping-wrapper.editing .wc-tp-shipping-display,
+.wc-tp-shipping-wrapper.editing .wc-tp-edit-btn {
 	display: none;
 }
 
-.wc-tp-fee-edit-form {
+.wc-tp-shipping-input {
 	display: none;
-	gap: 8px;
-}
-
-.wc-tp-shipping-fee-item.editing .wc-tp-fee-edit-form {
-	display: flex;
-	align-items: center;
-}
-
-.wc-tp-fee-input {
-	flex: 1;
-	padding: 6px 10px;
+	padding: 4px 8px;
 	border: 2px solid #2271b1;
 	border-radius: 3px;
-	font-size: 14px;
+	font-size: inherit;
+	font-family: inherit;
+	width: 80px;
+	text-align: right;
 	outline: none;
 }
 
-.wc-tp-fee-input:focus {
+.wc-tp-shipping-wrapper.editing .wc-tp-shipping-input {
+	display: inline-block;
+}
+
+.wc-tp-shipping-input:focus {
 	border-color: #135e96;
 	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
 }
 
-.wc-tp-fee-edit-actions {
-	display: flex;
+.wc-tp-shipping-actions {
+	display: none;
 	gap: 4px;
 }
 
-/* Add fee modal */
-.wc-tp-add-fee-modal {
-	display: none;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0,0,0,0.5);
-	z-index: 999999;
-	align-items: center;
-	justify-content: center;
+.wc-tp-shipping-wrapper.editing .wc-tp-shipping-actions {
+	display: inline-flex;
 }
 
-.wc-tp-add-fee-modal.active {
-	display: flex;
+.wc-tp-shipping-wrapper.loading .wc-tp-shipping-input,
+.wc-tp-shipping-wrapper.loading .wc-tp-action-btn {
+	opacity: 0.6;
+	pointer-events: none;
 }
 
-.wc-tp-modal-content {
-	background: #fff;
-	padding: 25px;
-	border-radius: 6px;
-	box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-	max-width: 400px;
-	width: 90%;
-	animation: wc-tp-modal-slide-in 0.3s ease;
+.wc-tp-shipping-wrapper.success {
+	animation: wc-tp-success 0.6s ease;
 }
 
-@keyframes wc-tp-modal-slide-in {
-	from {
-		transform: translateY(-50px);
-		opacity: 0;
-	}
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
-}
-
-.wc-tp-modal-content h3 {
-	margin: 0 0 20px 0;
-	font-size: 18px;
-	color: #333;
-}
-
-.wc-tp-modal-field {
-	margin-bottom: 15px;
-}
-
-.wc-tp-modal-field label {
-	display: block;
-	margin-bottom: 5px;
-	font-weight: 500;
-	color: #333;
-}
-
-.wc-tp-modal-field input {
-	width: 100%;
-	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 3px;
-	font-size: 14px;
-	outline: none;
-}
-
-.wc-tp-modal-field input:focus {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.1);
-}
-
-.wc-tp-modal-actions {
-	display: flex;
-	gap: 10px;
-	justify-content: flex-end;
-	margin-top: 20px;
-}
-
-.wc-tp-modal-btn {
-	padding: 8px 20px;
-	border: none;
-	border-radius: 3px;
-	cursor: pointer;
-	font-size: 14px;
-	transition: all 0.2s ease;
-}
-
-.wc-tp-modal-btn-primary {
-	background: #2271b1;
-	color: #fff;
-}
-
-.wc-tp-modal-btn-primary:hover {
-	background: #135e96;
-}
-
-.wc-tp-modal-btn-secondary {
-	background: #f0f0f0;
-	color: #333;
-}
-
-.wc-tp-modal-btn-secondary:hover {
-	background: #e0e0e0;
+.wc-tp-shipping-wrapper.error .wc-tp-shipping-input {
+	border-color: #d63638;
+	box-shadow: 0 0 0 2px rgba(214, 54, 56, 0.2);
 }
 
 /* ============================================================================
@@ -512,29 +293,30 @@
    ============================================================================ */
 
 @media (max-width: 768px) {
-	.wc-tp-price-edit-btn {
-		right: -20px;
-		padding: 3px 5px;
+	.wc-tp-edit-btn {
+		opacity: 1;
+		padding: 2px 4px;
 	}
 	
-	.wc-tp-price-edit-btn svg {
-		width: 12px;
-		height: 12px;
+	.wc-tp-edit-btn svg {
+		width: 10px;
+		height: 10px;
 	}
 	
-	.wc-tp-price-input {
-		width: 80px;
+	.wc-tp-price-input,
+	.wc-tp-shipping-input {
+		width: 70px;
 		font-size: 14px;
 	}
 	
-	.wc-tp-price-action-btn {
-		width: 24px;
-		height: 24px;
+	.wc-tp-action-btn {
+		width: 22px;
+		height: 22px;
 	}
 	
-	.wc-tp-price-action-btn svg {
-		width: 14px;
-		height: 14px;
+	.wc-tp-action-btn svg {
+		width: 12px;
+		height: 12px;
 	}
 	
 	.wc-tp-toast {
@@ -543,31 +325,13 @@
 		left: 10px;
 		min-width: auto;
 	}
-	
-	.wc-tp-modal-content {
-		width: 95%;
-		padding: 20px;
-	}
-	
-	.wc-tp-fee-display {
-		flex-wrap: wrap;
-	}
-	
-	.wc-tp-fee-actions {
-		opacity: 1;
-	}
 }
 
 /* ============================================================================
    THEME COMPATIBILITY
    ============================================================================ */
 
-.wc-tp-price-wrapper *,
-.wc-tp-shipping-editor * {
+.wc-tp-cart-price-wrapper *,
+.wc-tp-shipping-wrapper * {
 	box-sizing: border-box;
-}
-
-.products .product .wc-tp-price-wrapper,
-.woocommerce-loop-product__title + .wc-tp-price-wrapper {
-	margin-top: 0.5em;
 }

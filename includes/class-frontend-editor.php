@@ -33,21 +33,41 @@ class WC_Team_Payroll_Frontend_Editor {
 			return;
 		}
 
-		// Product Price Editing
-		add_filter( 'woocommerce_get_price_html', array( $this, 'add_price_edit_button' ), 999, 2 );
+		// Cart Item Price Editing
+		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 999, 3 );
+		add_filter( 'woocommerce_cart_item_subtotal', array( $this, 'add_cart_subtotal_edit_button' ), 999, 3 );
 
-		// Cart Shipping Fee Editing
-		add_action( 'woocommerce_cart_totals_after_shipping', array( $this, 'add_shipping_editor' ) );
-		add_action( 'woocommerce_review_order_after_shipping', array( $this, 'add_shipping_editor' ) );
+		// Shipping Fee Editing
+		add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'add_shipping_edit_button' ), 999, 2 );
+		
+		// Apply custom shipping costs from session
+		add_filter( 'woocommerce_package_rates', array( $this, 'apply_custom_shipping_costs' ), 999 );
 
 		// Enqueue scripts and styles
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// AJAX handlers
-		add_action( 'wp_ajax_wc_tp_update_product_price', array( $this, 'ajax_update_product_price' ) );
-		add_action( 'wp_ajax_wc_tp_add_shipping_fee', array( $this, 'ajax_add_shipping_fee' ) );
-		add_action( 'wp_ajax_wc_tp_update_shipping_fee', array( $this, 'ajax_update_shipping_fee' ) );
-		add_action( 'wp_ajax_wc_tp_remove_shipping_fee', array( $this, 'ajax_remove_shipping_fee' ) );
+		add_action( 'wp_ajax_wc_tp_update_cart_item_price', array( $this, 'ajax_update_cart_item_price' ) );
+		add_action( 'wp_ajax_wc_tp_update_shipping_cost', array( $this, 'ajax_update_shipping_cost' ) );
+	}
+
+	/**
+	 * Apply custom shipping costs from session
+	 */
+	public function apply_custom_shipping_costs( $rates ) {
+		if ( ! WC()->session ) {
+			return $rates;
+		}
+		
+		foreach ( $rates as $rate_key => $rate ) {
+			$custom_cost = WC()->session->get( 'wc_tp_custom_shipping_' . $rate->id );
+			if ( $custom_cost !== null && $custom_cost !== false ) {
+				$rates[ $rate_key ]->cost = floatval( $custom_cost );
+				// Also update taxes if needed
+				$rates[ $rate_key ]->taxes = array();
+			}
+		}
+		return $rates;
 	}
 
 	/**
@@ -77,27 +97,20 @@ class WC_Team_Payroll_Frontend_Editor {
 	}
 
 	/**
-	 * Add edit button to product price
+	 * Add edit button to cart item price
 	 */
-	public function add_price_edit_button( $price_html, $product ) {
-		if ( ! $product || ! $this->user_can_edit() ) {
+	public function add_cart_price_edit_button( $price_html, $cart_item, $cart_item_key ) {
+		if ( ! $this->user_can_edit() ) {
 			return $price_html;
 		}
 
-		// Get product ID
-		$product_id = $product->get_id();
-		
-		// Get current price
-		$current_price = $product->get_regular_price();
-		if ( empty( $current_price ) ) {
-			$current_price = $product->get_price();
-		}
+		$product = $cart_item['data'];
+		$current_price = $product->get_price();
 
-		// Wrap price with edit functionality
-		$wrapper = '<span class="wc-tp-price-wrapper" data-product-id="' . esc_attr( $product_id ) . '" data-current-price="' . esc_attr( $current_price ) . '">';
+		$wrapper = '<span class="wc-tp-cart-price-wrapper" data-cart-key="' . esc_attr( $cart_item_key ) . '" data-current-price="' . esc_attr( $current_price ) . '">';
 		$wrapper .= '<span class="wc-tp-price-display">' . $price_html . '</span>';
-		$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-price-edit-btn" title="' . esc_attr__( 'Edit Price', 'wc-team-payroll' ) . '">';
-		$wrapper .= '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+		$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-cart-price-edit" title="' . esc_attr__( 'Edit Price', 'wc-team-payroll' ) . '">';
+		$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
 		$wrapper .= '</button>';
 		$wrapper .= '</span>';
 
@@ -105,71 +118,36 @@ class WC_Team_Payroll_Frontend_Editor {
 	}
 
 	/**
-	 * Add shipping fee editor to cart/checkout
+	 * Add edit button to cart item subtotal
 	 */
-	public function add_shipping_editor() {
-		if ( ! $this->user_can_edit() ) {
-			return;
-		}
-
-		?>
-		<tr class="wc-tp-shipping-editor-row">
-			<td colspan="2">
-				<div class="wc-tp-shipping-editor">
-					<h4><?php esc_html_e( 'Manage Shipping Fees', 'wc-team-payroll' ); ?></h4>
-					
-					<div class="wc-tp-shipping-fees-list">
-						<?php $this->render_shipping_fees(); ?>
-					</div>
-					
-					<button type="button" class="button wc-tp-add-shipping-btn">
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-						<?php esc_html_e( 'Add Shipping Fee', 'wc-team-payroll' ); ?>
-					</button>
-				</div>
-			</td>
-		</tr>
-		<?php
+	public function add_cart_subtotal_edit_button( $subtotal_html, $cart_item, $cart_item_key ) {
+		// We only edit the unit price, not subtotal
+		return $subtotal_html;
 	}
 
 	/**
-	 * Render existing shipping fees
+	 * Add edit button to shipping cost
 	 */
-	private function render_shipping_fees() {
-		$cart = WC()->cart;
-		if ( ! $cart ) {
-			return;
+	public function add_shipping_edit_button( $label, $method ) {
+		if ( ! $this->user_can_edit() ) {
+			return $label;
 		}
 
-		$fees = $cart->get_fees();
-		
-		if ( empty( $fees ) ) {
-			echo '<p class="wc-tp-no-fees">' . esc_html__( 'No shipping fees added yet.', 'wc-team-payroll' ) . '</p>';
-			return;
+		$cost = $method->cost;
+		$method_id = $method->id;
+
+		// Only add edit button if there's a cost
+		if ( $cost > 0 ) {
+			$wrapper = '<span class="wc-tp-shipping-wrapper" data-method-id="' . esc_attr( $method_id ) . '" data-current-cost="' . esc_attr( $cost ) . '">';
+			$wrapper .= '<span class="wc-tp-shipping-display">' . $label . '</span>';
+			$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-shipping-edit" title="' . esc_attr__( 'Edit Shipping Cost', 'wc-team-payroll' ) . '">';
+			$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+			$wrapper .= '</button>';
+			$wrapper .= '</span>';
+			return $wrapper;
 		}
 
-		foreach ( $fees as $fee_key => $fee ) {
-			$fee_name = $fee->name;
-			$fee_amount = $fee->amount;
-			$fee_id = sanitize_title( $fee_name );
-			
-			?>
-			<div class="wc-tp-shipping-fee-item" data-fee-id="<?php echo esc_attr( $fee_id ); ?>" data-fee-key="<?php echo esc_attr( $fee_key ); ?>">
-				<div class="wc-tp-fee-display">
-					<span class="wc-tp-fee-name"><?php echo esc_html( $fee_name ); ?></span>
-					<span class="wc-tp-fee-amount"><?php echo wc_price( $fee_amount ); ?></span>
-					<div class="wc-tp-fee-actions">
-						<button type="button" class="wc-tp-edit-btn wc-tp-fee-edit-btn" title="<?php esc_attr_e( 'Edit Fee', 'wc-team-payroll' ); ?>">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-						</button>
-						<button type="button" class="wc-tp-remove-btn wc-tp-fee-remove-btn" title="<?php esc_attr_e( 'Remove Fee', 'wc-team-payroll' ); ?>">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-						</button>
-					</div>
-				</div>
-			</div>
-			<?php
-		}
+		return $label;
 	}
 
 	/**
@@ -226,25 +204,30 @@ class WC_Team_Payroll_Frontend_Editor {
 	}
 
 	/**
-	 * AJAX: Update product price
+	 * AJAX: Update cart item price
 	 */
-	public function ajax_update_product_price() {
+	public function ajax_update_cart_item_price() {
 		check_ajax_referer( 'wc_tp_frontend_editor', 'nonce' );
 
 		if ( ! $this->user_can_edit() ) {
 			wp_send_json_error( array( 'message' => __( 'You do not have permission to edit prices.', 'wc-team-payroll' ) ) );
 		}
 
-		$product_id = isset( $_POST['product_id'] ) ? intval( $_POST['product_id'] ) : 0;
+		$cart_key = isset( $_POST['cart_key'] ) ? sanitize_text_field( $_POST['cart_key'] ) : '';
 		$new_price = isset( $_POST['new_price'] ) ? sanitize_text_field( $_POST['new_price'] ) : '';
 
-		if ( ! $product_id ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid product ID.', 'wc-team-payroll' ) ) );
+		if ( empty( $cart_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid cart item.', 'wc-team-payroll' ) ) );
 		}
 
-		$product = wc_get_product( $product_id );
-		if ( ! $product ) {
-			wp_send_json_error( array( 'message' => __( 'Product not found.', 'wc-team-payroll' ) ) );
+		$cart = WC()->cart;
+		if ( ! $cart ) {
+			wp_send_json_error( array( 'message' => __( 'Cart not found.', 'wc-team-payroll' ) ) );
+		}
+
+		$cart_item = $cart->get_cart_item( $cart_key );
+		if ( ! $cart_item ) {
+			wp_send_json_error( array( 'message' => __( 'Cart item not found.', 'wc-team-payroll' ) ) );
 		}
 
 		$new_price = floatval( str_replace( ',', '.', $new_price ) );
@@ -252,149 +235,88 @@ class WC_Team_Payroll_Frontend_Editor {
 			wp_send_json_error( array( 'message' => __( 'Price must be a positive number.', 'wc-team-payroll' ) ) );
 		}
 
-		$old_price = $product->get_regular_price();
-		$product->set_regular_price( $new_price );
-		$product->set_price( $new_price );
-		$product->save();
-
-		wc_delete_product_transients( $product_id );
+		// Update the cart item price
+		$cart_item['data']->set_price( $new_price );
+		
+		// Recalculate cart totals
+		$cart->calculate_totals();
 
 		// Log the change
-		$this->log_price_change( $product_id, $old_price, $new_price );
+		$this->log_cart_price_change( $cart_item, $new_price );
 
 		wp_send_json_success( array(
 			'message' => __( 'Price updated successfully!', 'wc-team-payroll' ),
 			'new_price' => $new_price,
 			'new_price_html' => wc_price( $new_price ),
+			'cart_totals' => array(
+				'subtotal' => WC()->cart->get_cart_subtotal(),
+				'total' => WC()->cart->get_total(),
+			),
 		) );
 	}
 
 	/**
-	 * AJAX: Add shipping fee
+	 * AJAX: Update shipping cost
 	 */
-	public function ajax_add_shipping_fee() {
+	public function ajax_update_shipping_cost() {
 		check_ajax_referer( 'wc_tp_frontend_editor', 'nonce' );
 
 		if ( ! $this->user_can_edit() ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to add fees.', 'wc-team-payroll' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to edit shipping.', 'wc-team-payroll' ) ) );
 		}
 
-		$fee_name = isset( $_POST['fee_name'] ) ? sanitize_text_field( $_POST['fee_name'] ) : '';
-		$fee_amount = isset( $_POST['fee_amount'] ) ? sanitize_text_field( $_POST['fee_amount'] ) : '';
+		$method_id = isset( $_POST['method_id'] ) ? sanitize_text_field( $_POST['method_id'] ) : '';
+		$new_cost = isset( $_POST['new_cost'] ) ? sanitize_text_field( $_POST['new_cost'] ) : '';
 
-		if ( empty( $fee_name ) ) {
-			wp_send_json_error( array( 'message' => __( 'Fee name is required.', 'wc-team-payroll' ) ) );
+		if ( empty( $method_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid shipping method.', 'wc-team-payroll' ) ) );
 		}
 
-		$fee_amount = floatval( str_replace( ',', '.', $fee_amount ) );
-
-		$cart = WC()->cart;
-		if ( ! $cart ) {
-			wp_send_json_error( array( 'message' => __( 'Cart not found.', 'wc-team-payroll' ) ) );
+		$new_cost = floatval( str_replace( ',', '.', $new_cost ) );
+		if ( $new_cost < 0 ) {
+			wp_send_json_error( array( 'message' => __( 'Cost must be a positive number.', 'wc-team-payroll' ) ) );
 		}
 
-		// Add fee to cart
-		$cart->add_fee( $fee_name, $fee_amount, true );
-
-		// Log the change
-		$this->log_fee_change( 'add', $fee_name, $fee_amount );
-
-		wp_send_json_success( array(
-			'message' => __( 'Shipping fee added successfully!', 'wc-team-payroll' ),
-			'fee_name' => $fee_name,
-			'fee_amount' => $fee_amount,
-			'fee_html' => wc_price( $fee_amount ),
-		) );
-	}
-
-	/**
-	 * AJAX: Update shipping fee
-	 */
-	public function ajax_update_shipping_fee() {
-		check_ajax_referer( 'wc_tp_frontend_editor', 'nonce' );
-
-		if ( ! $this->user_can_edit() ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to edit fees.', 'wc-team-payroll' ) ) );
+		// Ensure session is initialized
+		if ( ! WC()->session ) {
+			wp_send_json_error( array( 'message' => __( 'Session not available.', 'wc-team-payroll' ) ) );
 		}
 
-		$fee_key = isset( $_POST['fee_key'] ) ? sanitize_text_field( $_POST['fee_key'] ) : '';
-		$new_amount = isset( $_POST['new_amount'] ) ? sanitize_text_field( $_POST['new_amount'] ) : '';
-
-		$new_amount = floatval( str_replace( ',', '.', $new_amount ) );
-
-		$cart = WC()->cart;
-		if ( ! $cart ) {
-			wp_send_json_error( array( 'message' => __( 'Cart not found.', 'wc-team-payroll' ) ) );
-		}
-
-		$fees = $cart->get_fees();
-		if ( ! isset( $fees[ $fee_key ] ) ) {
-			wp_send_json_error( array( 'message' => __( 'Fee not found.', 'wc-team-payroll' ) ) );
-		}
-
-		$fee = $fees[ $fee_key ];
-		$old_amount = $fee->amount;
-		$fee->amount = $new_amount;
-		$fee->total = $new_amount;
-
-		// Recalculate totals
-		$cart->calculate_totals();
-
-		// Log the change
-		$this->log_fee_change( 'update', $fee->name, $new_amount, $old_amount );
-
-		wp_send_json_success( array(
-			'message' => __( 'Shipping fee updated successfully!', 'wc-team-payroll' ),
-			'new_amount' => $new_amount,
-			'new_amount_html' => wc_price( $new_amount ),
-		) );
-	}
-
-	/**
-	 * AJAX: Remove shipping fee
-	 */
-	public function ajax_remove_shipping_fee() {
-		check_ajax_referer( 'wc_tp_frontend_editor', 'nonce' );
-
-		if ( ! $this->user_can_edit() ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to remove fees.', 'wc-team-payroll' ) ) );
-		}
-
-		$fee_key = isset( $_POST['fee_key'] ) ? sanitize_text_field( $_POST['fee_key'] ) : '';
-
-		$cart = WC()->cart;
-		if ( ! $cart ) {
-			wp_send_json_error( array( 'message' => __( 'Cart not found.', 'wc-team-payroll' ) ) );
-		}
-
-		$fees = $cart->get_fees();
-		if ( ! isset( $fees[ $fee_key ] ) ) {
-			wp_send_json_error( array( 'message' => __( 'Fee not found.', 'wc-team-payroll' ) ) );
-		}
-
-		$fee_name = $fees[ $fee_key ]->name;
-		$fee_amount = $fees[ $fee_key ]->amount;
-
-		// Remove fee
-		unset( $fees[ $fee_key ] );
-		$cart->fees_api()->set_fees( $fees );
-		$cart->calculate_totals();
-
-		// Log the change
-		$this->log_fee_change( 'remove', $fee_name, $fee_amount );
-
-		wp_send_json_success( array(
-			'message' => __( 'Shipping fee removed successfully!', 'wc-team-payroll' ),
-		) );
-	}
-
-	/**
-	 * Log price change for audit trail
-	 */
-	private function log_price_change( $product_id, $old_price, $new_price ) {
-		$current_user = wp_get_current_user();
+		// Store the custom shipping cost in session
+		WC()->session->set( 'wc_tp_custom_shipping_' . $method_id, $new_cost );
 		
-		$price_history = get_post_meta( $product_id, '_wc_tp_price_history', true );
+		// Force session save
+		WC()->session->save_data();
+
+		// Clear shipping cache
+		$packages = WC()->cart->get_shipping_packages();
+		foreach ( $packages as $package_key => $package ) {
+			WC()->session->set( 'shipping_for_package_' . $package_key, false );
+		}
+
+		// Recalculate shipping and totals
+		WC()->cart->calculate_shipping();
+		WC()->cart->calculate_totals();
+
+		// Log the change
+		$this->log_shipping_change( $method_id, $new_cost );
+
+		wp_send_json_success( array(
+			'message' => __( 'Shipping cost updated successfully!', 'wc-team-payroll' ),
+			'new_cost' => $new_cost,
+			'new_cost_html' => wc_price( $new_cost ),
+			'reload_required' => true, // Tell JS to reload
+		) );
+	}
+
+	/**
+	 * Log cart price change for audit trail
+	 */
+	private function log_cart_price_change( $cart_item, $new_price ) {
+		$current_user = wp_get_current_user();
+		$product = $cart_item['data'];
+		
+		$price_history = get_option( '_wc_tp_cart_price_history', array() );
 		if ( ! is_array( $price_history ) ) {
 			$price_history = array();
 		}
@@ -403,47 +325,47 @@ class WC_Team_Payroll_Frontend_Editor {
 			'date' => current_time( 'mysql' ),
 			'user_id' => $current_user->ID,
 			'user_name' => $current_user->display_name,
-			'old_price' => $old_price,
+			'product_id' => $product->get_id(),
+			'product_name' => $product->get_name(),
+			'old_price' => $cart_item['data']->get_regular_price(),
 			'new_price' => $new_price,
-			'source' => 'frontend_editor',
+			'source' => 'frontend_editor_cart',
 		);
 
-		// Keep only last 50 entries
-		if ( count( $price_history ) > 50 ) {
-			$price_history = array_slice( $price_history, -50 );
+		// Keep only last 100 entries
+		if ( count( $price_history ) > 100 ) {
+			$price_history = array_slice( $price_history, -100 );
 		}
 
-		update_post_meta( $product_id, '_wc_tp_price_history', $price_history );
+		update_option( '_wc_tp_cart_price_history', $price_history );
 	}
 
 	/**
-	 * Log fee change for audit trail
+	 * Log shipping change for audit trail
 	 */
-	private function log_fee_change( $action, $fee_name, $new_amount, $old_amount = null ) {
+	private function log_shipping_change( $method_id, $new_cost ) {
 		$current_user = wp_get_current_user();
 		
-		$fee_history = get_option( '_wc_tp_fee_history', array() );
-		if ( ! is_array( $fee_history ) ) {
-			$fee_history = array();
+		$shipping_history = get_option( '_wc_tp_shipping_history', array() );
+		if ( ! is_array( $shipping_history ) ) {
+			$shipping_history = array();
 		}
 
-		$fee_history[] = array(
+		$shipping_history[] = array(
 			'date' => current_time( 'mysql' ),
 			'user_id' => $current_user->ID,
 			'user_name' => $current_user->display_name,
-			'action' => $action,
-			'fee_name' => $fee_name,
-			'old_amount' => $old_amount,
-			'new_amount' => $new_amount,
+			'method_id' => $method_id,
+			'new_cost' => $new_cost,
 			'source' => 'frontend_editor',
 		);
 
 		// Keep only last 100 entries
-		if ( count( $fee_history ) > 100 ) {
-			$fee_history = array_slice( $fee_history, -100 );
+		if ( count( $shipping_history ) > 100 ) {
+			$shipping_history = array_slice( $shipping_history, -100 );
 		}
 
-		update_option( '_wc_tp_fee_history', $fee_history );
+		update_option( '_wc_tp_shipping_history', $shipping_history );
 	}
 }
 
