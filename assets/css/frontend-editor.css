@@ -40,30 +40,40 @@
 	line-height: 1 !important;
 }
 
+/* Hide edit button when editing */
+.wc-tp-cart-price-wrapper.editing .wc-tp-edit-btn,
+.wc-tp-shipping-wrapper.editing .wc-tp-edit-btn {
+	display: none !important;
+	opacity: 0 !important;
+	visibility: hidden !important;
+}
+
 /* Show edit button on hover for desktop, always visible on mobile */
 @media (min-width: 769px) {
 	.wc-tp-edit-btn {
 		opacity: 0 !important;
 	}
 	
-	.wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn,
-	.wc-tp-shipping-wrapper:hover .wc-tp-edit-btn {
+	.wc-tp-cart-price-wrapper:not(.editing):hover .wc-tp-edit-btn,
+	.wc-tp-shipping-wrapper:not(.editing):hover .wc-tp-edit-btn {
 		opacity: 0.6 !important;
 	}
 	
-	.wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn:hover,
-	.wc-tp-shipping-wrapper:hover .wc-tp-edit-btn:hover {
+	.wc-tp-cart-price-wrapper:not(.editing):hover .wc-tp-edit-btn:hover,
+	.wc-tp-shipping-wrapper:not(.editing):hover .wc-tp-edit-btn:hover {
 		opacity: 1 !important;
 	}
 }
 
-/* Always visible on mobile/tablet */
+/* Always visible on mobile/tablet (but not when editing) */
 @media (max-width: 768px) {
-	.wc-tp-edit-btn {
+	.wc-tp-cart-price-wrapper:not(.editing) .wc-tp-edit-btn,
+	.wc-tp-shipping-wrapper:not(.editing) .wc-tp-edit-btn {
 		opacity: 0.6 !important;
 	}
 	
-	.wc-tp-edit-btn:hover {
+	.wc-tp-cart-price-wrapper:not(.editing) .wc-tp-edit-btn:hover,
+	.wc-tp-shipping-wrapper:not(.editing) .wc-tp-edit-btn:hover {
 		opacity: 1 !important;
 	}
 }

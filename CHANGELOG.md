@@ -1,3 +1,34 @@
+## [1.0.32] - 2026-04-27
+### 🐛 Frontend Editor - Fixed Edit Button Visibility
+
+**Fixed Edit Button Still Showing During Editing**
+- Edit buttons now properly hidden when editing mode is active
+- Added `:not(.editing)` selector to prevent hover effects during editing
+- Used multiple CSS properties (`display: none`, `opacity: 0`, `visibility: hidden`) for maximum compatibility
+- Desktop hover effects only apply when NOT in editing mode
+- Mobile visibility only applies when NOT in editing mode
+
+**What's Fixed**
+- ✅ Edit button completely hidden during editing (no opacity, no display, no visibility)
+- ✅ Hover effects disabled during editing mode
+- ✅ Desktop: Hover only works when not editing
+- ✅ Mobile: Always visible only when not editing
+- ✅ Cleaner editing experience without duplicate buttons
+
+**Technical Changes**
+- Added `.wc-tp-cart-price-wrapper.editing .wc-tp-edit-btn` with triple hide (display, opacity, visibility)
+- Added `.wc-tp-shipping-wrapper.editing .wc-tp-edit-btn` with triple hide
+- Changed hover selectors to `:not(.editing):hover` for desktop
+- Changed mobile selectors to `:not(.editing)` to prevent visibility during editing
+- Stronger CSS specificity for better theme compatibility
+
+**Files Changed:**
+- `assets/css/frontend-editor.css` (fixed editing state visibility)
+- `woocommerce-team-payroll.php` (version bump to 1.0.32)
+- `CHANGELOG.md` (this entry)
+
+---
+
 ## [1.0.31] - 2026-04-27
 ### 🎨 Frontend Editor - UX Improvements
 
