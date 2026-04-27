@@ -33,6 +33,10 @@ class WC_Team_Payroll_Frontend_Editor {
 			return;
 		}
 
+		// CRITICAL: Clear session BEFORE cart calculations on every page load
+		// This ensures fresh state and prevents stale data
+		add_action( 'wp_loaded', array( $this, 'check_and_clear_stale_session' ), 5 );
+
 		// Apply custom prices from session BEFORE displaying
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply_custom_prices' ), 10, 1 );
 
@@ -61,7 +65,8 @@ class WC_Team_Payroll_Frontend_Editor {
 		add_action( 'woocommerce_cart_item_removed', array( $this, 'clear_custom_price_for_item' ), 10, 2 );
 		
 		// Clear custom shipping when address changes (shipping recalculation)
-		add_action( 'woocommerce_calculated_shipping', array( $this, 'clear_custom_shipping_on_address_change' ) );
+		// Use higher priority to run BEFORE shipping calculation
+		add_action( 'woocommerce_calculated_shipping', array( $this, 'clear_custom_shipping_on_address_change' ), 1 );
 
 		// Enqueue scripts and styles
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -73,6 +78,46 @@ class WC_Team_Payroll_Frontend_Editor {
 		// Debug: Log that hooks are set up
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( 'WC TP Frontend Editor: Hooks setup complete for user ' . wp_get_current_user()->user_login );
+		}
+	}
+
+	/**
+	 * Check and clear stale session data on page load
+	 * This ensures mini cart and other displays show fresh data
+	 */
+	public function check_and_clear_stale_session() {
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		// If cart is empty, clear ALL custom values
+		if ( WC()->cart && WC()->cart->is_empty() ) {
+			$this->clear_all_custom_values();
+			return;
+		}
+
+		// If we have custom values but cart items don't match, clear them
+		if ( WC()->cart ) {
+			$session_data = WC()->session->get_session_data();
+			if ( ! is_array( $session_data ) ) {
+				return;
+			}
+
+			// Get current cart item keys
+			$current_cart_keys = array_keys( WC()->cart->get_cart() );
+
+			// Check each custom price in session
+			foreach ( $session_data as $key => $value ) {
+				if ( strpos( $key, 'wc_tp_custom_price_' ) === 0 ) {
+					$cart_key = str_replace( 'wc_tp_custom_price_', '', $key );
+					// If this cart item no longer exists, clear it
+					if ( ! in_array( $cart_key, $current_cart_keys ) ) {
+						WC()->session->set( $key, null );
+					}
+				}
+			}
+
+			WC()->session->save_data();
 		}
 	}
 
@@ -125,19 +170,23 @@ class WC_Team_Payroll_Frontend_Editor {
 
 		// Get all session keys
 		$session_data = WC()->session->get_session_data();
+		if ( ! is_array( $session_data ) ) {
+			return;
+		}
 		
-		// Clear all custom price keys
+		// Clear all custom price and shipping keys
+		$cleared_any = false;
 		foreach ( $session_data as $key => $value ) {
-			if ( strpos( $key, 'wc_tp_custom_price_' ) === 0 ) {
+			if ( strpos( $key, 'wc_tp_custom_price_' ) === 0 || strpos( $key, 'wc_tp_custom_shipping_' ) === 0 ) {
 				WC()->session->set( $key, null );
-			}
-			if ( strpos( $key, 'wc_tp_custom_shipping_' ) === 0 ) {
-				WC()->session->set( $key, null );
+				$cleared_any = true;
 			}
 		}
 		
-		// Force session save
-		WC()->session->save_data();
+		// Force session save if we cleared anything
+		if ( $cleared_any ) {
+			WC()->session->save_data();
+		}
 	}
 
 	/**
@@ -155,6 +204,7 @@ class WC_Team_Payroll_Frontend_Editor {
 
 	/**
 	 * Clear custom shipping when address changes (shipping recalculation)
+	 * This runs BEFORE shipping is recalculated
 	 */
 	public function clear_custom_shipping_on_address_change() {
 		if ( ! WC()->session ) {
@@ -163,16 +213,23 @@ class WC_Team_Payroll_Frontend_Editor {
 
 		// Get all session keys
 		$session_data = WC()->session->get_session_data();
+		if ( ! is_array( $session_data ) ) {
+			return;
+		}
 		
 		// Clear all custom shipping keys
+		$cleared_any = false;
 		foreach ( $session_data as $key => $value ) {
 			if ( strpos( $key, 'wc_tp_custom_shipping_' ) === 0 ) {
 				WC()->session->set( $key, null );
+				$cleared_any = true;
 			}
 		}
 		
-		// Force session save
-		WC()->session->save_data();
+		// Force session save if we cleared anything
+		if ( $cleared_any ) {
+			WC()->session->save_data();
+		}
 	}
 
 	/**

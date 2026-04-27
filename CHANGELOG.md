@@ -1,3 +1,53 @@
+## [1.0.24] - 2026-04-27
+### ✅ Frontend Editor - Fixed Session Persistence & Mini Cart Issues
+
+**Fixed Critical Session Management Issues**
+- Mini cart now shows original prices (not edited values)
+- Shipping fees now properly clear when address changes
+- Shipping fees now properly clear when cart is emptied
+- Stale session data is cleaned up on every page load
+- Cart item keys are validated to prevent orphaned session data
+
+**Session Cleanup on Page Load**
+- Added `check_and_clear_stale_session()` method that runs on `wp_loaded` hook
+- Automatically clears ALL custom values if cart is empty
+- Validates cart item keys and removes orphaned session data
+- Ensures mini cart displays original prices
+- Prevents edited values from persisting across sessions
+
+**Improved Shipping Clearing**
+- Changed `woocommerce_calculated_shipping` hook priority to 1 (runs first)
+- Ensures shipping is cleared BEFORE recalculation
+- Shipping now properly resets when address changes
+- Shipping now properly clears when cart is emptied
+
+**Mini Cart Behavior**
+- Mini cart now always shows original product prices
+- No edited prices leak into mini cart display
+- When you add more items via mini cart, they show original price
+- After page reload, all prices reset to original
+
+**How It Works Now**
+1. **Page Load**: `wp_loaded` hook fires → checks if cart is empty → clears all custom values if empty
+2. **Page Load**: `wp_loaded` hook fires → validates cart item keys → removes orphaned session data
+3. **Address Change**: `woocommerce_calculated_shipping` fires → clears all custom shipping → shipping recalculates
+4. **Cart Empty**: `woocommerce_cart_emptied` fires → clears all custom prices and shipping
+5. **Mini Cart**: Always shows original prices because session is cleaned on page load
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added session validation, improved clearing logic)
+- `woocommerce-team-payroll.php` (version bump to 1.0.24)
+
+**User Experience:**
+- Mini cart shows correct original prices
+- Shipping resets when address changes
+- Shipping clears when cart is emptied
+- No more stale edited values persisting
+- Fresh start on every page load
+- Predictable, reliable behavior
+
+---
+
 ## [1.0.23] - 2026-04-27
 ### ✅ Frontend Editor - Session Clearing & Mini Cart Fix
 
