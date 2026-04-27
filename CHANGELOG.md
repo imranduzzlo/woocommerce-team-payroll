@@ -1,3 +1,40 @@
+## [1.0.31] - 2026-04-27
+### 🎨 Frontend Editor - UX Improvements
+
+**Fixed Edit Button Visibility Issues**
+- Edit buttons now hide when editing mode is active (prevents confusion)
+- Desktop/Tablet: Edit buttons only show on hover (cleaner interface)
+- Mobile: Edit buttons always visible (better touch accessibility)
+- Improved CSS specificity with `!important` flags for better theme compatibility
+
+**What's Fixed**
+- ✅ Edit button disappears when input field is shown
+- ✅ No duplicate edit buttons visible during editing
+- ✅ Desktop: Hover to reveal edit buttons (opacity 0 → 0.6 → 1)
+- ✅ Mobile/Tablet (≤768px): Always visible (opacity 0.6 → 1 on tap)
+- ✅ Better touch experience on mobile devices
+- ✅ Cleaner, less cluttered interface
+
+**Technical Changes**
+- Updated `.wc-tp-cart-price-wrapper.editing` to hide `.wc-tp-cart-price-edit` specifically
+- Updated `.wc-tp-shipping-wrapper.editing` to hide `.wc-tp-shipping-edit` specifically
+- Added media query for desktop (min-width: 769px) with hover-only visibility
+- Added media query for mobile (max-width: 768px) with always-visible buttons
+- Used `!important` flags for better theme override compatibility
+
+**User Experience**
+- Desktop users: Cleaner interface, edit buttons appear on hover
+- Mobile users: Always see edit buttons for easy access
+- No confusion with multiple buttons during editing
+- Consistent behavior across all devices
+
+**Files Changed:**
+- `assets/css/frontend-editor.css` (improved visibility logic and responsive behavior)
+- `woocommerce-team-payroll.php` (version bump to 1.0.31)
+- `CHANGELOG.md` (this entry)
+
+---
+
 ## [1.0.30] - 2026-04-27
 ### 🔧 Checkout Enhancement - Enhanced State/Country Change Detection
 

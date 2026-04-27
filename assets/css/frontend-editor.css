@@ -40,10 +40,32 @@
 	line-height: 1 !important;
 }
 
-/* Show edit button on hover */
-.wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn,
-.wc-tp-shipping-wrapper:hover .wc-tp-edit-btn {
-	opacity: 1 !important;
+/* Show edit button on hover for desktop, always visible on mobile */
+@media (min-width: 769px) {
+	.wc-tp-edit-btn {
+		opacity: 0 !important;
+	}
+	
+	.wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn,
+	.wc-tp-shipping-wrapper:hover .wc-tp-edit-btn {
+		opacity: 0.6 !important;
+	}
+	
+	.wc-tp-cart-price-wrapper:hover .wc-tp-edit-btn:hover,
+	.wc-tp-shipping-wrapper:hover .wc-tp-edit-btn:hover {
+		opacity: 1 !important;
+	}
+}
+
+/* Always visible on mobile/tablet */
+@media (max-width: 768px) {
+	.wc-tp-edit-btn {
+		opacity: 0.6 !important;
+	}
+	
+	.wc-tp-edit-btn:hover {
+		opacity: 1 !important;
+	}
 }
 
 /* ============================================================================
@@ -62,8 +84,8 @@
 }
 
 .wc-tp-cart-price-wrapper.editing .wc-tp-price-display,
-.wc-tp-cart-price-wrapper.editing .wc-tp-edit-btn {
-	display: none;
+.wc-tp-cart-price-wrapper.editing .wc-tp-cart-price-edit {
+	display: none !important;
 }
 
 .wc-tp-price-input {
@@ -171,8 +193,8 @@
 }
 
 .wc-tp-shipping-wrapper.editing .wc-tp-shipping-display,
-.wc-tp-shipping-wrapper.editing .wc-tp-edit-btn {
-	display: none;
+.wc-tp-shipping-wrapper.editing .wc-tp-shipping-edit {
+	display: none !important;
 }
 
 .wc-tp-shipping-input {
