@@ -1,3 +1,37 @@
+## [1.0.14] - 2026-04-27
+### 🐛 Frontend Editor - Enhanced Cart Price Filter with Debugging
+
+**Fixed Cart Item Price Icons Not Showing**
+- Added multiple filter priorities (9999, 999, 99) to ensure filter is applied
+- Added comprehensive PHP-side debugging with error_log
+- Logs when filter is called, user permissions, and wrapper status
+- Helps identify if filter is being called at all
+
+**Debugging Features:**
+- Logs to WordPress debug.log when WP_DEBUG is enabled
+- Shows when `add_cart_price_edit_button` is called
+- Displays price HTML, cart item key, and user permissions
+- Tracks if wrapper is already applied (duplicate prevention)
+- Logs when hooks are set up with current user
+
+**How to Debug:**
+1. Enable WP_DEBUG and WP_DEBUG_LOG in wp-config.php:
+   ```php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   ```
+2. Go to cart page
+3. Check `/wp-content/debug.log` for messages like:
+   - "WC TP Frontend Editor: Hooks setup complete for user X"
+   - "WC TP Frontend Editor: add_cart_price_edit_button called"
+   - "User can edit: yes/no"
+   - "Wrapper added"
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added debugging and multiple priorities)
+
+---
+
 ## [1.0.13] - 2026-04-27
 ### 🚀 Frontend Editor - Complete Rewrite for Universal Theme Compatibility
 

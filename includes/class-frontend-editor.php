@@ -33,8 +33,12 @@ class WC_Team_Payroll_Frontend_Editor {
 			return;
 		}
 
-		// Cart Item Price Editing
+		// Cart Item Price Editing - try multiple hooks with different priorities
+		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 9999, 3 );
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 999, 3 );
+		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 99, 3 );
+		
+		// Also try the subtotal hook as fallback
 		add_filter( 'woocommerce_cart_item_subtotal', array( $this, 'add_cart_subtotal_edit_button' ), 999, 3 );
 
 		// Shipping Fee Editing
@@ -49,6 +53,11 @@ class WC_Team_Payroll_Frontend_Editor {
 		// AJAX handlers
 		add_action( 'wp_ajax_wc_tp_update_cart_item_price', array( $this, 'ajax_update_cart_item_price' ) );
 		add_action( 'wp_ajax_wc_tp_update_shipping_cost', array( $this, 'ajax_update_shipping_cost' ) );
+		
+		// Debug: Log that hooks are set up
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'WC TP Frontend Editor: Hooks setup complete for user ' . wp_get_current_user()->user_login );
+		}
 	}
 
 	/**
@@ -100,12 +109,23 @@ class WC_Team_Payroll_Frontend_Editor {
 	 * Add edit button to cart item price
 	 */
 	public function add_cart_price_edit_button( $price_html, $cart_item, $cart_item_key ) {
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'WC TP Frontend Editor: add_cart_price_edit_button called' );
+			error_log( 'Price HTML: ' . $price_html );
+			error_log( 'Cart item key: ' . $cart_item_key );
+			error_log( 'User can edit: ' . ( $this->user_can_edit() ? 'yes' : 'no' ) );
+		}
+
 		if ( ! $this->user_can_edit() ) {
 			return $price_html;
 		}
 
 		// Prevent duplicate wrapping
 		if ( strpos( $price_html, 'wc-tp-cart-price-wrapper' ) !== false ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'WC TP Frontend Editor: Already wrapped, skipping' );
+			}
 			return $price_html;
 		}
 
@@ -118,6 +138,10 @@ class WC_Team_Payroll_Frontend_Editor {
 		$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
 		$wrapper .= '</button>';
 		$wrapper .= '</span>';
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'WC TP Frontend Editor: Wrapper added' );
+		}
 
 		return $wrapper;
 	}
