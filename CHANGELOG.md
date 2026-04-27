@@ -1,3 +1,60 @@
+## [1.0.28] - 2026-04-27
+### ✅ Frontend Editor - Fixed Mini Cart Price Display Using WooCommerce Hook
+
+**Fixed Mini Cart Showing Original Price After Reload**
+- Added `apply_custom_prices_for_mini_cart()` method using `woocommerce_before_mini_cart` hook
+- Mini cart now shows edited prices on page load and after reload
+- Uses WooCommerce's official mini cart hook for proper integration
+- Works with all themes and all plugins
+
+**Root Cause Analysis**
+- Mini cart displays the **original product price** (not line item price)
+- Mini cart renders BEFORE `woocommerce_before_calculate_totals` hook fires
+- Need to use `woocommerce_before_mini_cart` hook to apply prices BEFORE mini cart renders
+- This is the WooCommerce-recommended approach for mini cart price modifications
+
+**How It Works Now**
+```
+Page Load:
+  ↓
+wp_loaded hook fires (priority 1)
+  ↓
+apply_custom_prices_early() runs
+  ↓
+woocommerce_before_mini_cart hook fires
+  ↓
+apply_custom_prices_for_mini_cart() runs
+  ↓
+Custom prices applied to cart items
+  ↓
+Mini cart renders with edited prices ✅
+  ↓
+AJAX updates trigger
+  ↓
+Custom prices persist ✅
+```
+
+**What's Fixed**
+- ✅ Mini cart shows edited prices on page load
+- ✅ Mini cart shows edited prices after page reload
+- ✅ Mini cart shows edited prices during AJAX updates
+- ✅ Works with all WooCommerce themes
+- ✅ Works with all plugins
+- ✅ Uses WooCommerce's official hooks
+
+**Technical Implementation**
+- Added `apply_custom_prices_for_mini_cart()` method
+- Hooked to `woocommerce_before_mini_cart` action
+- Applies custom prices directly to cart items
+- Runs BEFORE mini cart template renders
+- Follows WooCommerce best practices
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added mini cart hook)
+- `woocommerce-team-payroll.php` (version bump to 1.0.28)
+
+---
+
 ## [1.0.27] - 2026-04-27
 ### ✅ Frontend Editor - Fixed Mini Cart Price Display on Page Load
 
