@@ -167,8 +167,60 @@ class WC_Team_Payroll_Frontend_Editor {
 	 * Add edit button to cart item subtotal
 	 */
 	public function add_cart_subtotal_edit_button( $subtotal_html, $cart_item, $cart_item_key ) {
-		// We only edit the unit price, not subtotal
-		return $subtotal_html;
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// Get the calling hook/filter name
+			$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 10 );
+			$hook_name = 'unknown';
+			foreach ( $backtrace as $trace ) {
+				if ( isset( $trace['function'] ) && $trace['function'] === 'apply_filters' ) {
+					if ( isset( $trace['args'][0] ) ) {
+						$hook_name = $trace['args'][0];
+						break;
+					}
+				}
+			}
+			
+			error_log( 'WC TP Frontend Editor: add_cart_subtotal_edit_button called via hook: ' . $hook_name );
+			error_log( 'Subtotal HTML: ' . $subtotal_html );
+			error_log( 'Cart item key: ' . $cart_item_key );
+			error_log( 'User can edit: ' . ( $this->user_can_edit() ? 'yes' : 'no' ) );
+			error_log( 'Current page: ' . ( is_cart() ? 'cart' : ( is_checkout() ? 'checkout' : 'other' ) ) );
+		}
+
+		if ( ! $this->user_can_edit() ) {
+			return $subtotal_html;
+		}
+
+		// On checkout, we want to edit the subtotal since unit price isn't shown
+		// On cart, we only edit unit price, not subtotal
+		if ( ! is_checkout() ) {
+			return $subtotal_html;
+		}
+
+		// Prevent duplicate wrapping
+		if ( strpos( $subtotal_html, 'wc-tp-cart-price-wrapper' ) !== false ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'WC TP Frontend Editor: Subtotal already wrapped, skipping' );
+			}
+			return $subtotal_html;
+		}
+
+		$product = $cart_item['data'];
+		$current_price = $product->get_price();
+
+		$wrapper = '<span class="wc-tp-cart-price-wrapper" data-cart-key="' . esc_attr( $cart_item_key ) . '" data-current-price="' . esc_attr( $current_price ) . '">';
+		$wrapper .= '<span class="wc-tp-price-display">' . $subtotal_html . '</span>';
+		$wrapper .= '<button type="button" class="wc-tp-edit-btn wc-tp-cart-price-edit" title="' . esc_attr__( 'Edit Price', 'wc-team-payroll' ) . '">';
+		$wrapper .= '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+		$wrapper .= '</button>';
+		$wrapper .= '</span>';
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'WC TP Frontend Editor: Subtotal wrapper added' );
+		}
+
+		return $wrapper;
 	}
 
 	/**

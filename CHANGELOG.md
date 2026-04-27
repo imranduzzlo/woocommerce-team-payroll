@@ -1,3 +1,35 @@
+## [1.0.18] - 2026-04-27
+### ✅ Frontend Editor - Fixed Checkout Page Price Editing
+
+**Fixed Cart Price Buttons on Checkout Page**
+- Checkout pages show SUBTOTALS, not unit prices
+- Added edit button to subtotal column on checkout page
+- Cart page still edits unit prices (as before)
+- Checkout page now edits subtotals (price × quantity)
+
+**How It Works:**
+- **Cart page**: Edit button beside unit price (per item)
+- **Checkout page**: Edit button beside subtotal (total for that line)
+- When you edit on checkout, you're editing the unit price (it updates the subtotal)
+- Works with any checkout template that shows subtotals
+
+**Technical Details:**
+- Uses `woocommerce_cart_item_subtotal` filter for checkout
+- Only applies wrapper on checkout page (`is_checkout()` check)
+- Cart page behavior unchanged (unit price editing only)
+- Enhanced debugging shows which hook and page type
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added subtotal editing for checkout)
+
+**User Experience:**
+- Edit buttons now visible on checkout order review table
+- Click to edit the unit price (subtotal updates automatically)
+- Consistent with shipping edit button behavior
+- Works with any theme's checkout template
+
+---
+
 ## [1.0.17] - 2026-04-27
 ### 🔍 Frontend Editor - Enhanced Diagnostics
 
