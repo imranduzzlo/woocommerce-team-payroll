@@ -1,3 +1,44 @@
+## [1.0.30] - 2026-04-27
+### 🔧 Checkout Enhancement - Enhanced State/Country Change Detection
+
+**Enhanced State/Country Change Listener with Better Debugging**
+- Added comprehensive debugging to identify why state/country changes weren't triggering
+- Added multiple selector variations to catch all possible field name formats
+- Added Select2 event listener support (WooCommerce uses Select2 for dropdowns)
+- Enhanced logging to track field changes and event triggers
+
+**What's New**
+- Listens for both `change` and `select2:select` events
+- Supports both ID-based selectors (`#billing_state`) and name-based selectors (`[name="billing_state"]`)
+- Debug mode shows:
+  - Whether we're on checkout page
+  - Which fields exist on the page
+  - When fields change and their values
+  - When `update_checkout` event is triggered
+
+**Selectors Now Monitored**
+- `select#billing_state`, `select#billing_country`
+- `select#shipping_state`, `select#shipping_country`
+- `select[name="billing_state"]`, `select[name="billing_country"]`
+- `select[name="shipping_state"]`, `select[name="shipping_country"]`
+
+**How to Debug**
+1. Enable WP_DEBUG in wp-config.php
+2. Go to checkout page
+3. Open browser console (F12)
+4. Look for messages:
+   - "Checkout enhancement: Initializing..."
+   - "Billing state field exists: X"
+   - "State/Country field changed: billing_state = XX"
+   - "Triggering update_checkout event"
+
+**Files Changed:**
+- `assets/js/frontend-editor.js` (enhanced event listeners and debugging)
+- `woocommerce-team-payroll.php` (version bump to 1.0.30)
+- `CHANGELOG.md` (this entry)
+
+---
+
 ## [1.0.29] - 2026-04-27
 ### ✅ Checkout Enhancement - Auto-Update Shipping on State/Country Change
 

@@ -570,17 +570,53 @@
 	// Works with all themes and improves user experience
 	// ============================================================================
 	$(document).ready(function() {
+		// Debug: Check if we're on checkout page
+		if (wcTpEditor.debug) {
+			console.log('Checkout enhancement: Initializing state/country change listener');
+			console.log('Is checkout page:', $('body').hasClass('woocommerce-checkout'));
+			console.log('Billing state field exists:', $('select#billing_state').length);
+			console.log('Billing country field exists:', $('select#billing_country').length);
+			console.log('Shipping state field exists:', $('select#shipping_state').length);
+			console.log('Shipping country field exists:', $('select#shipping_country').length);
+		}
+		
 		// Listen for state and country changes on both billing and shipping fields
-		$('body').on('change', 'select#billing_state, select#billing_country, select#shipping_state, select#shipping_country', function() {
+		// Use multiple selectors to catch all possible field variations
+		$('body').on('change', 'select#billing_state, select#billing_country, select#shipping_state, select#shipping_country, select[name="billing_state"], select[name="billing_country"], select[name="shipping_state"], select[name="shipping_country"]', function() {
+			const fieldName = $(this).attr('name') || $(this).attr('id');
+			const fieldValue = $(this).val();
+			
 			if (wcTpEditor.debug) {
-				console.log('State/Country changed, triggering checkout update');
+				console.log('State/Country field changed:', fieldName, '=', fieldValue);
+				console.log('Triggering update_checkout event');
 			}
+			
+			// Trigger WooCommerce checkout update to recalculate shipping
+			$('body').trigger('update_checkout');
+			
+			if (wcTpEditor.debug) {
+				console.log('update_checkout event triggered');
+			}
+		});
+		
+		// Also listen for the select2 change event (if WooCommerce uses Select2)
+		$('body').on('select2:select', 'select#billing_state, select#billing_country, select#shipping_state, select#shipping_country, select[name="billing_state"], select[name="billing_country"], select[name="shipping_state"], select[name="shipping_country"]', function() {
+			const fieldName = $(this).attr('name') || $(this).attr('id');
+			const fieldValue = $(this).val();
+			
+			if (wcTpEditor.debug) {
+				console.log('State/Country Select2 changed:', fieldName, '=', fieldValue);
+				console.log('Triggering update_checkout event');
+			}
+			
 			// Trigger WooCommerce checkout update to recalculate shipping
 			$('body').trigger('update_checkout');
 		});
 		
 		if (wcTpEditor.debug) {
 			console.log('Checkout enhancement: State/Country change listener initialized');
+			console.log('Listening for changes on: select#billing_state, select#billing_country, select#shipping_state, select#shipping_country');
+			console.log('Also listening for: select[name="billing_state"], select[name="billing_country"], select[name="shipping_state"], select[name="shipping_country"]');
 		}
 	});
 
