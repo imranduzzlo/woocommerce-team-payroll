@@ -104,6 +104,11 @@ class WC_Team_Payroll_Frontend_Editor {
 			return $price_html;
 		}
 
+		// Prevent duplicate wrapping
+		if ( strpos( $price_html, 'wc-tp-cart-price-wrapper' ) !== false ) {
+			return $price_html;
+		}
+
 		$product = $cart_item['data'];
 		$current_price = $product->get_price();
 
@@ -130,6 +135,11 @@ class WC_Team_Payroll_Frontend_Editor {
 	 */
 	public function add_shipping_edit_button( $label, $method ) {
 		if ( ! $this->user_can_edit() ) {
+			return $label;
+		}
+
+		// Prevent duplicate wrapping
+		if ( strpos( $label, 'wc-tp-shipping-wrapper' ) !== false ) {
 			return $label;
 		}
 

@@ -1,3 +1,21 @@
+## [1.0.11] - 2026-04-27
+### 🐛 Frontend Editor - Fixed Duplicate Icons
+
+**Fixed Duplicate Edit Icons Issue**
+- Fixed duplicate edit icons appearing on shipping costs
+- Added duplicate wrapping prevention for both cart prices and shipping
+- Icons now appear correctly without duplicates
+
+**Technical Improvements:**
+- Added `strpos()` check to prevent duplicate wrapper application
+- Check if element is already wrapped before adding edit button
+- Prevents filter from wrapping content multiple times
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added duplicate prevention)
+
+---
+
 ## [1.0.10] - 2026-04-27
 ### 🐛 Frontend Editor - Shipping Cost Update Fix
 
