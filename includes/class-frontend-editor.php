@@ -38,6 +38,10 @@ class WC_Team_Payroll_Frontend_Editor {
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 999, 3 );
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 99, 3 );
 		
+		// Checkout page uses different hooks for order review
+		add_filter( 'woocommerce_order_item_price', array( $this, 'add_cart_price_edit_button' ), 9999, 3 );
+		add_filter( 'woocommerce_checkout_cart_item_price', array( $this, 'add_cart_price_edit_button' ), 9999, 3 );
+		
 		// Also try the subtotal hook as fallback
 		add_filter( 'woocommerce_cart_item_subtotal', array( $this, 'add_cart_subtotal_edit_button' ), 999, 3 );
 

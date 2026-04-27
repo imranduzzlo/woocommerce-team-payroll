@@ -1,3 +1,28 @@
+## [1.0.16] - 2026-04-27
+### 🐛 Frontend Editor - Fixed Cart Price Buttons on Checkout Page
+
+**Fixed Cart Price Edit Buttons Not Showing on Checkout**
+- Added `woocommerce_order_item_price` filter for checkout page compatibility
+- Added `woocommerce_checkout_cart_item_price` filter as additional hook
+- Cart price edit buttons now work on both cart AND checkout pages
+- Previously only worked on cart page, not checkout order review
+
+**What Was Fixed:**
+- Checkout page uses different WooCommerce hooks than cart page
+- Added checkout-specific filters to catch price display on order review
+- Buttons now appear beside product prices in checkout order review table
+- Maintains all existing functionality on cart page
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (added checkout page hooks)
+
+**User Experience:**
+- Edit buttons now visible on both cart and checkout pages
+- Consistent experience across entire checkout flow
+- Works with any theme's cart and checkout templates
+
+---
+
 ## [1.0.15] - 2026-04-27
 ### 🐛 Frontend Editor - Cart Price Edit Buttons Now Visible
 
