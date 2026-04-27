@@ -39,6 +39,14 @@
 			
 			if (wrappers.length > 0) {
 				console.log('Sample wrapper HTML:', wrappers.first().html());
+			} else {
+				// If no wrappers found, let's see what price elements exist
+				console.log('No wrappers found. Checking for price elements...');
+				const priceElements = $('.woocommerce-Price-amount, .amount, .product-price, [class*="price"]');
+				console.log('Found', priceElements.length, 'potential price elements');
+				if (priceElements.length > 0) {
+					console.log('Sample price element HTML:', priceElements.first().parent().html());
+				}
 			}
 		}
 

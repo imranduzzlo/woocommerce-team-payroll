@@ -1,3 +1,24 @@
+## [1.0.17] - 2026-04-27
+### 🔍 Frontend Editor - Enhanced Diagnostics
+
+**Added Enhanced Debugging**
+- Added hook name detection in PHP debug logs
+- Added current page detection (cart/checkout/other) in logs
+- JavaScript now logs all price elements if wrappers not found
+- Helps identify where the HTML is being generated vs where JS looks
+
+**Diagnostic Features:**
+- PHP logs show which WooCommerce hook triggered the filter
+- PHP logs show if on cart or checkout page
+- JavaScript logs sample HTML of price elements when wrappers missing
+- Better visibility into theme-specific rendering
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (enhanced PHP debugging)
+- `assets/js/frontend-editor.js` (enhanced JS debugging)
+
+---
+
 ## [1.0.16] - 2026-04-27
 ### 🐛 Frontend Editor - Fixed Cart Price Buttons on Checkout Page
 

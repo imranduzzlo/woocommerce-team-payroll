@@ -115,10 +115,23 @@ class WC_Team_Payroll_Frontend_Editor {
 	public function add_cart_price_edit_button( $price_html, $cart_item, $cart_item_key ) {
 		// Debug logging
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'WC TP Frontend Editor: add_cart_price_edit_button called' );
+			// Get the calling hook/filter name
+			$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 10 );
+			$hook_name = 'unknown';
+			foreach ( $backtrace as $trace ) {
+				if ( isset( $trace['function'] ) && $trace['function'] === 'apply_filters' ) {
+					if ( isset( $trace['args'][0] ) ) {
+						$hook_name = $trace['args'][0];
+						break;
+					}
+				}
+			}
+			
+			error_log( 'WC TP Frontend Editor: add_cart_price_edit_button called via hook: ' . $hook_name );
 			error_log( 'Price HTML: ' . $price_html );
 			error_log( 'Cart item key: ' . $cart_item_key );
 			error_log( 'User can edit: ' . ( $this->user_can_edit() ? 'yes' : 'no' ) );
+			error_log( 'Current page: ' . ( is_cart() ? 'cart' : ( is_checkout() ? 'checkout' : 'other' ) ) );
 		}
 
 		if ( ! $this->user_can_edit() ) {
