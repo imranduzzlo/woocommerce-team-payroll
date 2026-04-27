@@ -1,3 +1,39 @@
+## [1.0.25] - 2026-04-27
+### ✅ Frontend Editor - Fixed Mini Cart Price Display Issue
+
+**Fixed Mini Cart Showing Edited Prices**
+- Mini cart now ALWAYS shows original product prices
+- Edited prices only apply on cart and checkout pages
+- Edited prices do NOT persist after page reload (by design)
+- Mini cart updates (qty change, item remove) show original prices
+- Session is cleared on every page load to prevent stale data
+
+**How It Works Now**
+- Prices are edited ONLY on cart/checkout pages
+- Custom prices are stored in session ONLY during current page session
+- Custom prices are NOT applied during AJAX requests (mini cart updates)
+- On page reload, session is cleared and original prices show
+- Mini cart always displays original prices
+
+**Technical Changes**
+- Modified `apply_custom_prices()` to skip AJAX requests
+- Modified `apply_custom_shipping_costs()` to skip AJAX requests
+- Simplified `check_and_clear_stale_session()` to always clear on page load
+- Custom prices/shipping now only apply on cart/checkout pages
+
+**User Experience**
+- Mini cart shows correct original prices
+- Editing prices on cart page works perfectly
+- After page reload, prices reset to original
+- No more confusion with edited prices in mini cart
+- Clean, predictable behavior
+
+**Files Changed:**
+- `includes/class-frontend-editor.php` (fixed AJAX handling and session clearing)
+- `woocommerce-team-payroll.php` (version bump to 1.0.25)
+
+---
+
 ## [1.0.24] - 2026-04-27
 ### ✅ Frontend Editor - Fixed Session Persistence & Mini Cart Issues
 
