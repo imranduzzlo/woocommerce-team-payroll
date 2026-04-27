@@ -1,3 +1,29 @@
+## [1.0.15] - 2026-04-27
+### 🐛 Frontend Editor - Cart Price Edit Buttons Now Visible
+
+**Fixed Cart Price Edit Buttons Visibility**
+- Changed CSS `opacity: 0` to `opacity: 1` for `.wc-tp-edit-btn`
+- Cart price edit buttons are now always visible (not just on hover)
+- Matches shipping edit button behavior for consistency
+- Buttons remain visible on mobile devices
+
+**What Was Fixed:**
+- Previously buttons had `opacity: 0` and only showed on hover
+- This made them invisible on touch devices and hard to discover
+- Now buttons are always visible with `opacity: 1`
+- Hover state still provides visual feedback with darker background
+
+**Files Changed:**
+- `assets/css/frontend-editor.css` (changed opacity from 0 to 1)
+
+**User Experience:**
+- Cart price edit buttons now clearly visible beside each product price
+- Consistent with shipping edit button visibility
+- Better discoverability for users
+- Works perfectly on all devices including mobile
+
+---
+
 ## [1.0.14] - 2026-04-27
 ### 🐛 Frontend Editor - Enhanced Cart Price Filter with Debugging
 
