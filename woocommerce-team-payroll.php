@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Team Payroll & Commission System
  * Plugin URI: https://github.com/imranduzzlo/woocommerce-team-payroll
  * Description: Manage team-based commission and payroll system with agents and processors
- * Version: 1.0.32
+ * Version: 1.0.33
  * Author: Imran
  * Author URI: https://imranhossain.me/
  * License: GPL v2 or later
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_TEAM_PAYROLL_VERSION', '1.0.32' );
+define( 'WC_TEAM_PAYROLL_VERSION', '1.0.33' );
 define( 'WC_TEAM_PAYROLL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_TEAM_PAYROLL_URL', plugin_dir_url( __FILE__ ) );
 
@@ -291,28 +291,63 @@ add_action( 'plugins_loaded', function() {
 	} );
 
 	// Add custom statuses to bulk actions - ONLY if checked
-	add_filter( 'bulk_actions-edit-shop_order', function( $actions ) {
+	// Support both legacy (edit-shop_order) and HPOS (woocommerce_page_wc-orders)
+	add_filter( 'bulk_actions-edit-shop_order', 'wc_tp_add_custom_bulk_actions', 20 );
+	add_filter( 'bulk_actions-woocommerce_page_wc-orders', 'wc_tp_add_custom_bulk_actions', 20 );
+	
+	function wc_tp_add_custom_bulk_actions( $actions ) {
 		$checkout_fields = get_option( 'wc_team_payroll_checkout_fields', array() );
 		$custom_statuses = isset( $checkout_fields['custom_statuses'] ) && is_array( $checkout_fields['custom_statuses'] ) ? $checkout_fields['custom_statuses'] : array();
 		
 		if ( ! empty( $custom_statuses ) ) {
+			// Build new actions array
+			$new_actions = array();
+			
 			foreach ( $custom_statuses as $status_key => $status_data ) {
 				// ONLY add if in_bulk_actions is checked
 				if ( is_array( $status_data ) && isset( $status_data['in_bulk_actions'] ) && $status_data['in_bulk_actions'] ) {
 					if ( isset( $status_data['name'] ) && ! empty( $status_data['name'] ) ) {
 						$status_name = $status_data['name'];
 						$status_label = isset( $status_data['label'] ) ? $status_data['label'] : $status_name;
-						$actions[ 'mark_' . $status_name ] = sprintf( __( 'Change status to %s', 'wc-team-payroll' ), $status_label );
+						$new_actions[ 'mark_' . $status_name ] = sprintf( __( 'Change status to %s', 'wc-team-payroll' ), $status_label );
 					}
 				}
+			}
+			
+			// Insert custom actions before "Move to Trash"
+			if ( ! empty( $new_actions ) ) {
+				$final_actions = array();
+				$added = false;
+				
+				foreach ( $actions as $key => $value ) {
+					if ( 'trash' === $key && ! $added ) {
+						// Add custom actions before trash
+						foreach ( $new_actions as $k => $v ) {
+							$final_actions[ $k ] = $v;
+						}
+						$added = true;
+					}
+					$final_actions[ $key ] = $value;
+				}
+				
+				// If trash wasn't found, add at the end
+				if ( ! $added ) {
+					$final_actions = array_merge( $final_actions, $new_actions );
+				}
+				
+				return $final_actions;
 			}
 		}
 		
 		return $actions;
-	} );
+	}
 
 	// Handle bulk action for custom statuses
-	add_action( 'handle_bulk_actions-edit-shop_order', function( $redirect_url, $action, $post_ids ) {
+	// Support both legacy (edit-shop_order) and HPOS (woocommerce_page_wc-orders)
+	add_filter( 'handle_bulk_actions-edit-shop_order', 'wc_tp_handle_custom_bulk_actions', 10, 3 );
+	add_filter( 'handle_bulk_actions-woocommerce_page_wc-orders', 'wc_tp_handle_custom_bulk_actions', 10, 3 );
+	
+	function wc_tp_handle_custom_bulk_actions( $redirect_url, $action, $post_ids ) {
 		$checkout_fields = get_option( 'wc_team_payroll_checkout_fields', array() );
 		$custom_statuses = isset( $checkout_fields['custom_statuses'] ) && is_array( $checkout_fields['custom_statuses'] ) ? $checkout_fields['custom_statuses'] : array();
 		
@@ -330,24 +365,61 @@ add_action( 'plugins_loaded', function() {
 			}
 			
 			if ( $is_valid_status ) {
+				$processed_count = 0;
+				
 				foreach ( $post_ids as $post_id ) {
 					$order = wc_get_order( $post_id );
 					if ( $order ) {
-						$order->set_status( $status_name );
-						$order->save();
+						$order->update_status( $status_name, 'Bulk status change via Admin' );
+						$processed_count++;
 					}
 				}
 				
-				$redirect_url = add_query_arg( 'bulk_action', $action, $redirect_url );
+				$redirect_url = add_query_arg( array(
+					'bulk_custom_status_changed' => $processed_count,
+					'changed_to_status' => $status_name
+				), $redirect_url );
 			}
 		}
 		
 		return $redirect_url;
-	}, 10, 3 );
+	}
 
 	// Add AJAX handlers for My Account
 	add_action( 'wp_ajax_wc_tp_get_myaccount_orders', array( 'WC_Team_Payroll_MyAccount', 'ajax_get_orders' ) );
 	add_action( 'wp_ajax_wc_tp_get_order_details', array( 'WC_TP_Order_Details_Modal', 'ajax_get_order_details' ) );
+
+	// Admin notice for bulk status changes
+	add_action( 'admin_notices', function() {
+		if ( ! empty( $_REQUEST['bulk_custom_status_changed'] ) ) {
+			$count = intval( $_REQUEST['bulk_custom_status_changed'] );
+			$status = isset( $_REQUEST['changed_to_status'] ) ? sanitize_text_field( $_REQUEST['changed_to_status'] ) : '';
+			
+			// Get status label
+			$checkout_fields = get_option( 'wc_team_payroll_checkout_fields', array() );
+			$custom_statuses = isset( $checkout_fields['custom_statuses'] ) && is_array( $checkout_fields['custom_statuses'] ) ? $checkout_fields['custom_statuses'] : array();
+			
+			$status_label = ucfirst( $status );
+			foreach ( $custom_statuses as $status_data ) {
+				if ( is_array( $status_data ) && isset( $status_data['name'] ) && $status_data['name'] === $status ) {
+					$status_label = isset( $status_data['label'] ) ? $status_data['label'] : $status_label;
+					break;
+				}
+			}
+			
+			printf(
+				'<div class="notice notice-success is-dismissible"><p>' .
+				_n(
+					'%d order status changed to %s.',
+					'%d order statuses changed to %s.',
+					$count,
+					'wc-team-payroll'
+				) . '</p></div>',
+				$count,
+				'<strong>' . esc_html( $status_label ) . '</strong>'
+			);
+		}
+	} );
 
 	// Block inactive employees from logging in
 	add_filter( 'wp_authenticate_user', function( $user, $password ) {

@@ -1,3 +1,41 @@
+## [1.0.33] - 2026-05-02
+### ✅ Custom Order Statuses - Fixed Bulk Actions Support
+
+**Fixed Bulk Actions Not Showing Custom Statuses**
+- Added HPOS (High-Performance Order Storage) bulk action hooks
+- Custom statuses now appear in bulk actions dropdown for both legacy and HPOS order tables
+- Bulk actions positioned before "Move to Trash" for better UX
+- Added success admin notice after bulk status changes
+
+**What's Fixed**
+- ✅ Bulk actions now work with HPOS (`woocommerce_page_wc-orders` hook)
+- ✅ Bulk actions work with legacy order tables (`edit-shop_order` hook)
+- ✅ Custom statuses appear in bulk dropdown when "Show in Bulk Actions" is checked
+- ✅ Bulk status changes show success notice with count and status name
+- ✅ Proper positioning before "Move to Trash" action
+
+**Technical Changes**
+- Converted anonymous functions to named functions for better hook management
+- Added `wc_tp_add_custom_bulk_actions()` function with priority 20
+- Added `wc_tp_handle_custom_bulk_actions()` function
+- Added both `bulk_actions-edit-shop_order` and `bulk_actions-woocommerce_page_wc-orders` filters
+- Added both `handle_bulk_actions-edit-shop_order` and `handle_bulk_actions-woocommerce_page_wc-orders` filters
+- Added admin notice for successful bulk status changes
+- Improved bulk action logic to match WooCommerce best practices
+
+**How It Works**
+1. Admin checks "Show in Bulk Actions" for custom status in settings
+2. Custom status appears in Orders > Bulk Actions dropdown
+3. Admin selects orders and applies bulk action
+4. Orders are updated with new status
+5. Success notice shows: "X order statuses changed to [Status Name]"
+
+**Files Changed:**
+- `woocommerce-team-payroll.php` (fixed bulk actions, added HPOS support, version bump to 1.0.33)
+- `CHANGELOG.md` (this entry)
+
+---
+
 ## [1.0.32] - 2026-04-27
 ### 🐛 Frontend Editor - Fixed Edit Button Visibility
 
